@@ -1,9 +1,8 @@
 {
   "expo": {
-    "name": "reuseit",
+    "name": "Reuseit",
     "slug": "reuseit",
     "version": "1.0.0",
-
     "scheme": "reuseit",
     "web": {
       "bundler": "metro",
@@ -17,19 +16,25 @@
         {
           "launchMode": "most-recent"
         }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
-
       "tsconfigPaths": true
     },
-
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -37,12 +42,25 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "ai.reuseit.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "googleServicesFile": "./google-services.json",
+      "package": "ai.reuseit.app"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5d93e3bd-d633-4646-b468-4243d5e5228f"
       }
     }
   }

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "54651170211",
+    "project_id": "reuseit-a37ea",
+    "storage_bucket": "reuseit-a37ea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:54651170211:android:f05c223d1efafe3e00fe16",
+        "android_client_info": {
+          "package_name": "ai.reuseit.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "54651170211-hbq96bq9l72ovsftr62odvbumsd431k0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuhoS_vYv1PfQ-0TolOEN4rKagEQyPhy4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "54651170211-hbq96bq9l72ovsftr62odvbumsd431k0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "54651170211-pm2no130q54k86le3tbat9p5b5r5g2ik.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "ai.reuseit.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
