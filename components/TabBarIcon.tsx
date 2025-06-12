@@ -1,6 +1,5 @@
-import Icon from '@react-native-vector-icons/fontawesome6';
-import { StyleSheet } from 'react-native';
+import { FontAwesome6 as Icon } from '@expo/vector-icons';
 
 export const TabBarIcon = (props: React.ComponentProps<typeof Icon>) => {
-  return <Icon size={24} className="text-primary" color={'#34A853'} {...props} />;
+  return <Icon size={22} className="text-primary" color={'#34A853'} {...props} />;
 };
