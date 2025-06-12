@@ -1,0 +1,248 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Badge {
+  id: ID!
+  criteria: String
+  description: String!
+  iconUrl: String
+  name: String!
+  users: [BadgeAssignment!]!
+}
+
+type BadgeAssignment {
+  id: ID!
+  awardedAt: DateTime!
+  badge: Badge!
+  user: User!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Location {
+  id: ID!
+  createdAt: DateTime!
+  name: String
+  address: String
+  type: LocationType!
+  events: [Event!]!
+  posts: [Post!]!
+  coordinates: [Float!]!
+  googlePlaceId: String
+}
+
+enum LocationType {
+  COLLECTION_SITE
+  DISTRIBUTION_CENTER
+  DONATION_CENTER
+  DROP_OFF_POINT
+  EVENT
+  OTHER
+  PICKUP_LOCATION
+  RECYCLING_CENTER
+  USER_CHECKIN
+  WAREHOUSE
+}
+
+type UserArticle {
+  id: ID!
+  name: String!
+  description: String
+  imageUrl: [String!]!
+  user: User!
+  post: Post
+}
+
+type Post {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  author: User
+  comments: [Comment!]!
+  content: String!
+  userArticles: [UserArticle!]!
+  event: Event
+  images: [String!]!
+  likes: Float!
+  location: Location
+}
+
+type Comment {
+  id: ID!
+  createdAt: DateTime!
+  author: User
+  content: String!
+  post: Post!
+}
+
+type EvenParticipant {
+  id: ID!
+  createdAt: DateTime!
+  event: Event!
+  user: User!
+}
+
+type PointsHistory {
+  id: ID!
+  createdAt: DateTime!
+  amount: Int!
+  reason: String!
+  user: User!
+}
+
+type User {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  avatarUrl: String
+  badges: [BadgeAssignment!]!
+  comments: [Comment!]!
+  email: String!
+  emailVerified: Boolean!
+  eventsCreated: [Event!]!
+  googleId: String
+  name: String!
+  phoneNumber: String!
+  phoneVerified: Boolean!
+  points: Float!
+  pointsHistory: [PointsHistory!]!
+  posts: [Post!]!
+  username: String
+  userArticle: [UserArticle!]!
+  evenParticipant: [EvenParticipant!]!
+}
+
+type Event {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  creator: User!
+  title: String!
+  imageUrl: [String!]!
+  description: String
+  startTime: DateTime!
+  endTime: DateTime
+  location: Location!
+  participants: EvenParticipant
+  post: [Post!]!
+}
+
+type Point {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  event(id: Int!): Event!
+  user(id: Int!): User!
+  point(id: Int!): Point!
+  badge(id: Int!): Badge!
+  userArticle(id: Int!): UserArticle!
+  post(id: Int!): Post!
+  comment(id: Int!): Comment!
+}
+
+type Mutation {
+  createEvent(createEventInput: CreateEventInput!): Event!
+  updateEvent(updateEventInput: UpdateEventInput!): Event!
+  removeEvent(id: Int!): Event!
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser(id: Int!): User!
+  createPoint(createPointInput: CreatePointInput!): Point!
+  updatePoint(updatePointInput: UpdatePointInput!): Point!
+  removePoint(id: Int!): Point!
+  createBadge(createBadgeInput: CreateBadgeInput!): Badge!
+  updateBadge(updateBadgeInput: UpdateBadgeInput!): Badge!
+  removeBadge(id: Int!): Badge!
+  createUserArticle(createUserArticleInput: CreateUserArticleInput!): UserArticle!
+  updateUserArticle(updateUserArticleInput: UpdateUserArticleInput!): UserArticle!
+  removeUserArticle(id: Int!): UserArticle!
+  createPost(createPostInput: CreatePostInput!): Post!
+  updatePost(updatePostInput: UpdatePostInput!): Post!
+  removePost(id: Int!): Post!
+  createComment(createCommentInput: CreateCommentInput!): Comment!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  removeComment(id: Int!): Comment!
+}
+
+input CreateEventInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateEventInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreatePointInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdatePointInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateBadgeInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateBadgeInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateUserArticleInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateUserArticleInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreatePostInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdatePostInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateCommentInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateCommentInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
