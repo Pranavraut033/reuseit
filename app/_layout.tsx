@@ -34,13 +34,22 @@ function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PortalProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ title: 'Modal', presentation: 'modal' }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-        </Stack>
-      </PortalProvider>
+      <Stack screenOptions={{ statusBarStyle: 'dark', headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{}} />
+        <Stack.Screen name="login" options={{}} />
+        <Stack.Screen
+          name="identify/index"
+          options={{
+            animation: 'fade_from_bottom',
+            statusBarTranslucent: true,
+            navigationBarHidden: true,
+            gestureEnabled: true,
+            gestureDirection: 'vertical',
+            statusBarHidden: true,
+          }}
+        />
+      </Stack>
+      <PortalHost />
     </GestureHandlerRootView>
   );
 }
