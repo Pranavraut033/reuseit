@@ -1,4 +1,4 @@
-import { Portal } from '@gorhom/portal';
+import { Portal } from '@rn-primitives/portal';
 import { useState, useCallback, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Toast } from 'toastify-react-native';

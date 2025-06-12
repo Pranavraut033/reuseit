@@ -5,7 +5,7 @@ import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Portal } from '@gorhom/portal';
+import { Portal } from '@rn-primitives/portal';
 import countries from '../../json/countries.json';
 
 export type Country = (typeof countries)[0];
@@ -79,7 +79,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         </View>
       </View>
 
-      <Portal>
+      <Portal name="countrySelector">
         <CountrySelector
           visible={showSelector}
           onSelect={handleCountrySelect}

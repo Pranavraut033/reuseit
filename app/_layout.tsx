@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Redirect, Stack, usePathname } from 'expo-router';
 import { AuthProvider, useAuth } from '~/context/AuthContext';
 import { SplashScreenController } from '~/components/SplashScreenController';
-import { PortalProvider } from '@gorhom/portal';
+import { PortalHost } from '@rn-primitives/portal';
 import ToastManager from 'toastify-react-native';
 import { AppProvider } from '~/context/AppContext';
 import 'react-native-reanimated';
