@@ -13,62 +13,65 @@ import { Event } from 'src/event/entities/event.entity';
 @ObjectType()
 export class User {
   @Field(() => ID)
-  id: string;
+  id: string; // @id @default(auto()) @map("_id") @db.ObjectId
 
   @Field()
-  createdAt: Date;
+  createdAt: Date; // @default(now())
 
   @Field()
-  updatedAt: Date;
+  updatedAt: Date; // @updatedAt
 
   @Field({ nullable: true })
-  avatarUrl?: string;
+  lastLogin?: Date; // DateTime?
+
+  @Field({ nullable: true })
+  avatarUrl?: string; // String?
 
   @Field(() => [BadgeAssignment])
-  badges: BadgeAssignment[];
+  badges: BadgeAssignment[]; // BadgeAssignment[]
 
   @Field(() => [Comment])
-  comments: Comment[];
+  comments: Comment[]; // Comment[]
 
   @Field()
-  email: string;
+  email: string; // String @unique
 
   @Field()
-  emailVerified: boolean;
+  emailVerified: boolean; // Boolean @default(false)
 
   @Field(() => [Event])
-  eventsCreated: Event[];
+  eventsCreated: Event[]; // Event[] @relation("EventCreator")
 
   @Field({ nullable: true })
-  googleId?: string;
+  googleId?: string; // String? @unique
 
   @Field()
-  name: string;
+  name: string; // String
 
-  // Password should not be exposed in a DTO used for output
-  // You may want to create separate input DTOs if needed
+  // password: String? (not exposed in GraphQL output DTO)
+  // If needed for input DTO, define separately.
 
-  @Field()
-  phoneNumber: string;
-
-  @Field()
-  phoneVerified: boolean;
+  @Field({ nullable: true })
+  phoneNumber?: string; // String?
 
   @Field()
-  points: number;
+  phoneVerified: boolean; // Boolean @default(false)
+
+  @Field()
+  points: number; // Int @default(0)
 
   @Field(() => [PointsHistory])
-  pointsHistory: PointsHistory[];
+  pointsHistory: PointsHistory[]; // PointsHistory[]
 
   @Field(() => [Post])
-  posts: Post[];
+  posts: Post[]; // Post[]
 
   @Field({ nullable: true })
-  username?: string;
+  username?: string; // String? @unique
 
   @Field(() => [UserArticle])
-  userArticle: UserArticle[];
+  userArticle: UserArticle[]; // UserArticle[]
 
   @Field(() => [EvenParticipant])
-  evenParticipant: EvenParticipant[];
+  evenParticipant: EvenParticipant[]; // EvenParticipant[]
 }

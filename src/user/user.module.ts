@@ -8,5 +8,6 @@ import { UserArticleModule } from './user-article.module';
 @Module({
   providers: [UserResolver, UserService],
   imports: [PointModule, BadgeModule, UserArticleModule],
+  exports: [UserService],
 })
 export class UserModule {}

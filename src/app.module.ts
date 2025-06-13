@@ -1,14 +1,15 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { PrismaModule } from './prisma/prisma.module';
-import { EventModule } from './event/event.module';
-import { UserModule } from './user/user.module';
-import { PostModule } from './post/post.module';
-import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthModule } from 'src/auth/auth.module';
+import { EventModule } from 'src/event/event.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { Module } from '@nestjs/common';
+import { PostModule } from 'src/post/post.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { UserModule } from 'src/user/user.module';
 import { join } from 'path';
-import { AuthModule } from './auth/auth.module';
-import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -23,7 +24,14 @@ import { AuthModule } from './auth/auth.module';
     }),
     AuthModule,
   ],
-  controllers: [AppController],
-  providers: [],
+  controllers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule {
+  // The AppModule is the root module of the application.
+}

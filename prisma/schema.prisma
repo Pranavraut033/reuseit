@@ -18,6 +18,7 @@ model User {
   id              String            @id @default(auto()) @map("_id") @db.ObjectId
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+  lastLogin       DateTime?
   avatarUrl       String?
   badges          BadgeAssignment[]
   comments        Comment[]
@@ -26,8 +27,8 @@ model User {
   eventsCreated   Event[]           @relation("EventCreator")
   googleId        String?           @unique
   name            String
-  password        String
-  phoneNumber     String
+  password        String?
+  phoneNumber     String?
   phoneVerified   Boolean           @default(false)
   points          Int               @default(0)
   pointsHistory   PointsHistory[]
