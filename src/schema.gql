@@ -23,6 +23,28 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type EvenParticipant {
+  id: ID!
+  createdAt: DateTime!
+  event: Event!
+  user: User!
+}
+
+type Event {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  creator: User!
+  title: String!
+  imageUrl: [String!]!
+  description: String
+  startTime: DateTime!
+  endTime: DateTime
+  location: Location!
+  participants: EvenParticipant
+  post: [Post!]!
+}
+
 type Location {
   id: ID!
   createdAt: DateTime!
@@ -79,13 +101,6 @@ type Comment {
   post: Post!
 }
 
-type EvenParticipant {
-  id: ID!
-  createdAt: DateTime!
-  event: Event!
-  user: User!
-}
-
 type PointsHistory {
   id: ID!
   createdAt: DateTime!
@@ -98,6 +113,7 @@ type User {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
+  lastLogin: DateTime
   avatarUrl: String
   badges: [BadgeAssignment!]!
   comments: [Comment!]!
@@ -106,7 +122,7 @@ type User {
   eventsCreated: [Event!]!
   googleId: String
   name: String!
-  phoneNumber: String!
+  phoneNumber: String
   phoneVerified: Boolean!
   points: Float!
   pointsHistory: [PointsHistory!]!
@@ -116,29 +132,19 @@ type User {
   evenParticipant: [EvenParticipant!]!
 }
 
-type Event {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  creator: User!
-  title: String!
-  imageUrl: [String!]!
-  description: String
-  startTime: DateTime!
-  endTime: DateTime
-  location: Location!
-  participants: EvenParticipant
-  post: [Post!]!
-}
-
 type Point {
   """Example field (placeholder)"""
   exampleField: Int!
 }
 
+type AuthResponse {
+  user: User!
+  token: String!
+}
+
 type Query {
   event(id: Int!): Event!
-  user(id: Int!): User!
+  user(email: Int!): User!
   point(id: Int!): Point!
   badge(id: Int!): Badge!
   userArticle(id: Int!): UserArticle!
@@ -168,6 +174,7 @@ type Mutation {
   createComment(createCommentInput: CreateCommentInput!): Comment!
   updateComment(updateCommentInput: UpdateCommentInput!): Comment!
   removeComment(id: Int!): Comment!
+  googleSignIn(data: GoogleSignInInput!): AuthResponse!
 }
 
 input CreateEventInput {
@@ -245,4 +252,27 @@ input UpdateCommentInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+}
+
+input GoogleSignInInput {
+  """User unique identifier"""
+  uid: String!
+
+  """User display name"""
+  displayName: String!
+
+  """User email address"""
+  email: String!
+
+  """Is email verified"""
+  emailVerified: Boolean!
+
+  """Is user anonymous"""
+  isAnonymous: Boolean!
+
+  """User phone number"""
+  phoneNumber: String
+
+  """User photo URL"""
+  photoURL: String
 }
