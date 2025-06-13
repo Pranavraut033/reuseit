@@ -8,6 +8,8 @@ import { PortalHost } from '@rn-primitives/portal';
 import ToastManager from 'toastify-react-native';
 import { AppProvider } from '~/context/AppContext';
 import 'react-native-reanimated';
+import { ApolloProvider } from '@apollo/client';
+import { apolloClient } from '~/utils/apollo';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -16,13 +18,15 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   return (
-    <AppProvider>
-      <AuthProvider>
-        <SplashScreenController />
-        <App />
-        <ToastManager />
-      </AuthProvider>
-    </AppProvider>
+    <ApolloProvider client={apolloClient}>
+      <AppProvider>
+        <AuthProvider>
+          <SplashScreenController />
+          <App />
+          <ToastManager />
+        </AuthProvider>
+      </AppProvider>
+    </ApolloProvider>
   );
 }
 
