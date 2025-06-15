@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
 } from '@react-native-firebase/auth';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { GOOGLE_SIGN_IN_MUTATION } from '~/graphql/auth/googleSignIn';
+import { GOOGLE_SIGN_IN_MUTATION } from '~/gql/auth/googleSignIn';
 
 export type AuthContextType = {
   error: unknown;
@@ -78,12 +78,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(getAuth(), async (user) => {
       if (user) {
-        const data = await update({
+        await update({
           variables: {
             data: {
               uid: user.uid,
-              displayName: user.displayName,
-              email: user.email,
+              displayName: user.displayName ?? '',
+              email: user.email ?? '',
               emailVerified: user.emailVerified,
               isAnonymous: user.isAnonymous,
               phoneNumber: user.phoneNumber,
@@ -92,22 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         })
           .then((res) => {
-            console.log('User update mutation result:', res);
-            return res;
+            setCurrentUser(user);
           })
-          .catch((err) => {
-            console.error('Error during user update mutation:', err);
-            setError(err);
-            return null;
-          })
-          .finally(() => {
-            reset();
-          });
-
-        console.log('Update mutation data:', data);
-        // setCurrentUser(user);
-
-        console.log({ data });
+          .catch((err) => setError(err))
+          .finally(() => reset());
       } else {
         setCurrentUser(null);
       }
