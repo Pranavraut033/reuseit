@@ -5,13 +5,13 @@ import { useAuth } from '~/context/AuthContext';
 
 const HomeScreen = () => {
   const { user } = useAuth();
+
   return (
     <ScrollView className="p-4">
       <View className="pb-[100dp]">
         {/* Header */}
         <View className="mb-4 flex-row items-center justify-between">
           <Text className="text-xl font-bold text-black">ReUseIt</Text>
-          <Feather name="bell" size={20} color="gray" />
         </View>
         {/* Greeting */}
         <Text className="text-lg font-semibold text-black">Hi, {user?.displayName}! 👋</Text>

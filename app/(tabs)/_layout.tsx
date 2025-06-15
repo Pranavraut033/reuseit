@@ -4,8 +4,7 @@ import { MotiView } from 'moti';
 import { Text, View, Pressable } from 'react-native';
 import clsx from 'clsx';
 import { ComponentProps, memo, useMemo } from 'react';
-import Camera from '~/assets/icons/camera.svg';
-import { FontAwesome6 as Icon, AntDesign } from '@expo/vector-icons';
+import { FontAwesome6 as Icon } from '@expo/vector-icons';
 
 // Memoized animated label
 const AnimatedTabLabel = memo(function AnimatedTabLabel({
