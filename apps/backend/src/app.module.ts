@@ -27,7 +27,7 @@ import { join } from 'path';
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
       // Ensure the HTTP request is available in GraphQL context for guards/decorators
       context: ({ req, res }) => ({ req, res }),
-      autoSchemaFile: join(process.cwd(), '/../../schema.gql'),
+      autoSchemaFile: join(process.cwd(), '/../schema.gql'),
     }),
     AuthModule,
   ],
