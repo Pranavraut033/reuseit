@@ -1,0 +1,171 @@
+// prisma/schema.prisma
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator zod {
+  provider = "zod-prisma-types"
+}
+
+model User {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  lastLogin       DateTime?
+  avatarUrl       String?
+  badges          BadgeAssignment[]
+  comments        Comment[]
+  email           String            @unique
+  emailVerified   Boolean           @default(false)
+  eventsCreated   Event[]           @relation("EventCreator")
+  googleId        String?           @unique
+  name            String
+  password        String?
+  phoneNumber     String?
+  phoneVerified   Boolean           @default(false)
+  points          Int               @default(0)
+  pointsHistory   PointsHistory[]
+  posts           Post[]
+  username        String?           @unique
+  userArticle     UserArticle[]
+  evenParticipant EvenParticipant[]
+  likes           Like[]
+}
+
+model Badge {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  criteria    String? // example: "Recycle 10 plastics"
+  description String
+  iconUrl     String?
+  name        String
+  users       BadgeAssignment[]
+}
+
+model BadgeAssignment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  awardedAt DateTime @default(now())
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  badgeId   String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+}
+
+model Post {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  author       User?         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId     String?       @db.ObjectId
+  comments     Comment[]
+  content      String
+  userArticles UserArticle[]
+  event        Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String?       @db.ObjectId
+  images       String[] // S3/GCS URLs or cloud storage links
+  likes        Int           @default(0)
+  location     Location?     @relation(fields: [locationId], references: [id])
+  locationId   String?       @db.ObjectId
+  likeHistory  Like[]
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String   @db.ObjectId
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String?  @db.ObjectId
+  content   String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String   @db.ObjectId
+}
+
+model Event {
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  creator             User             @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  title               String
+  imageUrl            String[]
+  description         String?
+  startTime           DateTime
+  endTime             DateTime?
+  location            Location         @relation(fields: [locationId], references: [id])
+  participants        EvenParticipant?
+  post                Post[]
+  eventParticipantsId String?          @unique @db.ObjectId
+  creatorId           String           @db.ObjectId
+  locationId          String           @db.ObjectId
+}
+
+model EvenParticipant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String   @unique @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+
+  @@unique([eventId, userId])
+}
+
+model Location {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt     DateTime     @default(now())
+  name          String?
+  address       String?
+  type          LocationType
+  events        Event[]
+  posts         Post[]
+  coordinates   Float[]
+  googlePlaceId String?      @unique
+}
+
+model UserArticle {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  imageUrl    String[]
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      String?  @db.ObjectId
+  userId      String   @db.ObjectId
+}
+
+enum LocationType {
+  COLLECTION_SITE
+  DISTRIBUTION_CENTER
+  DONATION_CENTER
+  DROP_OFF_POINT
+  EVENT
+  OTHER
+  PICKUP_LOCATION
+  RECYCLING_CENTER
+  USER_CHECKIN
+  WAREHOUSE
+}
+
+model PointsHistory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  amount    Int
+  reason    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+}

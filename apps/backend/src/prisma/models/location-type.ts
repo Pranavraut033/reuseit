@@ -1,0 +1,16 @@
+import { registerEnumType } from '@nestjs/graphql';
+
+export enum LocationType {
+  COLLECTION_SITE = 'COLLECTION_SITE',
+  DISTRIBUTION_CENTER = 'DISTRIBUTION_CENTER',
+  DONATION_CENTER = 'DONATION_CENTER',
+  DROP_OFF_POINT = 'DROP_OFF_POINT',
+  EVENT = 'EVENT',
+  OTHER = 'OTHER',
+  PICKUP_LOCATION = 'PICKUP_LOCATION',
+  RECYCLING_CENTER = 'RECYCLING_CENTER',
+  USER_CHECKIN = 'USER_CHECKIN',
+  WAREHOUSE = 'WAREHOUSE',
+}
+
+registerEnumType(LocationType, { name: 'LocationType' });
