@@ -9,6 +9,7 @@ import { IS_PUBLIC_KEY, jwtConstants } from './constants';
 import { Request } from 'express';
 import { UserService } from 'src/user/user.service';
 import { Reflector } from '@nestjs/core';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -30,15 +31,13 @@ export class AuthGuard implements CanActivate {
 
     // Support both HTTP and GraphQL contexts
     let request: Request | undefined;
-    console.log({ type: context.getType() });
 
     if (context.getType() === 'http') {
       request = context.switchToHttp().getRequest();
-      // @ts-expect-error 123
-    } else if (context.getType() === 'graphql') {
-      // For @nestjs/graphql, getContext().req is the request object
-      const gqlContext: { req: Request } = context.getArgByIndex(2);
-      request = gqlContext?.req;
+    } else if (context.getType<'graphql'>() === 'graphql') {
+      const gqlCtx = GqlExecutionContext.create(context);
+      const ctx = gqlCtx.getContext<{ req?: Request }>();
+      request = ctx?.req;
     }
     if (!request) {
       throw new UnauthorizedException('Request object not found');

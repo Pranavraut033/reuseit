@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { GoogleSignInInput } from './dto/google-signin.input';
+import { SignInInput } from './dto/signin.input';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { Public } from './constants';
@@ -25,29 +25,42 @@ export class AuthService {
   }
 
   @Public()
-  async googleSignIn({
+  async signIn({
     uid: googleId,
     displayName: name,
     email,
     emailVerified,
     phoneNumber,
     photoURL: avatarUrl,
-  }: GoogleSignInInput) {
-    const user = await this.prismaService.user.upsert({
-      where: { googleId },
-      update: {
-        name,
-        email,
-        emailVerified,
-        phoneNumber,
-        avatarUrl,
-        lastLogin: new Date(),
+  }: SignInInput) {
+    // Some providers (e.g., phone auth) may not supply an email. Ensure uniqueness and non-null.
+    const normalizedEmail = (email || '').trim() || `${googleId}@auth.local`;
+
+    const user = await this.prismaService.safeUpsert(
+      'User',
+      this.prismaService.user,
+      {
+        where: { googleId },
+        update: {
+          name,
+          email: normalizedEmail,
+          emailVerified,
+          phoneNumber,
+          avatarUrl,
+          lastLogin: new Date(),
+        },
+        create: {
+          googleId,
+          name,
+          email: normalizedEmail,
+          emailVerified,
+          phoneNumber,
+          avatarUrl,
+        },
       },
-      create: { googleId, name, email, emailVerified, phoneNumber, avatarUrl },
-    });
+    );
 
     const { password: _remove, ...result } = user;
-    console.log({ result });
 
     const token = this.jwtService.sign({ userId: user.id, email: user.email });
 

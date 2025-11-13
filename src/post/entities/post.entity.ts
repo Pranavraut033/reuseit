@@ -37,6 +37,9 @@ export class Post {
   @Field()
   likes: number;
 
+  @Field(() => Boolean, { nullable: true })
+  likedByCurrentUser?: boolean | null;
+
   @Field(() => Location, { nullable: true })
   location?: Location;
 }

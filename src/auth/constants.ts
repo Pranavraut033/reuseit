@@ -1,6 +1,6 @@
 export const jwtConstants = {
   secret: process.env.JWT_SECRET || 'defaultSecretKeyForJWT', // Use a strong secret key in production
-  expiresIn: '90d', // Token expiration time
+  expiresIn: '90d' as `${number}d`, // Token expiration time
   refreshTokenExpiresIn: '30d', // Refresh token expiration time
 };
 

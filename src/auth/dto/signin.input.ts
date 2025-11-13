@@ -1,7 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
-export class GoogleSignInInput {
+export class SignInInput {
   @Field(() => String, { description: 'User unique identifier' })
   uid: string;
 

@@ -1,4 +1,5 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -9,6 +10,7 @@ import { Module } from '@nestjs/common';
 import { PostModule } from 'src/post/post.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UserModule } from 'src/user/user.module';
+import { PointsModule } from 'src/points/points.module';
 import { join } from 'path';
 
 @Module({
@@ -17,10 +19,15 @@ import { join } from 'path';
     EventModule,
     UserModule,
     PostModule,
+    PointsModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      graphiql: true,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      // Enable GraphQL Playground in development
+      playground: false,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      // Ensure the HTTP request is available in GraphQL context for guards/decorators
+      context: ({ req, res }) => ({ req, res }),
+      autoSchemaFile: join(process.cwd(), '/prisma/schema.gql'),
     }),
     AuthModule,
   ],

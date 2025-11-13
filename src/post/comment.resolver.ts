@@ -1,35 +1,54 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { CommentService } from './comment.service';
 import { Comment } from './entities/comment.entity';
 import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
+import { User } from '../user/entities/user.entity';
 
 @Resolver(() => Comment)
 export class CommentResolver {
   constructor(private readonly commentService: CommentService) {}
 
   @Mutation(() => Comment)
-  createComment(@Args('createCommentInput') createCommentInput: CreateCommentInput) {
-    return this.commentService.create(createCommentInput);
+  createComment(
+    @Args('createCommentInput') createCommentInput: CreateCommentInput,
+    @Context('req') req: { user?: User },
+  ) {
+    return this.commentService.create(createCommentInput, req.user?.id);
   }
 
-  @Query(() => [Comment], { name: 'comment' })
+  @Query(() => [Comment], { name: 'comments' })
   findAll() {
     return this.commentService.findAll();
   }
 
   @Query(() => Comment, { name: 'comment' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id', { type: () => String }) id: string) {
     return this.commentService.findOne(id);
   }
 
-  @Mutation(() => Comment)
-  updateComment(@Args('updateCommentInput') updateCommentInput: UpdateCommentInput) {
-    return this.commentService.update(updateCommentInput.id, updateCommentInput);
+  @Query(() => [Comment], { name: 'commentsByPost' })
+  findByPostId(@Args('postId', { type: () => String }) postId: string) {
+    return this.commentService.findByPostId(postId);
   }
 
   @Mutation(() => Comment)
-  removeComment(@Args('id', { type: () => Int }) id: number) {
-    return this.commentService.remove(id);
+  updateComment(
+    @Args('updateCommentInput') updateCommentInput: UpdateCommentInput,
+    @Context('req') req: { user?: User },
+  ) {
+    return this.commentService.update(
+      updateCommentInput.id,
+      updateCommentInput,
+      req.user?.id,
+    );
+  }
+
+  @Mutation(() => Comment)
+  removeComment(
+    @Args('id', { type: () => String }) id: string,
+    @Context('req') req: { user?: User },
+  ) {
+    return this.commentService.remove(id, req.user?.id);
   }
 }

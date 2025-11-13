@@ -1,8 +1,9 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Public } from './constants';
-import { GoogleSignInInput } from './dto/google-signin.input';
+import { SignInInput } from './dto/signin.input';
 import { AuthService } from './auth.service';
 import { AuthResponse } from './dto/auth.response';
+import { User } from 'src/user/entities/user.entity';
 
 @Resolver()
 export class AuthResolver {
@@ -10,11 +11,13 @@ export class AuthResolver {
 
   @Public()
   @Mutation(() => AuthResponse)
-  async googleSignIn(
-    @Args('data', { type: () => GoogleSignInInput }) data: GoogleSignInInput,
-  ) {
-    console.log({ data });
+  async signIn(@Args('data', { type: () => SignInInput }) data: SignInInput) {
+    return this.authService.signIn(data);
+  }
 
-    return this.authService.googleSignIn(data);
+  // Returns the currently authenticated user
+  @Query(() => User)
+  async me(@Context('req') req: { user?: User }) {
+    return req.user;
   }
 }

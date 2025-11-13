@@ -36,6 +36,7 @@ model User {
   username        String?           @unique
   userArticle     UserArticle[]
   evenParticipant EvenParticipant[]
+  likes           Like[]
 }
 
 model Badge {
@@ -71,6 +72,18 @@ model Post {
   likes        Int           @default(0)
   location     Location?     @relation(fields: [locationId], references: [id])
   locationId   String?       @db.ObjectId
+  likeHistory  Like[]
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String   @db.ObjectId
+
+  @@unique([userId, postId])
 }
 
 model Comment {
