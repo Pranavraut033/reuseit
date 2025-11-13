@@ -1,14 +1,14 @@
-import AppConfig, { primaryColor } from '~/app.config';
-import tailwindConfig from '~/tailwind.config';
+import AppConfig from '@/app.config';
+import tailwindConfig from '@/tailwind.config';
 import resolveConfig from 'tailwindcss/resolveConfig';
 
 const resolvedTailwindConfig = resolveConfig(tailwindConfig);
 
-function useAppConfig() {
+function useAppConfig() {  
   return {
     ...AppConfig,
     tailwindConfig: resolvedTailwindConfig,
-    primaryColor:  primaryColor || "#34A853",
+    primaryColor: (resolvedTailwindConfig.theme.colors as any).primary.DEFAULT || "#34A853",
   };
 }
 

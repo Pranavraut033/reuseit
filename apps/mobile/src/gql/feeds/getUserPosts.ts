@@ -1,4 +1,4 @@
-import { gql } from "~/src/__generated__";
+import { gql } from "~/__generated__";
 
 export const GET_USER_POSTS = gql(`
   query GetUserPosts($authorId: String!) {

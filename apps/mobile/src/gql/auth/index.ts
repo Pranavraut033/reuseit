@@ -1,4 +1,4 @@
-import { gql } from '~/src/__generated__';
+import { gql } from '~/__generated__';
 
 export const SIGN_IN_MUTATION = gql(`
   mutation signIn($data: SignInInput!) {

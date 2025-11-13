@@ -2,15 +2,15 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { AuthModule } from 'src/auth/auth.module';
-import { EventModule } from 'src/event/event.module';
+import { AuthGuard } from '~/auth/auth.guard';
+import { AuthModule } from '~/auth/auth.module';
+import { EventModule } from '~/event/event.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { Module } from '@nestjs/common';
-import { PostModule } from 'src/post/post.module';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { UserModule } from 'src/user/user.module';
-import { PointsModule } from 'src/points/points.module';
+import { PostModule } from '~/post/post.module';
+import { PrismaModule } from '~/prisma/prisma.module';
+import { UserModule } from '~/user/user.module';
+import { PointsModule } from '~/points/points.module';
 import { join } from 'path';
 
 @Module({

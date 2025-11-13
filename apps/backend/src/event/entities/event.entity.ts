@@ -1,8 +1,8 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '~/user/entities/user.entity';
 import { EvenParticipant } from './event-participant.entity';
-import { Post } from 'src/post/entities/post.entity';
-import { Location } from 'src/global/entities/location.entity';
+import { Post } from '~/post/entities/post.entity';
+import { Location } from '~/global/entities/location.entity';
 
 @ObjectType()
 export class Event {

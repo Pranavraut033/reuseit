@@ -1,8 +1,8 @@
 import { View, Text, ScrollView } from 'react-native';
-import { useAuth } from '~/src/context/AuthContext';
-import { Container } from '~/src/components/common/Container';
+import { useAuth } from '~/context/AuthContext';
+import { Container } from '~/components/common/Container';
 import { useQuery } from '@apollo/client/react';
-import { GET_USER_POINTS } from '~/src/gql/points/getUserPoints';
+import { GET_USER_POINTS } from '~/gql/points/getUserPoints';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const PointsScreen = () => {

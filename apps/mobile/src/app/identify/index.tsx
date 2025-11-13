@@ -13,7 +13,7 @@ import {
 import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, FontAwesome6, MaterialIcons, Feather } from '@expo/vector-icons';
-import { MotiView } from '~/src/components/common/PlatformMotiView';
+import { MotiView } from '~/components/common/PlatformMotiView';
 import { Toast } from 'toastify-react-native';
 import { StatusBar } from 'expo-status-bar';
 

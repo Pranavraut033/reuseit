@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
-import { Post } from 'src/post/entities/post.entity';
-import { Event } from 'src/event/entities/event.entity';
+import { Post } from '~/post/entities/post.entity';
+import { Event } from '~/event/entities/event.entity';
 import { LocationType } from './location-type.entity';
 
 @ObjectType()

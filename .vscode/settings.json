@@ -1,0 +1,8 @@
+{
+  "eslint.nodePath": "./node_modules",
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "editor.formatOnSave": true
+}

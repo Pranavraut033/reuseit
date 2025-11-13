@@ -7,8 +7,8 @@ import CodeModal from './CodeModal';
 import Field from '../common/Field';
 import { Portal } from '@rn-primitives/portal';
 import { Toast } from 'toastify-react-native';
-import { useAppContext } from '~/src/context/AppContext';
-import { useAuth } from '~/src/context/AuthContext';
+import { useAppContext } from '~/context/AppContext';
+import { useAuth } from '~/context/AuthContext';
 
 function SignInWithPhone() {
   const { signInWithPhoneNumber, verifyCode, error } = useAuth();

@@ -1,14 +1,14 @@
 import { Tabs, usePathname, useRouter } from 'expo-router';
-import { TabBarIcon } from '~/src/components/TabBarIcon';
+import { TabBarIcon } from '~/components/TabBarIcon';
 import { MotiView } from 'moti';
 import { Text, View, Pressable } from 'react-native';
 import clsx from 'clsx';
 import { ComponentProps, memo, useMemo } from 'react';
 import { FontAwesome6 as Icon } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { FabButton } from '~/src/components/common/FabButton';
+import { FabButton } from '~/components/common/FabButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MainFabButton from '~/src/components/MainFabButton';
+import MainFabButton from '~/components/MainFabButton';
 
 // Memoized animated label
 const AnimatedTabLabel = memo(function AnimatedTabLabel({

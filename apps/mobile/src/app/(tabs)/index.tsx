@@ -2,11 +2,11 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { Container } from '~/src/components/common/Container';
-import { GET_POSTS } from '~/src/gql/feeds/getPosts';
+import { Container } from '~/components/common/Container';
+import { GET_POSTS } from '~/gql/feeds/getPosts';
 import { router } from 'expo-router';
-import useAppConfig from '~/src/hooks/useAppConfig';
-import { useAuth } from '~/src/context/AuthContext';
+import useAppConfig from '~/hooks/useAppConfig';
+import { useAuth } from '~/context/AuthContext';
 import { useQuery } from '@apollo/client/react';
 
 type QuickAction = {

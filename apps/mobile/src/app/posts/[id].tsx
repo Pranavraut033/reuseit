@@ -3,10 +3,10 @@ import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, Tex
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useQuery, useMutation } from '@apollo/client/react';
-import { GET_POSTS } from '~/src/gql/feeds/getPosts';
-import { GET_COMMENTS_BY_POST, CREATE_COMMENT } from '~/src/gql/feeds/postMutations';
-import { Container } from '~/src/components/common/Container';
-import { useAuth } from '~/src/context/AuthContext';
+import { GET_POSTS } from '~/gql/feeds/getPosts';
+import { GET_COMMENTS_BY_POST, CREATE_COMMENT } from '~/gql/feeds/postMutations';
+import { Container } from '~/components/common/Container';
+import { useAuth } from '~/context/AuthContext';
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons'; // or any icon lib
-import { useAuth } from '~/src/context/AuthContext';
+import { useAuth } from '~/context/AuthContext';
 
 const HomeScreen = () => {
   const { user } = useAuth();

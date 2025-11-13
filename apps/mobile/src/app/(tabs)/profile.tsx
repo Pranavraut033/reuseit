@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, Pressable } from 'react-native';
-import { Button } from '~/src/components/common/Button';
-import { Container } from '~/src/components/common/Container';
-import { useAuth } from '~/src/context/AuthContext';
+import { Button } from '~/components/common/Button';
+import { Container } from '~/components/common/Container';
+import { useAuth } from '~/context/AuthContext';
 import { router } from 'expo-router';
 
 export default function Home() {

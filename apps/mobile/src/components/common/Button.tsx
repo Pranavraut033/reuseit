@@ -9,7 +9,7 @@ import {
   TextStyle,
   ViewStyle,
 } from 'react-native';
-import cn from '~/src/utils/cn';
+import cn from '~/utils/cn';
 
 type ButtonType = 'primary' | 'error' | 'neutral';
 

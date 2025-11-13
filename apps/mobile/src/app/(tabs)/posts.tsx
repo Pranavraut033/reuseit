@@ -1,12 +1,12 @@
 import { View, Text, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '~/src/context/AuthContext';
-import { Container } from '~/src/components/common/Container';
+import { useAuth } from '~/context/AuthContext';
+import { Container } from '~/components/common/Container';
 import { useQuery } from '@apollo/client/react';
-import { GET_POSTS } from '~/src/gql/feeds/getPosts';
-import PostList from '~/src/components/feeds/PostList';
-import useAppConfig from '~/src/hooks/useAppConfig';
-import { FabButton } from '~/src/components/common/FabButton';
+import { GET_POSTS } from '~/gql/feeds/getPosts';
+import PostList from '~/components/feeds/PostList';
+import useAppConfig from '~/hooks/useAppConfig';
+import { FabButton } from '~/components/common/FabButton';
 import { router } from 'expo-router';
 import { useState } from 'react';
 

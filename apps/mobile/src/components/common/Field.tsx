@@ -9,7 +9,7 @@ import { TextInput as RNTextInput, Text, TextInputProps, View } from 'react-nati
 
 import React from 'react';
 import { clsx } from 'clsx';
-import cn from '~/src/utils/cn';
+import cn from '~/utils/cn';
 
 type FieldProps<TValue extends FieldValues> = {
   children?: (props: ControllerRenderProps<TValue>) => React.ReactElement;

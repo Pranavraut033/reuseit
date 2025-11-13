@@ -5,7 +5,7 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import CountrySelector from './CountrySelector';
 import { Portal } from '@rn-primitives/portal';
-import countries from '~/src/json/countries.json';
+import countries from '~/json/countries.json';
 
 export type Country = (typeof countries)[0];
 

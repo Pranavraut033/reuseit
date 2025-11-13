@@ -1,9 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import styles from 'toastify-react-native/components/styles';
-import LoadingOverlay from '~/src/components/common/LoadingOverlay';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import LoadingOverlay from '~/components/common/LoadingOverlay';
 
 type AppContextType = {
   showLoading: (text?: string) => void;

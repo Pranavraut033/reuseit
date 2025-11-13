@@ -9,9 +9,9 @@ import {
 } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { SIGN_IN_MUTATION } from '~/src/gql/auth';
-import { type User, useStore } from '~/src/store';
-import { apolloClient, httpLink } from '~/src/utils/apollo';
+import { SIGN_IN_MUTATION } from '~/gql/auth';
+import { type User, useStore } from '~/store';
+import { apolloClient, httpLink } from '~/utils/apollo';
 import { setContext } from '@apollo/client/link/context';
 
 // Configure Google Sign-In

@@ -6,7 +6,17 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.46.4
+        version: 8.46.4(@typescript-eslint/parser@8.46.4)(eslint@9.39.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.46.4
+        version: 8.46.4(eslint@9.39.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^9.25.1
+        version: 9.39.1
 
   apps/backend:
     dependencies:
@@ -345,6 +355,12 @@ importers:
       '@types/react':
         specifier: ~19.1.10
         version: 19.1.17
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.46.4
+        version: 8.46.4(@typescript-eslint/parser@8.46.4)(eslint@9.39.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.46.4
+        version: 8.46.4(eslint@9.39.1)(typescript@5.9.3)
       ajv:
         specifier: ^8.12.0
         version: 8.17.1

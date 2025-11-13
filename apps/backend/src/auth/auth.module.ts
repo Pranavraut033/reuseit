@@ -1,4 +1,4 @@
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from '~/user/user.module';
 import { AuthService } from './auth.service';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';

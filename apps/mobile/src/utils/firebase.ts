@@ -19,6 +19,11 @@ let auth: FirebaseAuthTypes.Module;
     measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
   });
   auth = initializeAuth(app);
-})();
+})().then(() => {
+  console.log('Firebase initialized');
+}).catch
+  ((error) => {
+    console.error('Firebase initialization error', { error });
+  });
 
 export { auth, app };

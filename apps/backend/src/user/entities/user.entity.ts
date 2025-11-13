@@ -3,12 +3,12 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 import { BadgeAssignment } from './badge-assignment';
-import { Comment } from 'src/post/entities/comment.entity';
-import { EvenParticipant } from 'src/event/entities/event-participant.entity';
+import { Comment } from '~/post/entities/comment.entity';
+import { EvenParticipant } from '~/event/entities/event-participant.entity';
 import { PointsHistory } from './point-history.entity';
-import { Post } from 'src/post/entities/post.entity';
+import { Post } from '~/post/entities/post.entity';
 import { UserArticle } from './user-article.entity';
-import { Event } from 'src/event/entities/event.entity';
+import { Event } from '~/event/entities/event.entity';
 
 @ObjectType()
 export class User {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '~/user/user.service';
 import { SignInInput } from './dto/signin.input';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '~/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { Public } from './constants';
 

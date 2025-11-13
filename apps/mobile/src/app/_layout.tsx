@@ -2,18 +2,18 @@ import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import '../../global.css';
 
-import { AuthProvider, useAuth } from '~/src/context/AuthContext';
+import { AuthProvider, useAuth } from '~/context/AuthContext';
 import { Stack, usePathname } from 'expo-router';
 
 import { ApolloProvider } from '@apollo/client/react';
-import { AppProvider } from '~/src/context/AppContext';
+import { AppProvider } from '~/context/AppContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Login from './login';
 import { PortalHost } from '@rn-primitives/portal';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SplashScreenController } from '~/src/components/SplashScreenController';
+import { SplashScreenController } from '~/components/SplashScreenController';
 import ToastManager from 'toastify-react-native';
-import { apolloClient } from '~/src/utils/apollo';
+import { apolloClient } from '~/utils/apollo';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.

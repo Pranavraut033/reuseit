@@ -12,12 +12,17 @@
     "dev:mobile": "pnpm --filter mobile start",
     "dev:backend": "pnpm --filter backend start:dev",
     "build": "pnpm -w -r build",
-    "lint": "pnpm -w --parallel -r run lint",
+    "lint": "pnpm --parallel -r run lint",
     "format": "pnpm -w -r format",
     "test": "pnpm -w -r test",
     "clean": "pnpm -w -r run clean || true"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.25.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4"
+  }
 }

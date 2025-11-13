@@ -4,10 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Country } from ".";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import countries from '~/src/json/countries.json';
+import countries from '~/json/countries.json';
 import { AntDesign } from "@expo/vector-icons";
-import useAppConfig from "~/src/hooks/useAppConfig";
-import cn from "~/src/utils/cn";
+import useAppConfig from "~/hooks/useAppConfig";
+import cn from "~/utils/cn";
 
 type CountrySelectorProps = {
   visible: boolean;

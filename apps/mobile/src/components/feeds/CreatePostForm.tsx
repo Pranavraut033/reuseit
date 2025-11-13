@@ -11,19 +11,19 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useCallback, useState } from 'react';
 
 import { AddImageButton } from './AddImageButton';
-import { CREATE_POST } from '~/src/gql/feeds/createPost';
-import { Container } from '~/src/components/common/Container';
-import Field from '~/src/components/common/Field';
-import { GET_POSTS } from '~/src/gql/feeds/getPosts';
-import { GET_USER_POSTS } from '~/src/gql/feeds/getUserPosts';
+import { CREATE_POST } from '~/gql/feeds/createPost';
+import { Container } from '~/components/common/Container';
+import Field from '~/components/common/Field';
+import { GET_POSTS } from '~/gql/feeds/getPosts';
+import { GET_USER_POSTS } from '~/gql/feeds/getUserPosts';
 import IconButton from '../common/IconButton';
 import { ImagePreviewList } from './ImagePreviewList';
 import { Ionicons } from '@expo/vector-icons';
 import { Toast } from 'toastify-react-native';
 import { router } from 'expo-router';
-import { uploadImages } from '~/src/utils/storage';
-import { useAuth } from '~/src/context/AuthContext';
-import { useImagePicker } from '~/src/hooks/useImagePicker';
+import { uploadImages } from '~/utils/storage';
+import { useAuth } from '~/context/AuthContext';
+import { useImagePicker } from '~/hooks/useImagePicker';
 import { useMutation } from '@apollo/client/react';
 
 const MAX_IMAGES = 5;

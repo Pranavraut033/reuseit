@@ -1,9 +1,9 @@
 import { AntDesign } from '@expo/vector-icons';
 import { TouchableOpacity, Text, View } from 'react-native';
 import { useCallback } from 'react';
-import { useAppContext } from '~/src/context/AppContext';
+import { useAppContext } from '~/context/AppContext';
 import { Toast } from 'toastify-react-native';
-import { useAuth } from '~/src/context/AuthContext';
+import { useAuth } from '~/context/AuthContext';
 
 const SignInWithGoogle: React.FC = () => {
   const { showLoading, hideLoading } = useAppContext();

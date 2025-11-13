@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-import { Container } from '~/src/components/common/Container';
-import { useAuth } from '~/src/context/AuthContext';
+import { Container } from '~/components/common/Container';
+import { useAuth } from '~/context/AuthContext';
 import { useQuery } from '@apollo/client/react';
-import { GET_USER_POSTS } from '~/src/gql/feeds/getUserPosts';
-import PostList from '~/src/components/feeds/PostList';
+import { GET_USER_POSTS } from '~/gql/feeds/getUserPosts';
+import PostList from '~/components/feeds/PostList';
 import { router } from 'expo-router';
 import { Pressable } from 'react-native';
-import { FabButton } from '~/src/components/common/FabButton';
+import { FabButton } from '~/components/common/FabButton';
 
 export default function MyPosts() {
   const { user } = useAuth();

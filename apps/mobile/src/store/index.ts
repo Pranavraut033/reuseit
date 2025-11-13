@@ -1,6 +1,6 @@
 import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { create } from 'zustand';
-import { SignInMutation } from '~/src/__generated__/graphql';
+import { SignInMutation } from '~/__generated__/graphql';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type User = SignInMutation['signIn']['user'] & {
@@ -35,4 +35,3 @@ export const useStore = create<AppState>((set) => ({
   },
 }));
 
-// Usage: Call useStore.getState().loadToken() on app startup to load the token.

@@ -1,5 +1,5 @@
-import { gql,  } from "~/src/__generated__";
-import { GetPostsQuery } from "~/src/__generated__/graphql";
+import { gql,  } from "~/__generated__";
+import { GetPostsQuery } from "~/__generated__/graphql";
 
 export const GET_POSTS = gql(`
   query GetPosts {

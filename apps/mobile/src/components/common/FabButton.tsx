@@ -8,7 +8,7 @@ import {
   ViewStyle,
   Text,
 } from 'react-native';
-import cn from '~/src/utils/cn';
+import cn from '~/utils/cn';
 
 type FabButtonType = 'primary' | 'error' | 'neutral';
 type FabButtonSize = 'regular' | 'small' | 'large';

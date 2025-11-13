@@ -2,11 +2,10 @@ import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Post } from '~/src/gql/feeds/getPosts';
-import { Swipeable, RectButton } from 'react-native-gesture-handler';
+import { Post } from '~/gql/feeds/getPosts';
 import { useMutation } from '@apollo/client/react';
-import { LIKE_POST } from '~/src/gql/feeds/likePost';
-import Row from '~/src/components/common/SpaceHelper';
+import { LIKE_POST } from '~/gql/feeds/likePost';
+import Row from '~/components/common/SpaceHelper';
 
 interface PostItemProps {
   post: Post;
@@ -65,10 +64,6 @@ const PostItem: React.FC<PostItemProps> = ({ post, onSwipeRefresh }) => {
       setActiveImage(idx);
     };
   }, []);
-
-
-  console.log({ post });
-
 
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={handlePress} className="mb-4 rounded-2xl bg-white p-4 shadow-lg border border-gray-100 ">

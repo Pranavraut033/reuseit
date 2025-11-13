@@ -3,7 +3,7 @@ import { Public } from './constants';
 import { SignInInput } from './dto/signin.input';
 import { AuthService } from './auth.service';
 import { AuthResponse } from './dto/auth.response';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '~/user/entities/user.entity';
 
 @Resolver()
 export class AuthResolver {

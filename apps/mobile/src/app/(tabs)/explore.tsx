@@ -1,4 +1,4 @@
-import { Container } from '~/src/components/common/Container';
+import { Container } from '~/components/common/Container';
 import { Text, View, StyleSheet, Linking, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import MapView, {
   PROVIDER_GOOGLE,
@@ -9,9 +9,9 @@ import Constants from 'expo-constants';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { FontAwesome } from '@expo/vector-icons';
-import { FabButton } from '~/src/components/common/FabButton';
-import { TooltipWrapper } from '~/src/components/common/TooltipWrapper';
-import useStatusBarHeight from '~/src/hooks/useStatusBarHeight';
+import { FabButton } from '~/components/common/FabButton';
+import { TooltipWrapper } from '~/components/common/TooltipWrapper';
+import useStatusBarHeight from '~/hooks/useStatusBarHeight';
 import { MotiView } from 'moti';
 
 export default function Home() {

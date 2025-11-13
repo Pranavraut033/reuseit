@@ -1,4 +1,4 @@
-import { gql } from "~/src/__generated__";
+import { gql } from "~/__generated__";
 
 export const GET_USER_POINTS = gql( `
   query GetUserPoints($id: String!) {

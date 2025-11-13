@@ -7,7 +7,7 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import cn from '~/src/utils/cn';
+import cn from '~/utils/cn';
 
 /**
  * Flat style icon-only button.

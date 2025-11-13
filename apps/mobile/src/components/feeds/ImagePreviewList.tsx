@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Image, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SelectedImage } from '~/src/hooks/useImagePicker';
+import { SelectedImage } from '~/hooks/useImagePicker';
 
 interface ImagePreviewListProps {
   images: SelectedImage[];

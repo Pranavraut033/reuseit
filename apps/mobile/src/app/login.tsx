@@ -1,11 +1,11 @@
 import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 
-import SignInWithGoogle from '~/src/components/Auth/SignInWithGoogle';
-import SignInWithPhone from '~/src/components/Auth/SignInWithPhone';
-import SignInWithApple from '~/src/components/Auth/SignInWithApple';
-import { useAuth } from '~/src/context/AuthContext';
+import SignInWithGoogle from '~/components/Auth/SignInWithGoogle';
+import SignInWithPhone from '~/components/Auth/SignInWithPhone';
+import SignInWithApple from '~/components/Auth/SignInWithApple';
+import { useAuth } from '~/context/AuthContext';
 import { Redirect, usePathname } from 'expo-router';
-import { Container } from '~/src/components/common/Container';
+import { Container } from '~/components/common/Container';
 import { PortalHost } from '@rn-primitives/portal';
 import { ScrollView } from 'react-native-gesture-handler';
 
