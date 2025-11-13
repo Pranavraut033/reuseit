@@ -277,6 +277,6 @@ export class PostService {
       );
     }
 
-    return updatedPost as any;
+    return updatedPost;
   }
 }

@@ -1,0 +1,23 @@
+{
+  "name": "reuseit-mono",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for reuseit (apps + packages)",
+  "main": "index.js",
+  "scripts": {
+    "bootstrap": "pnpm install",
+    "dev": "pnpm -w --parallel dev",
+    "generate": "pnpm -r postinstall",
+    "prebuild": "pnpm -w -F mobile exec expo prebuild",
+    "dev:mobile": "pnpm --filter mobile start",
+    "dev:backend": "pnpm --filter backend start:dev",
+    "build": "pnpm -w -r build",
+    "lint": "pnpm -w --parallel -r run lint",
+    "format": "pnpm -w -r format",
+    "test": "pnpm -w -r test",
+    "clean": "pnpm -w -r run clean || true"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

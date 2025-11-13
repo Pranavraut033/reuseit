@@ -14,7 +14,8 @@
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "prebuild": "expo prebuild",
     "start": "expo start --dev-client",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "pnpm run codegen"
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
