@@ -6,16 +6,62 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "24.9.0",
+      "pnpm": "8.12.0",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "24.9.0",
+      "pnpm": "8.12.0",
+      "env": {
+        "NODE_ENV": "staging"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      }
     },
     "production": {
-      "autoIncrement": true
+      "node": "24.9.0",
+      "pnpm": "8.12.0",
+      "autoIncrement": true,
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
+      },
+      "cache": {
+        "key": "production-cache"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./credentials/android/service-account.json",
+        "track": "internal"
+      },
+      "ios": {
+        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+        "appleId": "YOUR_APPLE_ID",
+        "appleTeamId": "YOUR_TEAM_ID"
+      }
+    }
   }
 }

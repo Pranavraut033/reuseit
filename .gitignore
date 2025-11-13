@@ -1,26 +1,112 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Expo
 .expo/
+.expo-shared/
 dist/
+web-build/
+expo-env.d.ts
+
+# Native builds - Comment out if you want to commit these
+ios/
+android/
+
+# Metro
+.metro-health-check*
+
+# Debug
 npm-debug.*
+yarn-debug.*
+yarn-error.log*
+
+# Testing
+/coverage
+
+# Environment variables
+.env
+.env*.local
+
+# macOS
+.DS_Store
+*.pem
+
+# Local
+*.local
+
+# Typescript
+*.tsbuildinfo
+
+# Gradle (Android)
+.gradle/
+local.properties
+
+# Build artifacts
+*.apk
+*.apks
+*.aab
+*.ipa
+*.hbc
+
+# Signing files - KEEP THESE SECRET!
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
-web-build/
-# expo router
-expo-env.d.ts
 
-# firebase/supabase/vexo
-.env
+# Xcode (iOS)
+*.xcarchive
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
 
-ios
-android
+# Android Studio
+*.iml
+.idea/
+.gradle
+/local.properties
+/android/app/debug
+/android/app/release
 
-# macOS
-.DS_Store
+# Generated files
+__generated__/
+*.graphql.ts
 
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
-__generated__
+# VSCode
+.vscode/
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+
+# Logs
+logs
+*.log
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

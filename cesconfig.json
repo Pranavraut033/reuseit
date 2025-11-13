@@ -27,13 +27,13 @@
     "noInstall": false,
     "overwrite": false,
     "importAlias": true,
-    "packageManager": "npm",
+    "packageManager": "pnpm",
     "eas": true,
     "publish": false
   },
   "packageManager": {
-    "type": "npm",
-    "version": "11.4.0"
+    "type": "pnpm",
+    "version": "8.6.6"
   },
   "os": {
     "type": "Darwin",

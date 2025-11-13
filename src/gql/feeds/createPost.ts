@@ -1,0 +1,21 @@
+import { gql } from "~/src/__generated__";
+
+export const CREATE_POST = gql( `
+  mutation CreatePost($createPostInput: CreatePostInput!) {
+    createPost(createPostInput: $createPostInput) {
+      id
+      content
+      createdAt
+      images
+      likes
+      author {
+        id
+        name
+        avatarUrl
+      }
+      comments {
+        id
+      }
+    }
+  }
+`);

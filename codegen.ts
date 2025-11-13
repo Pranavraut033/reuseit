@@ -3,15 +3,15 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 const config: CodegenConfig = {
   overwrite: true,
   schema: './schema.gql',
-  documents: ['./gql/**/*.ts'],
+  documents: ['./src/gql/**/*.ts'],
   generates: {
-    './__generated__/': {
+    './src/__generated__/': {
       preset: 'client',
       presetConfig: {
         gqlTagName: 'gql',
       },
     },
-    './__generated__/graphql.schema.json': {
+    './src/__generated__/graphql.schema.json': {
       plugins: ['introspection'],
     },
   },
