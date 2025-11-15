@@ -7,6 +7,7 @@ import { AuthModule } from '~/auth/auth.module';
 import { EventModule } from '~/event/event.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { Module } from '@nestjs/common';
+import { FirebaseModule } from './firebase/firebase.module';
 import { PostModule } from '~/post/post.module';
 import { PrismaModule } from '~/prisma/prisma.module';
 import { UserModule } from '~/user/user.module';
@@ -30,6 +31,7 @@ import { join } from 'path';
       autoSchemaFile: join(process.cwd(), '/../schema.gql'),
     }),
     AuthModule,
+    FirebaseModule,
   ],
   controllers: [],
   providers: [

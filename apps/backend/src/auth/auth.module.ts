@@ -4,11 +4,13 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AuthResolver } from './auth.resolver';
+import { FirebaseModule } from '~/firebase/firebase.module';
 
 @Module({
   providers: [AuthService, AuthResolver],
   imports: [
     UserModule,
+    FirebaseModule,
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
@@ -17,4 +19,4 @@ import { AuthResolver } from './auth.resolver';
   ],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

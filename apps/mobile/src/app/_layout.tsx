@@ -14,37 +14,39 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SplashScreenController } from '~/components/SplashScreenController';
 import ToastManager from 'toastify-react-native';
 import { apolloClient } from '~/utils/apollo';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(drawer)',
 };
 
+const queryClient = new QueryClient()
+
 export default function RootLayout() {
-
   return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ApolloProvider client={apolloClient}>
-          <AppProvider>
-            <AuthProvider>
-              <SplashScreenController />
-              <App />
-              <PortalHost />
-              <ToastManager />
-            </AuthProvider>
-          </AppProvider>
-        </ApolloProvider>
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
-
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <ApolloProvider client={apolloClient}>
+            <QueryClientProvider client={queryClient}>
+              <AppProvider>
+                <SplashScreenController />
+                <App />
+                <PortalHost />
+                <ToastManager />
+              </AppProvider>
+            </QueryClientProvider >
+          </ApolloProvider >
+        </AuthProvider >
+      </SafeAreaProvider >
+    </GestureHandlerRootView >
   );
 }
 
 function App() {
   const { user } = useAuth();
   const pathname = usePathname();
-  console.log({ user });
 
   if (!user && pathname !== '/login')
     return <Login />;

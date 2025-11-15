@@ -320,24 +320,6 @@ input UpdateCommentInput {
 }
 
 input SignInInput {
-  """User unique identifier"""
-  uid: String!
-
-  """User display name"""
-  displayName: String!
-
-  """User email address"""
-  email: String!
-
-  """Is email verified"""
-  emailVerified: Boolean!
-
-  """Is user anonymous"""
-  isAnonymous: Boolean!
-
-  """User phone number"""
-  phoneNumber: String
-
-  """User photo URL"""
-  photoURL: String
+  """Firebase ID token (JWT) obtained after client auth"""
+  idToken: String!
 }

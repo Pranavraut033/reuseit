@@ -4,14 +4,17 @@ import { SignInInput } from './dto/signin.input';
 import { PrismaService } from '~/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { Public } from './constants';
+import * as admin from 'firebase-admin';
+import { Inject } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject('FIREBASE_APP') private firebaseApp: admin.app.App,
     private usersService: UserService,
     private prismaService: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne({ email: username });
@@ -25,16 +28,24 @@ export class AuthService {
   }
 
   @Public()
-  async signIn({
-    uid: googleId,
-    displayName: name,
-    email,
-    emailVerified,
-    phoneNumber,
-    photoURL: avatarUrl,
-  }: SignInInput) {
-    // Some providers (e.g., phone auth) may not supply an email. Ensure uniqueness and non-null.
-    const normalizedEmail = (email || '').trim() || `${googleId}@auth.local`;
+  async signIn({ idToken }: SignInInput) {
+    // Verify the Firebase ID token to ensure authenticity
+    let decoded: admin.auth.DecodedIdToken;
+    try {
+      decoded = await this.firebaseApp.auth().verifyIdToken(idToken);
+    } catch (err) {
+      throw new Error('Invalid or expired ID token');
+    }
+
+    console.log({ decoded });
+
+    const googleId = decoded.uid;
+    const name = decoded.name || '';
+    const emailRaw = (decoded.email || '').trim();
+    const email = emailRaw || `${googleId}@auth.local`;
+    const emailVerified = !!decoded.email_verified;
+    const phoneNumber = decoded.phone_number || undefined;
+    const avatarUrl = decoded.picture || undefined;
 
     const user = await this.prismaService.safeUpsert(
       'User',
@@ -43,7 +54,7 @@ export class AuthService {
         where: { googleId },
         update: {
           name,
-          email: normalizedEmail,
+          email,
           emailVerified,
           phoneNumber,
           avatarUrl,
@@ -52,7 +63,7 @@ export class AuthService {
         create: {
           googleId,
           name,
-          email: normalizedEmail,
+          email,
           emailVerified,
           phoneNumber,
           avatarUrl,
@@ -64,6 +75,6 @@ export class AuthService {
 
     const token = this.jwtService.sign({ userId: user.id, email: user.email });
 
-    return { user: result, token: token }; // Token generation logic can be added later
+    return { user: result, token: token };
   }
 }

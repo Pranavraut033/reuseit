@@ -79,27 +79,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = useCallback(async (onSuccess?: () => void) => {
     try {
-      // Check if your device supports Google Play
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
-      // Get the users ID token
       const signInResult = await GoogleSignin.signIn();
 
-      // Try the new style of google-sign in result, from v13+ of that module
-      let idToken = signInResult.data?.idToken;
-      if (!idToken) {
-        // if you are using older versions of google-signin, try old style result
-        idToken = (signInResult as any).idToken;
-      }
+      let idToken: string | undefined = signInResult.data?.idToken ?? (signInResult as any).idToken;
 
       if (!idToken) {
         throw new Error('No ID token found');
       }
 
-      // Create a Google credential with the token
       const googleCredential = GoogleAuthProvider.credential(idToken);
 
-      // Sign-in the user with the credential
       const response = await signInWithCredential(getAuth(), googleCredential);
       await handleUserSignIn(response.user);
       onSuccess?.();
@@ -109,29 +100,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const [serverSignIn, { error: mutationError, reset }] = useMutation(SIGN_IN_MUTATION);
+  const [serverSignIn, { data, error: mutationError, reset }] = useMutation(SIGN_IN_MUTATION);
 
-  const handleUserSignIn = useCallback((user: FirebaseAuthTypes.User) => {
+  const handleUserSignIn = useCallback(async (user: FirebaseAuthTypes.User) => {
+    const idToken = await user.getIdToken();
     return serverSignIn({
-      variables: {
-        data: {
-          uid: user.uid,
-          displayName: user.displayName ?? '',
-          email: user.email ?? '',
-          emailVerified: user.emailVerified,
-          isAnonymous: user.isAnonymous,
-          phoneNumber: user.phoneNumber,
-          photoURL: user.photoURL,
-        },
-      },
+      variables: { data: { idToken } },
     })
       .then((res) => {
-        const authToken = res.data?.signIn.token;
+        const signInData = (res.data as any)?.signIn;
+        if (!signInData) return;
+        const authToken = signInData.token;
         setToken(authToken || null);
-        setUser({ ...res.data!.signIn.user, googleUser: user });
+        setUser({ ...signInData.user, googleUser: user });
       })
       .finally(() => reset());
-  }, [reset, serverSignIn, setToken, setUser, user]);
+  }, [reset, serverSignIn, setToken, setUser]);
+
+
   const error = _error || mutationError;
 
   const verifyOtp = useCallback(
