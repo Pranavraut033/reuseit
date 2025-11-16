@@ -10,6 +10,7 @@ const config: CodegenConfig = {
       preset: 'client',
       presetConfig: {
         gqlTagName: 'gql',
+        fragmentMasking: { unmaskFunctionName: 'getFragmentData' },
       },
     },
     './src/__generated__/types.ts': {

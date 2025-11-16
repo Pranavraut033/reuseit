@@ -22,11 +22,11 @@ import { Toast } from 'toastify-react-native';
 import Container from '~/components/common/Container';
 import { LocationPicker } from '~/components/post/LocationPicker';
 import { MediaItem, MediaPicker } from '~/components/post/MediaPicker';
-import { PreviewCard } from '~/components/post/PreviewCard';
+import { PostCard } from '~/components/post/PostCard';
 import { TagEditor } from '~/components/post/TagEditor';
 import { useAuth } from '~/context/AuthContext';
-import { CREATE_POST } from '~/gql/feeds/createPost';
-import { GET_POSTS } from '~/gql/feeds/getPosts';
+import { CREATE_POST } from '~/gql/posts/createPost';
+import { GET_POSTS } from '~/gql/posts/getPosts';
 import { t } from '~/utils/i18n';
 import { compressImages } from '~/utils/imageCompression';
 import { saveOfflinePost } from '~/utils/offlineStorage';
@@ -495,8 +495,8 @@ export const PostCreateScreen: React.FC = () => {
           </View>
 
           {/* Preview Card */}
-          <PreviewCard
-            formData={formValues}
+          <PostCard
+            post={formValues}
             images={images.map((img) => img.uri)}
             userName={user?.name}
             userAvatar={user?.avatarUrl || undefined}

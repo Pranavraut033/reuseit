@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -14,19 +14,23 @@ import {
   View,
 } from 'react-native';
 
+import { getFragmentData } from '~/__generated__/fragment-masking';
 import Container from '~/components/common/Container';
 import { useAuth } from '~/context/AuthContext';
-import { GET_POSTS } from '~/gql/feeds/getPosts';
-import { CREATE_COMMENT, GET_COMMENTS_BY_POST } from '~/gql/feeds/postMutations';
+import { GET_POST_BY_ID, POST_FIELDS } from '~/gql/posts/getPosts';
+import { CREATE_COMMENT, GET_COMMENTS_BY_POST } from '~/gql/posts/postMutations';
 
 export default function PostDetail() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const [commentText, setCommentText] = useState('');
 
   // Find the post from the posts query
-  const { data: postsData, loading: postsLoading } = useQuery(GET_POSTS);
-  const post = postsData?.posts?.find((p) => p.id === id);
+  const { data, loading: postsLoading } = useQuery(GET_POST_BY_ID, {
+    variables: { id: id },
+  });
+
+  const post = getFragmentData(POST_FIELDS, data?.post);
 
   // Get comments for this post
   const {
@@ -65,6 +69,16 @@ export default function PostDetail() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="mt-4 text-gray-600">Loading post...</Text>
+        </View>
+      </Container>
+    );
+  }
+
+  if (!post) {
+    return (
+      <Container>
+        <View className="flex-1 items-center justify-center">
+          <Text className="mt-4 text-gray-600">Post not found.</Text>
         </View>
       </Container>
     );
@@ -131,7 +145,7 @@ export default function PostDetail() {
             <View className="flex-row items-center space-x-6 pt-3 border-t border-gray-100">
               <View className="flex-row items-center space-x-1">
                 <Ionicons name="heart-outline" size={20} color="#6B7280" />
-                <Text className="text-gray-600 text-sm">{Math.floor(post.likes)}</Text>
+                <Text className="text-gray-600 text-sm">{Math.floor(post.likeCount)}</Text>
               </View>
 
               <View className="flex-row items-center space-x-1">

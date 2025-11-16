@@ -29,14 +29,21 @@ type Post {
   createdAt: DateTime!
   updatedAt: DateTime!
   author: User
+  title: String!
+  category: String!
+  condition: String!
+  tags: [String!]!
+  pickupDate: DateTime
   comments: [Comment!]!
   content: String!
   userArticles: [UserArticle!]!
   event: Event
   images: [String!]!
-  likes: Float!
   likedByCurrentUser: Boolean
+  likeCount: Float!
+  commentsCount: Float!
   location: Location
+  commentCount: Float!
 }
 
 type Location {
@@ -182,7 +189,7 @@ type Mutation {
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: String!): Post!
-  likePost(postId: String!): Post!
+  likePost(postId: String!): Boolean!
   createComment(createCommentInput: CreateCommentInput!): Comment!
   updateComment(updateCommentInput: UpdateCommentInput!): Comment!
   removeComment(id: String!): Comment!
@@ -275,8 +282,23 @@ input UpdateUserArticleInput {
 }
 
 input CreatePostInput {
+  """Post title"""
+  title: String!
+
   """Post content"""
   content: String!
+
+  """Post category"""
+  category: String!
+
+  """Post condition"""
+  condition: String!
+
+  """Post tags"""
+  tags: [String!]!
+
+  """Pickup date for the post item"""
+  pickupDate: DateTime
 
   """Post images URLs"""
   images: [String!]
@@ -289,8 +311,23 @@ input CreatePostInput {
 }
 
 input UpdatePostInput {
+  """Post title"""
+  title: String
+
   """Post content"""
   content: String
+
+  """Post category"""
+  category: String
+
+  """Post condition"""
+  condition: String
+
+  """Post tags"""
+  tags: [String!]
+
+  """Pickup date for the post item"""
+  pickupDate: DateTime
 
   """Post images URLs"""
   images: [String!]

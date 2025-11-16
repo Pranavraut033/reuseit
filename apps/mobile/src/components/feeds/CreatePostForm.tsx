@@ -9,9 +9,9 @@ import { Toast } from 'toastify-react-native';
 import Field from '~/components/common/Field';
 import IconButton from '~/components/common/IconButton';
 import { useAuth } from '~/context/AuthContext';
-import { CREATE_POST } from '~/gql/feeds/createPost';
-import { GET_POSTS } from '~/gql/feeds/getPosts';
-import { GET_USER_POSTS } from '~/gql/feeds/getUserPosts';
+import { CREATE_POST } from '~/gql/posts/createPost';
+import { GET_POSTS } from '~/gql/posts/getPosts';
+import { GET_USER_POSTS } from '~/gql/posts/getUserPosts';
 import { useImagePicker } from '~/hooks/useImagePicker';
 import { uploadImages } from '~/utils/storage';
 

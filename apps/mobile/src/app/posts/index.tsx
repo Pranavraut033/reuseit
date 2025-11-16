@@ -1,13 +1,15 @@
 import { useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
+import { getFragmentData } from '~/__generated__';
 import Container from '~/components/common/Container';
 import { FabButton } from '~/components/common/FabButton';
-import PostList from '~/components/feeds/PostList';
+import PostList from '~/components/post/PostList';
 import { useAuth } from '~/context/AuthContext';
-import { GET_USER_POSTS } from '~/gql/feeds/getUserPosts';
+import { POST_FIELDS } from '~/gql/posts/getPosts';
+import { GET_USER_POSTS } from '~/gql/posts/getUserPosts';
 
 export default function MyPosts() {
   const { user } = useAuth();
@@ -18,7 +20,7 @@ export default function MyPosts() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const posts = data?.postsByAuthor ?? [];
+  const posts = getFragmentData(POST_FIELDS, data?.postsByAuthor ?? []);
 
   return (
     <Container>

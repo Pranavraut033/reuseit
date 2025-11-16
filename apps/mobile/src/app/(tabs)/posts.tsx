@@ -5,8 +5,8 @@ import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import { GetPostsQuery } from '~/__generated__/graphql';
 import Container from '~/components/common/Container';
-import PostList from '~/components/feeds/PostList';
-import { GET_POSTS } from '~/gql/feeds/getPosts';
+import PostList from '~/components/post/PostList';
+import { GET_POSTS } from '~/gql/posts/getPosts';
 
 const FeedsScreen = () => {
   const { data, loading, error, refetch } = useQuery<GetPostsQuery>(GET_POSTS);

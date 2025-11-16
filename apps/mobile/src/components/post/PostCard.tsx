@@ -1,31 +1,53 @@
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
-import React from 'react';
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Post } from '~/gql/posts/getPosts';
 import { t } from '~/utils/i18n';
 import { PostCreateFormData } from '~/utils/postValidation';
 
-interface PreviewCardProps {
-  formData: Partial<PostCreateFormData>;
+type BaseProps = {
   images: string[];
   userName?: string;
   userAvatar?: string;
-}
+};
 
-export const PreviewCard: React.FC<PreviewCardProps> = ({
+type PostCardProps =
+  | (BaseProps & {
+      isPreview: true;
+      post?: undefined;
+      formData: Partial<PostCreateFormData>;
+    })
+  | (BaseProps & {
+      isPreview: false;
+      post: Post;
+      formData: undefined;
+    });
+
+export const PostCard: React.FC<PostCardProps> = ({
   formData,
+  post,
+  isPreview,
   images,
   userName = 'User',
   userAvatar,
 }) => {
-  const { title, description, category, condition, tags, location, pickupDate } = formData;
+  const { title, description, category, condition, tags, location, pickupDate } = useMemo(() => {
+    if (isPreview) {
+      return formData;
+    }
+
+    return {
+      title: post.title,
+      description: post.content,
+      category: post.category,
+      condition: post.condition,
+      tags: post.tags,
+      location: post.location,
+      pickupDate: post.pickupDate,
+    };
+  }, [isPreview, formData, post]);
 
   const hasContent = title || description || images.length > 0;
 
@@ -34,9 +56,7 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
       <View style={styles.container}>
         <View style={styles.emptyState}>
           <Ionicons name="eye-outline" size={48} color="#D1D5DB" />
-          <Text style={styles.emptyStateText}>
-            Start adding content to see preview
-          </Text>
+          <Text style={styles.emptyStateText}>Start adding content to see preview</Text>
         </View>
       </View>
     );
@@ -111,18 +131,14 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
             {category && (
               <View style={styles.metadataItem}>
                 <Ionicons name="grid-outline" size={14} color="#6B7280" />
-                <Text style={styles.metadataText}>
-                  {t(`categories.${category}`)}
-                </Text>
+                <Text style={styles.metadataText}>{t(`categories.${category}`)}</Text>
               </View>
             )}
 
             {condition && (
               <View style={styles.metadataItem}>
                 <Ionicons name="information-circle-outline" size={14} color="#6B7280" />
-                <Text style={styles.metadataText}>
-                  {t(`conditions.${condition}`)}
-                </Text>
+                <Text style={styles.metadataText}>{t(`conditions.${condition}`)}</Text>
               </View>
             )}
           </View>

@@ -21,6 +21,21 @@ export class Post {
   @Field(() => User, { nullable: true })
   author?: User;
 
+  @Field(() => String)
+  title: string;
+
+  @Field(() => String)
+  category: string;
+
+  @Field(() => String)
+  condition: string;
+
+  @Field(() => [String])
+  tags: string[];
+
+  @Field(() => Date, { nullable: true })
+  pickupDate?: Date;
+
   @Field(() => [Comment])
   comments: Comment[];
 
@@ -36,11 +51,14 @@ export class Post {
   @Field(() => [String])
   images: string[];
 
-  @Field()
-  likes: number;
-
   @Field(() => Boolean, { nullable: true })
   likedByCurrentUser?: boolean | null;
+
+  @Field(() => Number)
+  likeCount: number;
+
+  @Field(() => Number)
+  commentsCount: number;
 
   @Field(() => Location, { nullable: true })
   location?: Location;

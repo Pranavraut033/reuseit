@@ -21,11 +21,16 @@ export class PostService {
 
     const post = await this.prisma.post.create({
       data: {
-        content: createPostInput.content,
-        images: createPostInput.images || [],
         authorId: userId,
-        locationId: createPostInput.locationId,
+        category: createPostInput.category,
+        condition: createPostInput.condition,
+        content: createPostInput.content,
         eventId: createPostInput.eventId,
+        images: createPostInput.images || [],
+        locationId: createPostInput.locationId,
+        pickupDate: createPostInput.pickupDate,
+        tags: createPostInput.tags,
+        title: createPostInput.title,
       },
       include: {
         author: true,
@@ -213,7 +218,7 @@ export class PostService {
     return post as unknown as Post;
   }
 
-  async likePost(postId: string, userId: string | undefined): Promise<Post> {
+  async likePost(postId: string, userId: string | undefined): Promise<void> {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to like a post');
     }
@@ -237,50 +242,18 @@ export class PostService {
       },
     });
 
-    let updatedPost;
-
     if (existingLike) {
-      // Unlike: delete the Like and decrement post.likes (not going below 0)
-      const [, post] = await this.prisma.$transaction([
-        this.prisma.like.delete({ where: { id: existingLike.id } }),
-        this.prisma.post.update({
-          where: { id: postId },
-          data: { likes: { decrement: 1 } },
-          include: {
-            author: true,
-            comments: true,
-            location: true,
-            event: true,
-            userArticles: true,
-          },
-        }),
-      ]);
-
-      updatedPost = post;
+      await this.prisma.like.delete({ where: { id: existingLike.id } });
     } else {
-      // Like: create a Like and increment post.likes
-      const [, post] = await this.prisma.$transaction([
-        this.prisma.like.create({ data: { userId, postId } }),
-        this.prisma.post.update({
-          where: { id: postId },
-          data: { likes: { increment: 1 } },
-          include: {
-            author: true,
-            comments: true,
-            location: true,
-            event: true,
-            userArticles: true,
-          },
-        }),
-      ]);
-
-      updatedPost = post;
+      await this.prisma.like.create({ data: { userId, postId } });
     }
+  }
 
-    if (!updatedPost) {
-      throw new NotFoundException(`Post with ID ${postId} not found after like toggle`);
-    }
+  getCommentCount(postId: string): Promise<number> {
+    return this.prisma.comment.count({ where: { postId } });
+  }
 
-    return updatedPost as unknown as Post;
+  getLikeCount(postId: string): Promise<number> {
+    return this.prisma.like.count({ where: { postId } });
   }
 }

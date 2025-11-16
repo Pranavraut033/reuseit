@@ -51,17 +51,29 @@ export class PostResolver {
     return this.postService.remove(id, req.user?.id);
   }
 
-  @Mutation(() => Post)
-  likePost(
+  @Mutation(() => Boolean)
+  async likePost(
     @Args('postId', { type: () => String }) postId: string,
     @Context('req') req: { user?: User },
   ) {
-    return this.postService.likePost(postId, req.user?.id);
+    await this.postService.likePost(postId, req.user?.id);
+
+    return true;
   }
 
-  @ResolveField(() => Boolean, { name: 'likedByCurrentUser', nullable: true })
-  async likedByCurrentUser(@Parent() post: Post, @Context('req') req: { user?: User }) {
+  @ResolveField(() => Boolean, { name: 'likedByCurrentUser' })
+  likedByCurrentUser(@Parent() post: Post, @Context('req') req: { user?: User }) {
     const userId = req?.user?.id;
     return this.postService.isLikedByUser(post.id, userId);
+  }
+
+  @ResolveField(() => Number, { name: 'commentCount' })
+  commentCount(@Parent() post: Post) {
+    return this.postService.getCommentCount(post.id);
+  }
+
+  @ResolveField(() => Number, { name: 'likeCount' })
+  likeCount(@Parent() post: Post) {
+    return this.postService.getLikeCount(post.id);
   }
 }

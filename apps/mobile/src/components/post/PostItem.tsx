@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 
 import Row from '~/components/common/SpaceHelper';
-import { Post } from '~/gql/feeds/getPosts';
-import { LIKE_POST } from '~/gql/feeds/likePost';
+import { Post } from '~/gql/posts/getPosts';
+import { LIKE_POST } from '~/gql/posts/likePost';
 
 interface PostItemProps {
   post: Post;
@@ -23,7 +23,7 @@ interface PostItemProps {
 
 const PostItem: React.FC<PostItemProps> = ({ post }) => {
   const [state, setState] = useState<{ likes: number; liked: boolean }>({
-    likes: Math.floor(post.likes || 0),
+    likes: Math.floor(+post.likeCount || 0),
     liked: !!post.likedByCurrentUser,
   });
 
@@ -67,12 +67,10 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
   const imgScrollRef = useRef<ScrollView | null>(null);
 
   const onMomentumScrollEnd = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    return (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetX = e.nativeEvent.contentOffset.x;
-      const width = e.nativeEvent.layoutMeasurement.width || 1;
-      const idx = Math.round(offsetX / width);
-      setActiveImage(idx);
-    };
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const width = e.nativeEvent.layoutMeasurement.width || 1;
+    const idx = Math.round(offsetX / width);
+    setActiveImage(idx);
   }, []);
 
   return (
@@ -173,7 +171,7 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
           >
             <Row space={4}>
               <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
-              <Text className="text-gray-600 text-sm">{post.comments.length}</Text>
+              <Text className="text-gray-600 text-sm">{post.commentsCount}</Text>
             </Row>
           </TouchableOpacity>
         </Row>

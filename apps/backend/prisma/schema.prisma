@@ -65,14 +65,18 @@ model Post {
   authorId     String?       @db.ObjectId
   comments     Comment[]
   content      String
+  title        String
+  category     String
+  condition    String
+  tags         String[]
+  pickupDate   DateTime?
+  location     Location?     @relation(fields: [locationId], references: [id])
+  locationId   String?       @db.ObjectId
   userArticles UserArticle[]
   event        Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      String?       @db.ObjectId
   images       String[] // S3/GCS URLs or cloud storage links
-  likes        Int           @default(0)
-  location     Location?     @relation(fields: [locationId], references: [id])
-  locationId   String?       @db.ObjectId
-  likeHistory  Like[]
+  likes        Like[]
 }
 
 model Like {
