@@ -11,6 +11,12 @@ module.exports = {
           allow: ['warn', 'error'],
         },
       ],
+      // Prettier integration - disable conflicting rules
+      'max-len': 'off',
+      'comma-dangle': 'off',
+      'object-curly-spacing': 'off',
+      quotes: 'off',
+      semi: 'off',
     },
   },
   typescript: {
@@ -18,6 +24,7 @@ module.exports = {
     files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
     plugins: {
       '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
+      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
     },
     languageOptions: {
       parser: require('@typescript-eslint/parser'),
@@ -25,6 +32,8 @@ module.exports = {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       // '@typescript-eslint/no-floating-promises': 'warn',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -41,4 +50,3 @@ module.exports = {
     },
   },
 };
-

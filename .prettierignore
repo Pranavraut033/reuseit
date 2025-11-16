@@ -1,0 +1,60 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist
+build
+.expo
+.next
+out
+
+# Generated files
+**/__generated__
+**/generated
+*.graphql.ts
+schema.gql
+schema.graphql
+
+# Mobile specific
+ios/build
+ios/Pods
+android/build
+android/app/build
+*.apk
+*.ipa
+*.xcworkspace
+*.xcodeproj
+
+# Backend specific
+prisma/migrations
+
+# Config files
+.env
+.env.*
+eas.json
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+coverage
+.git
+
+# Documentation (optional - remove if you want to format docs)
+apps/mobile/ARCHITECTURE.md
+apps/mobile/IMPLEMENTATION_SUMMARY.md
+apps/backend/DEPLOYMENT.md

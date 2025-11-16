@@ -2,6 +2,5 @@ module.exports = {
   ...require('../../.prettierrc.json'),
   // Mobile-specific overrides
   bracketSameLine: true,
-  plugins: [require.resolve('prettier-plugin-tailwindcss')],
   tailwindAttributes: ['className'],
 };

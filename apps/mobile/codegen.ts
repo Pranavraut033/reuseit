@@ -1,8 +1,9 @@
-import type { CodegenConfig } from '@graphql-codegen/cli';
+import { CodegenConfig } from '@graphql-codegen/cli';
+import { join } from 'path';
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: '../schema.gql',
+  schema: join(process.cwd(), '../backend/schema.gql'),
   documents: ['./src/gql/**/*.ts'],
   generates: {
     './src/__generated__/': {
@@ -10,6 +11,9 @@ const config: CodegenConfig = {
       presetConfig: {
         gqlTagName: 'gql',
       },
+    },
+    './src/__generated__/types.ts': {
+      plugins: ['typescript', 'typescript-operations'],
     },
     './src/__generated__/graphql.schema.json': {
       plugins: ['introspection'],

@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "bootstrap": "pnpm install",
+    "apk": "pnpm --filter mobile run build:dev --platform android --local",
     "dev": "pnpm -w --parallel dev",
     "generate": "pnpm -r postinstall",
     "prebuild": "pnpm -w -F mobile exec expo prebuild",
@@ -13,7 +14,10 @@
     "dev:backend": "pnpm --filter backend start:dev",
     "build": "pnpm -w -r build",
     "lint": "pnpm --parallel -r run lint",
-    "format": "pnpm -w -r format",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:code": "prettier --write \"apps/**/*.{js,jsx,ts,tsx,json}\" \"packages/**/*.{js,jsx,ts,tsx,json}\" \"*.{js,cjs,mjs}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "test": "pnpm -w -r test",
     "clean": "pnpm -w -r run clean || true"
   },
@@ -21,8 +25,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^9.25.1",
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/client-preset": "^4.8.2",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
-    "@typescript-eslint/parser": "^8.46.4"
+    "@typescript-eslint/parser": "^8.46.4",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.4.2"
   }
 }

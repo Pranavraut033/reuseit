@@ -7,7 +7,15 @@ module.exports = defineConfig([
   // shared rules from repo root (split into base and typescript below)
   expoConfig,
   {
-    ignores: ['dist/*'],
+    ignores: [
+      'dist/*',
+      '.expo/**',
+      'android/**',
+      'ios/**',
+      'node_modules/**',
+      'eslint.config.js',
+      './src/__generated__/**',
+    ],
   },
   // base shared rules
   shared.base,
@@ -18,7 +26,11 @@ module.exports = defineConfig([
     files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.json'],
+        // Use the TypeScript project service to auto-detect the nearest tsconfig
+        projectService: true,
+        // Ensure relative resolution from the mobile package directory
+        tsconfigRootDir: __dirname,
+        // Keep explicit project for editors/linters that still prefer it
       },
     },
   },
