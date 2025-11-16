@@ -1,8 +1,9 @@
 import { AntDesign } from '@expo/vector-icons';
-import { TouchableOpacity, Text, View } from 'react-native';
 import { useCallback } from 'react';
-import { useAppContext } from '~/context/AppContext';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Toast } from 'toastify-react-native';
+
+import { useAppContext } from '~/context/AppContext';
 import { useAuth } from '~/context/AuthContext';
 
 const SignInWithGoogle: React.FC = () => {

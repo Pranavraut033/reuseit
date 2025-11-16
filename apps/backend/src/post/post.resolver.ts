@@ -1,12 +1,4 @@
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  Context,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context, ResolveField, Parent } from '@nestjs/graphql';
 import { PostService } from './post.service';
 import { Post } from './entities/post.entity';
 import { CreatePostInput } from './dto/create-post.input';
@@ -45,18 +37,11 @@ export class PostResolver {
     @Args('updatePostInput') updatePostInput: UpdatePostInput,
     @Context('req') req: { user?: User },
   ) {
-    return this.postService.update(
-      updatePostInput.id,
-      updatePostInput,
-      req.user?.id,
-    );
+    return this.postService.update(updatePostInput.id, updatePostInput, req.user?.id);
   }
 
   @Mutation(() => Post)
-  removePost(
-    @Args('id', { type: () => String }) id: string,
-    @Context('req') req: { user?: User },
-  ) {
+  removePost(@Args('id', { type: () => String }) id: string, @Context('req') req: { user?: User }) {
     return this.postService.remove(id, req.user?.id);
   }
 
@@ -69,10 +54,7 @@ export class PostResolver {
   }
 
   @ResolveField(() => Boolean, { name: 'likedByCurrentUser', nullable: true })
-  async likedByCurrentUser(
-    @Parent() post: Post,
-    @Context('req') req: { user?: User },
-  ) {
+  async likedByCurrentUser(@Parent() post: Post, @Context('req') req: { user?: User }) {
     const userId = req?.user?.id;
     return this.postService.isLikedByUser(post.id, userId);
   }

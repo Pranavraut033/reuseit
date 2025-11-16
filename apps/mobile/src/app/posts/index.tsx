@@ -1,13 +1,13 @@
-import { Ionicons } from '@expo/vector-icons';
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-import { Container } from '~/components/common/Container';
-import { useAuth } from '~/context/AuthContext';
 import { useQuery } from '@apollo/client/react';
-import { GET_USER_POSTS } from '~/gql/feeds/getUserPosts';
-import PostList from '~/components/feeds/PostList';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+
+import Container from '~/components/common/Container';
 import { FabButton } from '~/components/common/FabButton';
+import PostList from '~/components/feeds/PostList';
+import { useAuth } from '~/context/AuthContext';
+import { GET_USER_POSTS } from '~/gql/feeds/getUserPosts';
 
 export default function MyPosts() {
   const { user } = useAuth();
@@ -29,7 +29,8 @@ export default function MyPosts() {
           className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
           accessible={true}
           accessibilityLabel="Go back"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </Pressable>
         <Text className="flex-1 text-2xl font-bold text-gray-800">My Posts</Text>
@@ -38,7 +39,8 @@ export default function MyPosts() {
           className="h-10 w-10 items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
           accessible={true}
           accessibilityLabel="Refresh posts"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <Ionicons name="refresh" size={24} color="#374151" />
         </Pressable>
       </View>
@@ -96,16 +98,14 @@ export default function MyPosts() {
       )}
 
       {/* Posts List */}
-      {!loading && !error && posts.length > 0 && (
-        <PostList posts={posts} />
-      )}
+      {!loading && !error && posts.length > 0 && <PostList posts={posts} />}
 
       {/* FAB Button for Create Post */}
       <FabButton
         icon={(props) => (
           <Ionicons name="add" size={props.size || 24} color={props.color || 'white'} />
         )}
-        className='absolute bottom-4 right-4'
+        className="absolute bottom-4 right-4"
         size="regular"
         onPress={() => router.push('/posts/create')}
         accessible={true}

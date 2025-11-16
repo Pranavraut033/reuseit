@@ -1,26 +1,23 @@
-import { Container } from '~/components/common/Container';
-import { Text, View, StyleSheet, Linking, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import MapView, {
-  PROVIDER_GOOGLE,
-  Region,
-  Marker,
-} from 'react-native-maps';
-import Constants from 'expo-constants';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import * as Location from 'expo-location';
 import { FontAwesome } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import { MotiView } from 'moti';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Image, Linking, StyleSheet, Text, View } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { Toast } from 'toastify-react-native';
+
+import { Button } from '~/components/common/Button';
 import { FabButton } from '~/components/common/FabButton';
 import { TooltipWrapper } from '~/components/common/TooltipWrapper';
+import { useFetchNearbyPlacesByKeywords, useGetPlacePhotoUrl } from '~/hooks/googlemaps';
 import useStatusBarHeight from '~/hooks/useStatusBarHeight';
-import { MotiView } from 'moti';
+import { Place } from '~/utils/googleMaps';
 
 export default function Home() {
   const [location, setLocation] = useState<Region>();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const mapRef = useRef<MapView | null>(null);
-  const [places, setPlaces] = useState<Array<any>>([]);
-  const [loadingPlaces, setLoadingPlaces] = useState(false);
-  const [selectedPlace, setSelectedPlace] = useState<any | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [showCurrentLocation, setShowCurrentLocation] = useState(false);
   const regionChangedRef = useRef(false); // Add this ref
 
@@ -39,98 +36,19 @@ export default function Home() {
       longitudeDelta: 0.5,
     });
   }, []);
+  useEffect(() => {
+    if (errorMsg) {
+      Toast.show({
+        type: 'error',
+        text1: 'Location Error',
+        text2: errorMsg,
+      });
+    }
+  }, [errorMsg]);
 
   useEffect(() => {
     getCurrentLocation();
   }, [getCurrentLocation]);
-
-  // Helper to read API key from Expo config or env
-  const getGoogleApiKey = () => {
-    try {
-      // prefer expo config values when available
-      // these keys are defined in app.config.js under ios.config.googleMapsApiKey and android.config.googleMaps.apiKey
-      const expoConfig = (Constants as any).expoConfig || (Constants as any).manifest || {};
-      return (
-        expoConfig?.ios?.config?.googleMapsApiKey ||
-        expoConfig?.android?.config?.googleMaps?.apiKey ||
-        process.env.GOOGLE_MAPS_API_KEY ||
-        ''
-      );
-    } catch (e) {
-      return '';
-    }
-  };
-
-  const getPlacePhotoUrl = (place: any, maxwidth = 400) => {
-    try {
-      const photos = place?.photos || [];
-      if (!photos.length) return null;
-      const ref = photos[0]?.photo_reference;
-      if (!ref) return null;
-      const key = getGoogleApiKey();
-      if (!key) return null;
-      return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(
-        ref,
-      )}&key=${key}`;
-    } catch (e) {
-      return null;
-    }
-  };
-
-  // Fetch nearby places for recycling and clothing donation using Google Places Nearby Search
-  const fetchNearbyRecyclingAndDonationPlaces = useCallback(
-    async (loc?: Region) => {
-      if (!loc) return;
-      const apiKey = getGoogleApiKey();
-      if (!apiKey) {
-        console.warn('Google Maps API key not found. Set GOOGLE_MAPS_API_KEY in app config or env.');
-        return;
-      }
-
-      setLoadingPlaces(true);
-      try {
-        const locationStr = `${loc.latitude},${loc.longitude}`;
-        const radius = 5000; // meters
-
-        // We'll query twice with different keywords and combine unique results
-        const keywords = [
-          'recycling',
-          'recycling center',
-          'clothing donation',
-          'clothing drop-off',
-          'donation center',
-        ];
-
-        const allResults: Record<string, any> = {};
-
-        for (const kw of keywords) {
-          const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${encodeURIComponent(
-            locationStr,
-          )}&radius=${radius}&keyword=${encodeURIComponent(kw)}&key=${apiKey}`;
-
-          const res = await fetch(url);
-          if (!res.ok) continue;
-          const json = await res.json();
-          const results = json.results || [];
-          for (const r of results) {
-            if (r.place_id && !allResults[r.place_id]) {
-              allResults[r.place_id] = r;
-            }
-          }
-
-          // if the API returns a next_page_token we could handle pagination here
-          // but for simplicity we'll ignore paginated results in this first iteration
-        }
-
-        setPlaces(Object.values(allResults));
-      } catch (e) {
-        console.warn('Error fetching places', e);
-      } finally {
-        setLoadingPlaces(false);
-      }
-    },
-    [],
-  );
 
   const animateToCurrentLocation = useCallback(() => {
     if (location && mapRef.current) {
@@ -146,19 +64,19 @@ export default function Home() {
     animateToCurrentLocation();
   }, [animateToCurrentLocation]);
 
-  // Fetch places whenever we get a location
-  useEffect(() => {
-    if (location) {
-      fetchNearbyRecyclingAndDonationPlaces(location);
-    }
-  }, [location, fetchNearbyRecyclingAndDonationPlaces]);
+  const { data: places, isLoading: isLoadingPlaces } = useFetchNearbyPlacesByKeywords({
+    loc: location!,
+    keywords: ['event', 'workshop', 'community activity'],
+    radius: 5000,
+  });
 
   return (
-    <Container noPadding >
+    <View className="flex-1">
       <View
         className="left-4 right-4 top-4 z-10 rounded p-6"
-        style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}>
-        <Text className="text-center text-xl font-semibold text-primary-dark">Explore Events</Text>
+        style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}
+      >
+        <Text className="text-center text-xl font-semibold text-primary-dark">Explore Nearby</Text>
         <Text className="mt-4 text-base text-slate-600">
           Discover local events, workshops, and community activities happening near you.
         </Text>
@@ -173,7 +91,8 @@ export default function Home() {
           style={{
             overflow: 'hidden',
             borderRadius: 0, // fix for fab button not showing properly
-          }}>
+          }}
+        >
           <TooltipWrapper content="Go to Current Location">
             <FabButton
               icon={({ color, size }) => (
@@ -203,9 +122,10 @@ export default function Home() {
           showsMyLocationButton={false}
           followsUserLocation
           showsUserLocation
-          style={styles.map}>
+          style={styles.map}
+        >
           {/* Render fetched places as markers */}
-          {places.map((p) => {
+          {places?.map((p) => {
             const lat = p.geometry?.location?.lat;
             const lng = p.geometry?.location?.lng;
             if (typeof lat !== 'number' || typeof lng !== 'number') return null;
@@ -225,34 +145,25 @@ export default function Home() {
       </View>
       {/* Preview card for selected place */}
       {selectedPlace && (
-        <View className="absolute bottom-[104px] left-4 right-4 items-center" pointerEvents="box-none">
+        <View
+          className="absolute bottom-[104px] left-4 right-4 items-center"
+          pointerEvents="box-none"
+        >
           <View className="flex-row bg-white rounded-xl p-3 w-full shadow-lg">
             <View className="w-24 h-24 rounded-lg overflow-hidden mr-3">
-              {(() => {
-                const url = getPlacePhotoUrl(selectedPlace);
-                if (!url) {
-                  return (
-                    <View className="w-full h-full bg-gray-400 justify-center items-center">
-                      <Text className="text-white">No Image</Text>
-                    </View>
-                  );
-                }
-                return (
-                  <Image
-                    source={{ uri: url }}
-                    className="w-full h-full"
-                    resizeMode="cover"
-                    onError={() => { }}
-                  />
-                );
-              })()}
+              <PlacePhoto place={selectedPlace} />
             </View>
             <View className="flex-1 justify-center">
-              <Text numberOfLines={1} className="text-base font-semibold">{selectedPlace.name}</Text>
-              <Text numberOfLines={2} className="text-sm text-gray-500 mt-1">{selectedPlace.vicinity || selectedPlace.formatted_address}</Text>
-              <View className="flex-row space-x-2 mt-2">
-                <TouchableOpacity
-                  className="px-3 py-2 bg-blue-600 rounded-md items-center justify-center"
+              <Text numberOfLines={2} className="text-base font-semibold">
+                {selectedPlace.name}
+              </Text>
+              <Text numberOfLines={3} className="text-sm text-gray-500 mt-1">
+                {selectedPlace.vicinity || selectedPlace.formatted_address}
+              </Text>
+              <View className="flex-row mt-2">
+                <Button
+                  size="small"
+                  className="mr-3"
                   onPress={() => {
                     // open directions in maps
                     const lat = selectedPlace.geometry?.location?.lat;
@@ -263,22 +174,34 @@ export default function Home() {
                     }
                   }}
                 >
-                  <Text className="text-white">Directions</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="px-3 py-2 bg-gray-200 rounded-md items-center justify-center"
-                  onPress={() => setSelectedPlace(null)}
-                >
-                  <Text className="text-black">Close</Text>
-                </TouchableOpacity>
+                  Directions
+                </Button>
+                <Button size="small" type="neutral" onPress={() => setSelectedPlace(null)}>
+                  Close
+                </Button>
               </View>
             </View>
           </View>
         </View>
       )}
-    </Container>
+    </View>
   );
 }
+
+const PlacePhoto: React.FC<{ place: Place }> = ({ place }) => {
+  const url = useGetPlacePhotoUrl(place, 400);
+
+  if (!url) {
+    return (
+      <View className="w-full h-full bg-gray-400 justify-center items-center">
+        <Text className="text-white">No Image</Text>
+      </View>
+    );
+  }
+  return (
+    <Image source={{ uri: url }} className="w-full h-full" resizeMode="cover" onError={() => {}} />
+  );
+};
 
 const styles = StyleSheet.create({
   glassHeader: {

@@ -37,11 +37,7 @@ export class CommentResolver {
     @Args('updateCommentInput') updateCommentInput: UpdateCommentInput,
     @Context('req') req: { user?: User },
   ) {
-    return this.commentService.update(
-      updateCommentInput.id,
-      updateCommentInput,
-      req.user?.id,
-    );
+    return this.commentService.update(updateCommentInput.id, updateCommentInput, req.user?.id);
   }
 
   @Mutation(() => Comment)

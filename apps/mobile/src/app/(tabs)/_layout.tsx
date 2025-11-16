@@ -1,14 +1,14 @@
-import { Tabs, usePathname, useRouter } from 'expo-router';
-import { TabBarIcon } from '~/components/TabBarIcon';
-import { MotiView } from 'moti';
-import { Text, View, Pressable } from 'react-native';
-import clsx from 'clsx';
-import { ComponentProps, memo, useMemo } from 'react';
 import { FontAwesome6 as Icon } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { FabButton } from '~/components/common/FabButton';
+import { Tabs, usePathname } from 'expo-router';
+import { MotiView } from 'moti';
+import { ComponentProps, memo, useMemo } from 'react';
+import { Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import MainFabButton from '~/components/MainFabButton';
+import { TabBarIcon } from '~/components/TabBarIcon';
+import cn from '~/utils/cn';
 
 // Memoized animated label
 const AnimatedTabLabel = memo(function AnimatedTabLabel({
@@ -23,9 +23,10 @@ const AnimatedTabLabel = memo(function AnimatedTabLabel({
   const animate = focused
     ? { scale: 1, opacity: 1, translateY: -10 }
     : { scale: 0.8, opacity: 0, translateY: 0 };
+
   return (
     <MotiView transition={{ type: 'timing', duration: 200 }} animate={animate}>
-      <Text style={{ color }} className={clsx('text-xs', { 'font-bold': focused })}>
+      <Text style={{ color }} className={cn('text-xs', { 'font-bold': focused })}>
         {label}
       </Text>
     </MotiView>
@@ -44,9 +45,11 @@ const AnimatedTabIcon = memo(function AnimatedTabIcon({
 }) {
   const animate = focused ? { translateY: -6 } : { translateY: 0 };
   return (
-    <MotiView animate={animate} style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name={iconName} solid color={color} size={18} />
-    </MotiView>
+    <TouchableOpacity activeOpacity={0.7}>
+      <MotiView animate={animate} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={iconName} solid color={color} size={18} />
+      </MotiView>
+    </TouchableOpacity>
   );
 });
 
@@ -61,11 +64,9 @@ function useTabOptions(label: string, iconName: ComponentProps<typeof TabBarIcon
         <AnimatedTabIcon color={color} focused={focused} iconName={iconName} />
       ),
     }),
-    [label, iconName]
+    [label, iconName],
   );
 }
-
-
 
 export default function TabLayout() {
   const homeOptions = useTabOptions('Home', 'house');
@@ -88,22 +89,19 @@ export default function TabLayout() {
             right: 16,
             height: 58,
             bottom: bottom + 16,
-            borderRadius: 16,
+            borderRadius: 9999,
             paddingBottom: 12,
             paddingTop: 10,
-            backgroundColor: 'rgba(255,255,255,0.8)', // more translucent
             elevation: 20,
             zIndex: 25, // ensure it appears above other content
             marginHorizontal: 16,
+            marginRight: 48 + 16 * 2,
           },
-          // tabBarBackground: () => <TabBarBackground />,
-        }}>
+          tabBarBackground: () => <TabBarBackground />,
+        }}
+      >
         <Tabs.Screen name="index" options={homeOptions} />
         <Tabs.Screen name="posts" options={postsOptions} />
-        <Tabs.Screen
-          name="blank"
-          options={{ tabBarButton: () => <View style={{ width: 64 }} /> }} // disables and hides the middle tab
-        />
         <Tabs.Screen name="explore" options={exploreOptions} />
         <Tabs.Screen name="profile" options={profileOptions} />
       </Tabs>
@@ -121,7 +119,13 @@ function TabBarBackground() {
       tint="extraLight"
       className="absolute inset-0 z-[11]"
       experimentalBlurMethod={isExplore ? 'none' : 'dimezisBlurView'}
-      style={{ flex: 1, zIndex: 20, borderRadius: 16, overflow: 'hidden' }}
+      style={{
+        flex: 1,
+        zIndex: 20,
+        borderRadius: 999,
+        overflow: 'hidden',
+        backgroundColor: isExplore ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.1)',
+      }}
     />
   );
 }

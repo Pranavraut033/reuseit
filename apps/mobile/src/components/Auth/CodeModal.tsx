@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
-import Field from '../common/Field';
+import { Modal,Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { Button } from '../common/Button';
+import Field from '../common/Field';
 
 const CodeModal: React.FC<{
   visible: boolean;

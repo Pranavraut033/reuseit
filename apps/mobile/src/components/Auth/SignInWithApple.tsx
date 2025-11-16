@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 const SignInWithApple: React.FC = () => {
   return (

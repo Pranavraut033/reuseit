@@ -20,11 +20,7 @@ export class PointsService {
    *   addPoints(userId, 'JOIN_EVENT') // +5 points for joining event
    *   addPoints(userId, 'SCAN_ITEM') // +2 points for scanning item
    */
-  async addPoints(
-    userId: string,
-    action: keyof typeof POINTS_RULES,
-    customAmount?: number,
-  ) {
+  async addPoints(userId: string, action: keyof typeof POINTS_RULES, customAmount?: number) {
     const amount = customAmount ?? POINTS_RULES[action] ?? 0;
     await this.prisma.pointsHistory.create({
       data: {

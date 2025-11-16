@@ -14,7 +14,7 @@ export class AuthService {
     private usersService: UserService,
     private prismaService: PrismaService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne({ email: username });
@@ -34,42 +34,36 @@ export class AuthService {
     try {
       decoded = await this.firebaseApp.auth().verifyIdToken(idToken);
     } catch (err) {
-      throw new Error('Invalid or expired ID token');
+      throw new Error('Invalid or expired ID token', { cause: err });
     }
 
-    console.log({ decoded });
-
     const googleId = decoded.uid;
-    const name = decoded.name || '';
+    const name = ((decoded as any).name || '') as string;
     const emailRaw = (decoded.email || '').trim();
     const email = emailRaw || `${googleId}@auth.local`;
     const emailVerified = !!decoded.email_verified;
     const phoneNumber = decoded.phone_number || undefined;
     const avatarUrl = decoded.picture || undefined;
 
-    const user = await this.prismaService.safeUpsert(
-      'User',
-      this.prismaService.user,
-      {
-        where: { googleId },
-        update: {
-          name,
-          email,
-          emailVerified,
-          phoneNumber,
-          avatarUrl,
-          lastLogin: new Date(),
-        },
-        create: {
-          googleId,
-          name,
-          email,
-          emailVerified,
-          phoneNumber,
-          avatarUrl,
-        },
+    const user = await this.prismaService.safeUpsert('User', this.prismaService.user, {
+      where: { googleId },
+      update: {
+        name,
+        email,
+        emailVerified,
+        phoneNumber,
+        avatarUrl,
+        lastLogin: new Date(),
       },
-    );
+      create: {
+        googleId,
+        name,
+        email,
+        emailVerified,
+        phoneNumber,
+        avatarUrl,
+      },
+    });
 
     const { password: _remove, ...result } = user;
 

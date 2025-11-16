@@ -1,5 +1,5 @@
-import firebase, { initializeApp, ReactNativeFirebase } from '@react-native-firebase/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firebase, { initializeApp, ReactNativeFirebase } from '@react-native-firebase/app';
 import { FirebaseAuthTypes, initializeAuth } from '@react-native-firebase/auth';
 
 firebase.setReactNativeAsyncStorage(AsyncStorage);
@@ -19,11 +19,8 @@ let auth: FirebaseAuthTypes.Module;
     measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
   });
   auth = initializeAuth(app);
-})().then(() => {
-  console.log('Firebase initialized');
-}).catch
-  ((error) => {
-    console.error('Firebase initialization error', { error });
-  });
+})().catch((error) => {
+  console.error('Firebase initialization error', { error });
+});
 
-export { auth, app };
+export { app, auth };

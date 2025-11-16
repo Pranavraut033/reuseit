@@ -1,3 +1,5 @@
+import { clsx } from 'clsx';
+import React from 'react';
 import {
   Controller,
   ControllerRenderProps,
@@ -5,10 +7,8 @@ import {
   RegisterOptions,
   useFormContext,
 } from 'react-hook-form';
-import { TextInput as RNTextInput, Text, TextInputProps, View } from 'react-native';
+import { Text, TextInput as RNTextInput, TextInputProps, View } from 'react-native';
 
-import React from 'react';
-import { clsx } from 'clsx';
 import cn from '~/utils/cn';
 
 type FieldProps<TValue extends FieldValues> = {

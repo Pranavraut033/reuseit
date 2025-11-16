@@ -38,7 +38,7 @@ export const uploadImage = async (uri: string, path: string): Promise<string> =>
 export const uploadImages = async (
   uris: string[],
   userId: string,
-  folder: string = 'posts'
+  folder: string = 'posts',
 ): Promise<string[]> => {
   try {
     const uploadPromises = uris.map((uri, index) => {

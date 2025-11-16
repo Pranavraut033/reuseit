@@ -17,7 +17,7 @@ export class AuthResolver {
 
   // Returns the currently authenticated user
   @Query(() => User)
-  async me(@Context('req') req: { user?: User }) {
+  me(@Context('req') req: { user?: User }) {
     return req.user;
   }
 }

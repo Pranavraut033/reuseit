@@ -1,11 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import {
-  PrismaModelName,
-  PrismaModel,
-  SafeUpsertOptions,
-  ModelType,
-} from './types/safeUpsert';
+import { PrismaModelName, PrismaModel, SafeUpsertOptions, ModelType } from './types/safeUpsert';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -24,7 +19,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       // Try a simple transaction to test support
       await this.$transaction([]);
       this.supportsTransactions = true;
-      console.log('✓ Database supports transactions');
     } catch (error: any) {
       if (
         error.code === 'P2010' ||
@@ -32,9 +26,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         error.message?.includes('Transactions are not supported')
       ) {
         this.supportsTransactions = false;
-        console.warn(
-          '⚠ Database does not support transactions. Using fallback upsert logic.',
-        );
+        console.warn('⚠ Database does not support transactions. Using fallback upsert logic.');
       } else {
         // Unknown error, assume transactions work but log the error
         this.supportsTransactions = true;
@@ -73,9 +65,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           error.message?.includes('Transactions are not supported')
         ) {
           this.supportsTransactions = false;
-          console.warn(
-            '⚠ Transaction error detected. Switching to manual upsert.',
-          );
+          console.warn('⚠ Transaction error detected. Switching to manual upsert.');
           // Fall through to manual upsert
         } else {
           throw error;

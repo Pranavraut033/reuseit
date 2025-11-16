@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 import { Alert } from 'react-native';
 
 export interface SelectedImage {
@@ -27,7 +27,7 @@ export const useImagePicker = () => {
         Alert.alert(
           'Permission Required',
           'Photo library permission is required to select images.',
-          [{ text: 'OK' }]
+          [{ text: 'OK' }],
         );
         return false;
       }
@@ -114,7 +114,7 @@ export const useImagePicker = () => {
           style: 'cancel',
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 

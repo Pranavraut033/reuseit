@@ -1,9 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IS_PUBLIC_KEY, jwtConstants } from './constants';
 import { Request } from 'express';
@@ -67,9 +62,7 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(
-    request: Request | undefined,
-  ): string | undefined {
+  private extractTokenFromHeader(request: Request | undefined): string | undefined {
     // Safely handle undefined request
     const [type, token] = request?.headers?.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;

@@ -1,6 +1,6 @@
-import React, { useState, PropsWithChildren, ReactNode } from 'react';
+import React, { PropsWithChildren, ReactNode,useState } from 'react';
+import { Platform, Pressable, TextStyle,View, ViewStyle } from 'react-native';
 import * as Tooltip from 'universal-tooltip';
-import { View, Pressable, Platform, ViewStyle, TextStyle } from 'react-native';
 
 type TooltipWrapperProps = PropsWithChildren<{
   content: ReactNode;

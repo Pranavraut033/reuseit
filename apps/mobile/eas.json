@@ -5,6 +5,9 @@
   },
   "build": {
     "development": {
+      "cache": {
+        "disabled": false
+      },
       "developmentClient": true,
       "distribution": "internal",
       "node": "24.9.0",
@@ -20,6 +23,9 @@
       }
     },
     "preview": {
+      "cache": {
+        "disabled": false
+      },
       "distribution": "internal",
       "node": "24.9.0",
       "pnpm": "8.12.0",

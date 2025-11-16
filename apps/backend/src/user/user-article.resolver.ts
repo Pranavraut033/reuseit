@@ -31,10 +31,7 @@ export class UserArticleResolver {
     @Args('updateUserArticleInput')
     updateUserArticleInput: UpdateUserArticleInput,
   ) {
-    return this.userArticleService.update(
-      updateUserArticleInput.id,
-      updateUserArticleInput,
-    );
+    return this.userArticleService.update(updateUserArticleInput.id, updateUserArticleInput);
   }
 
   @Mutation(() => UserArticle)

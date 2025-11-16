@@ -1,34 +1,34 @@
-import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import '../../global.css';
 
-import { AuthProvider, useAuth } from '~/context/AuthContext';
-import { Stack, usePathname } from 'expo-router';
-
 import { ApolloProvider } from '@apollo/client/react';
-import { AppProvider } from '~/context/AppContext';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Login from './login';
 import { PortalHost } from '@rn-primitives/portal';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SplashScreenController } from '~/components/SplashScreenController';
-import ToastManager from 'toastify-react-native';
-import { apolloClient } from '~/utils/apollo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Stack, usePathname } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import ToastManager from 'toastify-react-native';
+
+import { SplashScreenController } from '~/components/SplashScreenController';
+import { AppProvider } from '~/context/AppContext';
+import { AuthProvider, useAuth } from '~/context/AuthContext';
+import { apolloClient } from '~/utils/apollo';
+
+import Login from './login';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(drawer)',
 };
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AuthProvider>
-          <ApolloProvider client={apolloClient}>
+        <ApolloProvider client={apolloClient}>
+          <AuthProvider>
             <QueryClientProvider client={queryClient}>
               <AppProvider>
                 <SplashScreenController />
@@ -36,11 +36,11 @@ export default function RootLayout() {
                 <PortalHost />
                 <ToastManager />
               </AppProvider>
-            </QueryClientProvider >
-          </ApolloProvider >
-        </AuthProvider >
-      </SafeAreaProvider >
-    </GestureHandlerRootView >
+            </QueryClientProvider>
+          </AuthProvider>
+        </ApolloProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -48,9 +48,7 @@ function App() {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  if (!user && pathname !== '/login')
-    return <Login />;
-
+  if (!user && pathname !== '/login') return <Login />;
 
   return (
     <Stack screenOptions={{ statusBarStyle: 'dark', headerShown: false }}>
@@ -59,7 +57,7 @@ function App() {
       <Stack.Screen name="identify/index" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="posts/index" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="posts/create" options={{ animation: 'slide_from_bottom' }} />
-      <Stack.Screen name="posts/[postId]" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="posts/[id]" options={{ animation: 'slide_from_right' }} />
     </Stack>
   );
 }

@@ -1,12 +1,13 @@
 import React, { forwardRef, useMemo } from 'react';
 import {
-  Pressable,
   ActivityIndicator,
-  View,
+  Pressable,
   PressableProps,
-  ViewStyle,
   StyleProp,
+  View,
+  ViewStyle,
 } from 'react-native';
+
 import cn from '~/utils/cn';
 
 /**
@@ -15,7 +16,7 @@ import cn from '~/utils/cn';
  * - Supports disabled + loading states.
  * - Accepts render prop/function or ReactNode icon.
  */
-export type IconButtonProps = {
+type IconButtonProps = {
   icon: React.ReactNode | ((props: { size: number; color: string }) => React.ReactNode);
   size?: number; // icon size
   color?: string; // icon color
@@ -28,7 +29,7 @@ export type IconButtonProps = {
   hitSlop?: number | { top?: number; bottom?: number; left?: number; right?: number };
 } & Omit<PressableProps, 'style'>;
 
-export const IconButton = forwardRef<View, IconButtonProps>(
+const IconButton = forwardRef<View, IconButtonProps>(
   (
     {
       icon,
@@ -44,7 +45,7 @@ export const IconButton = forwardRef<View, IconButtonProps>(
       hitSlop = 8,
       ...pressableProps
     },
-    ref
+    ref,
   ) => {
     const isDisabled = disabled || loading;
 
@@ -55,11 +56,11 @@ export const IconButton = forwardRef<View, IconButtonProps>(
           'active:opacity-70',
           isDisabled ? 'opacity-40' : '',
           typeof style === 'string' ? style : '',
-          className || ''
+          className || '',
         ),
         color,
       ],
-      [isDisabled, style, className, color]
+      [isDisabled, style, className, color],
     );
 
     const renderIcon = () => {
@@ -95,13 +96,14 @@ export const IconButton = forwardRef<View, IconButtonProps>(
           pressed && {
             opacity: 0.7,
           },
-        ]}>
+        ]}
+      >
         <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
           {renderIcon()}
         </View>
       </Pressable>
     );
-  }
+  },
 );
 
 IconButton.displayName = 'IconButton';

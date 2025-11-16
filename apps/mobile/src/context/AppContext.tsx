@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, ReactNode, useCallback,useContext, useState } from 'react';
+
 import LoadingOverlay from '~/components/common/LoadingOverlay';
 
 type AppContextType = {
@@ -16,6 +17,7 @@ export const useAppContext = () => {
   return context;
 };
 
+
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState<string | undefined>(undefined);
@@ -32,7 +34,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-
       <AppContext.Provider value={{ showLoading, hideLoading, isLoading: isLoading }}>
         {children}
       </AppContext.Provider>

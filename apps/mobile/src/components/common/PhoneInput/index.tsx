@@ -1,11 +1,11 @@
-import * as RNLocalize from 'react-native-localize';
-
+import { Portal } from '@rn-primitives/portal';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as RNLocalize from 'react-native-localize';
+
+import countries from '~/json/countries.json';
 
 import CountrySelector from './CountrySelector';
-import { Portal } from '@rn-primitives/portal';
-import countries from '~/json/countries.json';
 
 export type Country = (typeof countries)[0];
 

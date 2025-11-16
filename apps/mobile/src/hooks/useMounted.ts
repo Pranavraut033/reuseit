@@ -14,4 +14,4 @@ const useMounted = (callback: (mounted: boolean) => void) => {
   return mounted;
 };
 
-export default useMounted
+export default useMounted;

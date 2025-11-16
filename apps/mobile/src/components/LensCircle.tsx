@@ -1,5 +1,5 @@
 import { MotiView } from 'moti';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect,useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
 // Animated Google Lens-like circles overlay

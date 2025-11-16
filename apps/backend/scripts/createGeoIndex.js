@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 
 async function main() {
-  const uri = process.env.DATABASE_URL || "mongodb://localhost:27017/reuseit";
+  const uri = process.env.DATABASE_URL || "mongodb://root:example@localhost:6000/reuseit?authSource=admin";
   const client = new MongoClient(uri);
 
   try {

@@ -1,5 +1,5 @@
-import { gql,  } from "~/__generated__";
-import { GetPostsQuery } from "~/__generated__/graphql";
+import { gql } from '~/__generated__';
+import { GetPostsQuery } from '~/__generated__/graphql';
 
 export const GET_POSTS = gql(`
   query GetPosts {
@@ -22,4 +22,4 @@ export const GET_POSTS = gql(`
   }
 `);
 
-export type Post = GetPostsQuery["posts"][number] // extract from the query
+export type Post = GetPostsQuery['posts'][number]; // extract from the query

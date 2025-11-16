@@ -1,18 +1,14 @@
 import { usePathname } from 'expo-router';
 import React from 'react';
 import {
-  View,
+  Keyboard,
   KeyboardAvoidingView,
-  TextInput,
-  StyleSheet,
-  Text,
   Platform,
   TouchableWithoutFeedback,
-  Button,
-  Keyboard,
-  ScrollView,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import cn from '~/utils/cn';
 
 type ContainerProps = {
@@ -23,12 +19,8 @@ type ContainerProps = {
 
 const PATH_WITH_TABS = ['/', 'explore', '/rewards', '/scan'];
 
-
-export const Container: React.FC<ContainerProps> = ({ children, noPadding, paddingForTabs }) => {
-  if (noPadding) { return children }
+const Container: React.FC<ContainerProps> = ({ children, noPadding, paddingForTabs }) => {
   const pathname = usePathname();
-  console.log({ pathname });
-
 
   return (
     <SafeAreaView className="flex-1 bg-container">
@@ -37,17 +29,18 @@ export const Container: React.FC<ContainerProps> = ({ children, noPadding, paddi
         className="flex-1"
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className={cn(
-            'flex-1 p-4',
-            {
+          <View
+            className={cn('flex-1 ', {
+              'p-4': !noPadding,
               'pb-24': paddingForTabs && PATH_WITH_TABS.includes(pathname),
-            }
-          )}>
+            })}
+          >
             {children}
           </View>
-        </TouchableWithoutFeedback >
-      </KeyboardAvoidingView >
-    </SafeAreaView >
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
+
 export default Container;

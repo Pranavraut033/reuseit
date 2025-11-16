@@ -1,8 +1,10 @@
 import React from 'react';
 import { FlatList, RefreshControlProps } from 'react-native';
-import PostItem from './PostItem';
-import { Post } from '~/gql/feeds/getPosts';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import { Post } from '~/gql/feeds/getPosts';
+
+import PostItem from './PostItem';
 
 interface PostListProps {
   posts: Post[];

@@ -1,14 +1,15 @@
 import { forwardRef, memo, useMemo } from 'react';
 import {
-  Text,
+  ActivityIndicator,
   Pressable,
   PressableProps,
-  View,
-  ActivityIndicator,
   StyleProp,
+  Text,
   TextStyle,
+  View,
   ViewStyle,
 } from 'react-native';
+
 import cn from '~/utils/cn';
 
 type ButtonType = 'primary' | 'error' | 'neutral';
@@ -78,7 +79,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(
       type = 'primary',
       ...touchableProps
     },
-    ref
+    ref,
   ) => {
     const isDisabled = disabled || loading;
 
@@ -92,19 +93,19 @@ const ButtonComponent = forwardRef<View, ButtonProps>(
           typeClass[type],
           sizeClass[size],
           isDisabled ? 'opacity-60' : '',
-          className || ''
+          className || '',
         ),
         cn(
           'font-semibold text-center',
           textSizeClass[size],
           textTypeClass[type],
           isDisabled ? 'text-gray-300' : '',
-          textClassName
+          textClassName,
         ),
         iconPosition === 'left' ? 'mr-2' : 'ml-2',
         iconColor || (type === 'neutral' ? 'black' : 'white'),
       ],
-      [type, size, isDisabled, className, textClassName, iconPosition, iconColor]
+      [type, size, isDisabled, className, textClassName, iconPosition, iconColor],
     );
 
     const renderIcon = () => {
@@ -141,14 +142,16 @@ const ButtonComponent = forwardRef<View, ButtonProps>(
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled, busy: loading }}
         testID={testID}
-        style={style}>
+        style={style}
+      >
         {iconPosition === 'left' && (loading ? renderLoading() : renderIcon())}
         {title || typeof children == 'string' || typeof children == 'number' ? (
           <Text
             className={computedTextClassName}
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={typeof textStyle !== 'string' ? textStyle : undefined}>
+            style={typeof textStyle !== 'string' ? textStyle : undefined}
+          >
             {title || children}
           </Text>
         ) : (
@@ -157,7 +160,7 @@ const ButtonComponent = forwardRef<View, ButtonProps>(
         {iconPosition === 'right' && (loading ? renderLoading() : renderIcon())}
       </Pressable>
     );
-  }
+  },
 );
 
 ButtonComponent.displayName = 'Button';

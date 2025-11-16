@@ -1,9 +1,10 @@
-import { View, Text, ScrollView } from 'react-native';
-import { useAuth } from '~/context/AuthContext';
-import { Container } from '~/components/common/Container';
 import { useQuery } from '@apollo/client/react';
-import { GET_USER_POINTS } from '~/gql/points/getUserPoints';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { ScrollView, Text, View } from 'react-native';
+
+import Container from '~/components/common/Container';
+import { useAuth } from '~/context/AuthContext';
+import { GET_USER_POINTS } from '~/gql/points/getUserPoints';
 
 const PointsScreen = () => {
   const { user } = useAuth();
@@ -94,7 +95,8 @@ const PointsScreen = () => {
             className="mb-3 flex-row items-center rounded-xl bg-white p-4 shadow-sm"
             accessible={true}
             accessibilityLabel={`Earned ${entry.amount} points for ${entry.reason.replace('_', ' ')}`}
-            accessibilityRole="text">
+            accessibilityRole="text"
+          >
             <View className="h-10 w-10 items-center justify-center rounded-full bg-green-100">
               <FontAwesome5 name="star" size={18} color="#10B981" />
             </View>

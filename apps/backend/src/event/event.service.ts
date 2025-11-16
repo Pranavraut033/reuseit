@@ -14,14 +14,9 @@ import { Event } from './entities/event.entity';
 export class EventService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    createEventInput: CreateEventInput,
-    userId: string | undefined,
-  ): Promise<Event> {
+  async create(createEventInput: CreateEventInput, userId: string | undefined): Promise<Event> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to create an event',
-      );
+      throw new UnauthorizedException('User must be authenticated to create an event');
     }
 
     // Verify that the location exists
@@ -30,16 +25,11 @@ export class EventService {
     });
 
     if (!location) {
-      throw new NotFoundException(
-        `Location with ID ${createEventInput.locationId} not found`,
-      );
+      throw new NotFoundException(`Location with ID ${createEventInput.locationId} not found`);
     }
 
     // Validate dates
-    if (
-      createEventInput.endTime &&
-      createEventInput.startTime > createEventInput.endTime
-    ) {
+    if (createEventInput.endTime && createEventInput.startTime > createEventInput.endTime) {
       throw new BadRequestException('End time must be after start time');
     }
 
@@ -143,9 +133,7 @@ export class EventService {
     userId: string | undefined,
   ): Promise<Event> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to update an event',
-      );
+      throw new UnauthorizedException('User must be authenticated to update an event');
     }
 
     // Check if event exists and belongs to user
@@ -168,18 +156,14 @@ export class EventService {
       });
 
       if (!location) {
-        throw new NotFoundException(
-          `Location with ID ${updateEventInput.locationId} not found`,
-        );
+        throw new NotFoundException(`Location with ID ${updateEventInput.locationId} not found`);
       }
     }
 
     // Validate dates if being updated
     const startTime = updateEventInput.startTime || existingEvent.startTime;
     const endTime =
-      updateEventInput.endTime !== undefined
-        ? updateEventInput.endTime
-        : existingEvent.endTime;
+      updateEventInput.endTime !== undefined ? updateEventInput.endTime : existingEvent.endTime;
 
     if (endTime && startTime > endTime) {
       throw new BadRequestException('End time must be after start time');
@@ -208,9 +192,7 @@ export class EventService {
 
   async remove(id: string, userId: string | undefined): Promise<Event> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to delete an event',
-      );
+      throw new UnauthorizedException('User must be authenticated to delete an event');
     }
 
     // Check if event exists and belongs to user

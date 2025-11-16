@@ -1,14 +1,15 @@
-import { FormProvider, useForm } from 'react-hook-form';
-import PhoneInput, { Country } from '../common/PhoneInput';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import { Button } from '../common/Button';
-import CodeModal from './CodeModal';
-import Field from '../common/Field';
 import { Portal } from '@rn-primitives/portal';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import { Toast } from 'toastify-react-native';
+
 import { useAppContext } from '~/context/AppContext';
 import { useAuth } from '~/context/AuthContext';
+
+import { Button } from '../common/Button';
+import Field from '../common/Field';
+import PhoneInput, { Country } from '../common/PhoneInput';
+import CodeModal from './CodeModal';
 
 function SignInWithPhone() {
   const { signInWithPhoneNumber, verifyCode, error } = useAuth();

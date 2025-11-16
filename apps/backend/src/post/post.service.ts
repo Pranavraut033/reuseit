@@ -13,14 +13,9 @@ import { Post } from './entities/post.entity';
 export class PostService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    createPostInput: CreatePostInput,
-    userId: string | undefined,
-  ): Promise<Post> {
+  async create(createPostInput: CreatePostInput, userId: string | undefined): Promise<Post> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to create a post',
-      );
+      throw new UnauthorizedException('User must be authenticated to create a post');
     }
 
     const post = await this.prisma.post.create({
@@ -43,13 +38,10 @@ export class PostService {
     return post as any;
   }
 
-  async isLikedByUser(
-    postId: string,
-    userId: string | undefined,
-  ): Promise<boolean> {
+  async isLikedByUser(postId: string, userId: string | undefined): Promise<boolean> {
     if (!userId) return false;
 
-    const existingLike = await (this.prisma as any).like.findUnique({
+    const existingLike = await this.prisma.like.findUnique({
       where: {
         userId_postId: {
           userId,
@@ -133,9 +125,7 @@ export class PostService {
     userId: string | undefined,
   ): Promise<Post> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to update a post',
-      );
+      throw new UnauthorizedException('User must be authenticated to update a post');
     }
 
     // Check if post exists and belongs to user
@@ -173,9 +163,7 @@ export class PostService {
 
   async remove(id: string, userId: string | undefined): Promise<Post> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to delete a post',
-      );
+      throw new UnauthorizedException('User must be authenticated to delete a post');
     }
 
     // Check if post exists and belongs to user
@@ -207,9 +195,7 @@ export class PostService {
 
   async likePost(postId: string, userId: string | undefined): Promise<Post> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to like a post',
-      );
+      throw new UnauthorizedException('User must be authenticated to like a post');
     }
 
     // Check post exists
@@ -236,7 +222,7 @@ export class PostService {
     if (existingLike) {
       // Unlike: delete the Like and decrement post.likes (not going below 0)
       const [, post] = await this.prisma.$transaction([
-        (this.prisma as any).like.delete({ where: { id: existingLike.id } }),
+        this.prisma.like.delete({ where: { id: existingLike.id } }),
         this.prisma.post.update({
           where: { id: postId },
           data: { likes: { decrement: 1 } },
@@ -254,7 +240,7 @@ export class PostService {
     } else {
       // Like: create a Like and increment post.likes
       const [, post] = await this.prisma.$transaction([
-        (this.prisma as any).like.create({ data: { userId, postId } }),
+        this.prisma.like.create({ data: { userId, postId } }),
         this.prisma.post.update({
           where: { id: postId },
           data: { likes: { increment: 1 } },
@@ -272,9 +258,7 @@ export class PostService {
     }
 
     if (!updatedPost) {
-      throw new NotFoundException(
-        `Post with ID ${postId} not found after like toggle`,
-      );
+      throw new NotFoundException(`Post with ID ${postId} not found after like toggle`);
     }
 
     return updatedPost;

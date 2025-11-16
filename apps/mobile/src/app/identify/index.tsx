@@ -1,21 +1,21 @@
+import { Feather,FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { CameraType, CameraView, FlashMode,useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { StatusBar } from 'expo-status-bar';
+import { MotiView } from 'moti';
 import React, { ComponentProps, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View,
-  TouchableOpacity,
-  Text,
-  Image,
-  StyleSheet,
   ActivityIndicator,
+  Image,
   Linking,
   Platform,
+  StyleSheet,
+  Text,
   ToastAndroid,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
-import { Ionicons, FontAwesome6, MaterialIcons, Feather } from '@expo/vector-icons';
-import { MotiView } from '~/components/common/PlatformMotiView';
 import { Toast } from 'toastify-react-native';
-import { StatusBar } from 'expo-status-bar';
 
 const FLASH_OPTIONS: FlashMode[] = ['off', 'on', 'auto'];
 const FLASH_OPTION_ICONS: Record<FlashMode, ComponentProps<typeof MaterialIcons>['name']> = {
@@ -159,8 +159,6 @@ const CameraUI: React.FC<CameraUIProps> = ({
 
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
-      // Handle the captured photo (e.g., navigate or preview)
-      console.log('Captured photo:', photo);
 
       if (photo) {
         setPickedImage(photo.uri);

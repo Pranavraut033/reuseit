@@ -1,9 +1,10 @@
+import { FontAwesome6 as Icon } from '@expo/vector-icons';
 import clsx from "clsx";
 import { Href, usePathname, useRouter } from "expo-router";
 import { memo } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { FabButton } from "./common/FabButton";
-import { FontAwesome6 as Icon } from '@expo/vector-icons';
 
 type FabOptionType = {
   title: string;
@@ -15,7 +16,7 @@ type FabOptionType = {
 const CameraOptions: FabOptionType = {
   title: 'Scan Item',
   accessibilityLabel: 'Scan item to identify recyclable materials',
-  iconName: 'camera',
+    iconName: 'camera',
   route: '/identify',
 }
 
@@ -37,13 +38,12 @@ const MainFabButton = memo(function MainFabButton() {
 
   return (
     <FabButton
-      android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: false }}
       className={clsx(
-        'absolute bottom-0 left-1/2 z-[30] -translate-x-[50%]  shadow shadow-primary'
+        'absolute bottom-4 right-4 z-[30] shadow shadow-primary'
       )}
-      size="large"
+      size="regular"
       style={{
-        bottom: bottom + 8,
+        bottom: bottom + 17,
         elevation: 3,
         shadowColor: 'black',
       }}

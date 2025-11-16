@@ -1,13 +1,14 @@
 import { forwardRef, useMemo } from 'react';
 import {
-  Pressable,
-  PressableProps,
-  View,
   ActivityIndicator,
   StyleProp,
-  ViewStyle,
   Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  View,
+  ViewStyle,
 } from 'react-native';
+
 import cn from '~/utils/cn';
 
 type FabButtonType = 'primary' | 'error' | 'neutral';
@@ -29,7 +30,7 @@ type FabButtonProps = {
   children?: React.ReactNode; // allow badge or similar
   activityIndicator?: ReactNonPrimitiveNode; // custom loading indicator
   size?: FabButtonSize;
-} & PressableProps;
+} & TouchableOpacityProps;
 
 export const FabButton = forwardRef<View, FabButtonProps>(
   (
@@ -104,9 +105,9 @@ export const FabButton = forwardRef<View, FabButtonProps>(
       );
 
     return (
-      <Pressable
+      <TouchableOpacity
         ref={ref}
-        android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
+        activeOpacity={0.7}
         {...touchableProps}
         className={fabClassName}
         disabled={isDisabled}
@@ -128,7 +129,7 @@ export const FabButton = forwardRef<View, FabButtonProps>(
         ) : (
           children
         )}
-      </Pressable>
+      </TouchableOpacity>
     );
   }
 );

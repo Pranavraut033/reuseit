@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { useMutation, useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useQuery, useMutation } from '@apollo/client/react';
-import { GET_POSTS } from '~/gql/feeds/getPosts';
-import { GET_COMMENTS_BY_POST, CREATE_COMMENT } from '~/gql/feeds/postMutations';
-import { Container } from '~/components/common/Container';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import Container from '~/components/common/Container';
 import { useAuth } from '~/context/AuthContext';
+import { GET_POSTS } from '~/gql/feeds/getPosts';
+import { CREATE_COMMENT, GET_COMMENTS_BY_POST } from '~/gql/feeds/postMutations';
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams();
@@ -15,10 +26,14 @@ export default function PostDetail() {
 
   // Find the post from the posts query
   const { data: postsData, loading: postsLoading } = useQuery(GET_POSTS);
-  const post = postsData?.posts?.find(p => p.id === id);
+  const post = postsData?.posts?.find((p) => p.id === id);
 
   // Get comments for this post
-  const { data: commentsData, loading: commentsLoading, refetch: refetchComments } = useQuery(GET_COMMENTS_BY_POST, {
+  const {
+    data: commentsData,
+    loading: commentsLoading,
+    refetch: refetchComments,
+  } = useQuery(GET_COMMENTS_BY_POST, {
     variables: { postId: id as string },
     skip: !id,
   });
@@ -81,7 +96,10 @@ export default function PostDetail() {
             {post.author && (
               <View className="mb-3 flex-row items-center">
                 {post.author.avatarUrl && (
-                  <Image source={{ uri: post.author.avatarUrl }} className="mr-3 h-12 w-12 rounded-full border-2 border-gray-200" />
+                  <Image
+                    source={{ uri: post.author.avatarUrl }}
+                    className="mr-3 h-12 w-12 rounded-full border-2 border-gray-200"
+                  />
                 )}
                 <View className="flex-1">
                   <Text className="font-semibold text-gray-900 text-lg">{post.author.name}</Text>
@@ -91,7 +109,7 @@ export default function PostDetail() {
                       day: 'numeric',
                       year: 'numeric',
                       hour: '2-digit',
-                      minute: '2-digit'
+                      minute: '2-digit',
                     })}
                   </Text>
                 </View>
@@ -104,11 +122,7 @@ export default function PostDetail() {
               <View className="mb-4 space-y-2">
                 {post.images.map((image, index) => (
                   <View key={index} className="rounded-xl overflow-hidden">
-                    <Image
-                      source={{ uri: image }}
-                      className="h-64 w-full"
-                      resizeMode="cover"
-                    />
+                    <Image source={{ uri: image }} className="h-64 w-full" resizeMode="cover" />
                   </View>
                 ))}
               </View>
@@ -140,22 +154,29 @@ export default function PostDetail() {
               <View className="items-center py-12">
                 <Ionicons name="chatbubble-outline" size={48} color="#D1D5DB" />
                 <Text className="mt-4 text-gray-500">No comments yet</Text>
-                <Text className="mt-1 text-center text-sm text-gray-400">Be the first to share your thoughts!</Text>
+                <Text className="mt-1 text-center text-sm text-gray-400">
+                  Be the first to share your thoughts!
+                </Text>
               </View>
             ) : (
               comments.map((comment) => (
                 <View key={comment.id} className="mb-3 rounded-xl bg-gray-50 p-3">
                   <View className="flex-row items-center mb-2">
                     {comment.author?.avatarUrl && (
-                      <Image source={{ uri: comment.author.avatarUrl }} className="mr-2 h-8 w-8 rounded-full" />
+                      <Image
+                        source={{ uri: comment.author.avatarUrl }}
+                        className="mr-2 h-8 w-8 rounded-full"
+                      />
                     )}
-                    <Text className="font-medium text-gray-900 text-sm">{comment.author?.name || 'Anonymous'}</Text>
+                    <Text className="font-medium text-gray-900 text-sm">
+                      {comment.author?.name || 'Anonymous'}
+                    </Text>
                     <Text className="ml-2 text-xs text-gray-500">
                       {new Date(comment.createdAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
                       })}
                     </Text>
                   </View>

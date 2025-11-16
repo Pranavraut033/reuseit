@@ -1,13 +1,13 @@
-import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import { PortalHost } from '@rn-primitives/portal';
+import { Redirect, usePathname } from 'expo-router';
+import { Text, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
+import SignInWithApple from '~/components/Auth/SignInWithApple';
 import SignInWithGoogle from '~/components/Auth/SignInWithGoogle';
 import SignInWithPhone from '~/components/Auth/SignInWithPhone';
-import SignInWithApple from '~/components/Auth/SignInWithApple';
+import Container from '~/components/common/Container';
 import { useAuth } from '~/context/AuthContext';
-import { Redirect, usePathname } from 'expo-router';
-import { Container } from '~/components/common/Container';
-import { PortalHost } from '@rn-primitives/portal';
-import { ScrollView } from 'react-native-gesture-handler';
 
 export default function Login() {
   const { user } = useAuth();
@@ -18,7 +18,6 @@ export default function Login() {
   return (
     <Container>
       <ScrollView>
-
         <View>
           <View className="flex-1"></View>
           <View className="mb-6">

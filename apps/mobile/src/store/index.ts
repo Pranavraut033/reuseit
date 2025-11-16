@@ -1,7 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { create } from 'zustand';
+
 import { SignInMutation } from '~/__generated__/graphql';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type User = SignInMutation['signIn']['user'] & {
   googleUser?: FirebaseAuthTypes.User;

@@ -1,18 +1,28 @@
+import { setContext } from '@apollo/client/link/context';
 import { useMutation } from '@apollo/client/react';
 import {
   FirebaseAuthTypes,
-  signInWithPhoneNumber as faSignInWithPhoneNumber,
   getAuth,
-  onAuthStateChanged,
   GoogleAuthProvider,
+  onAuthStateChanged,
   signInWithCredential,
+  signInWithPhoneNumber as faSignInWithPhoneNumber,
 } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import { SignInMutation, SignInMutationVariables } from '~/__generated__/graphql';
 import { SIGN_IN_MUTATION } from '~/gql/auth';
 import { type User, useStore } from '~/store';
 import { apolloClient, httpLink } from '~/utils/apollo';
-import { setContext } from '@apollo/client/link/context';
 
 // Configure Google Sign-In
 GoogleSignin.configure({
@@ -54,9 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const token = useStore((state) => state.token);
   const loadToken = useStore((state) => state.loadToken);
   const [_error, setError] = useState<unknown | null>(null);
-  const confirmationRef = useRef<FirebaseAuthTypes.ConfirmationResult | null>(
-    null
-  );
+  const confirmationRef = useRef<FirebaseAuthTypes.ConfirmationResult | null>(null);
 
   useEffect(() => {
     loadToken().catch((err) => {
@@ -77,46 +85,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const signInWithGoogle = useCallback(async (onSuccess?: () => void) => {
-    try {
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  const [serverSignIn, { error: mutationError, reset }] = useMutation<
+    SignInMutation,
+    SignInMutationVariables
+  >(SIGN_IN_MUTATION);
 
-      const signInResult = await GoogleSignin.signIn();
-
-      let idToken: string | undefined = signInResult.data?.idToken ?? (signInResult as any).idToken;
-
-      if (!idToken) {
-        throw new Error('No ID token found');
-      }
-
-      const googleCredential = GoogleAuthProvider.credential(idToken);
-
-      const response = await signInWithCredential(getAuth(), googleCredential);
-      await handleUserSignIn(response.user);
-      onSuccess?.();
-    } catch (error) {
-      setError(error);
-      throw error;
-    }
-  }, []);
-
-  const [serverSignIn, { data, error: mutationError, reset }] = useMutation(SIGN_IN_MUTATION);
-
-  const handleUserSignIn = useCallback(async (user: FirebaseAuthTypes.User) => {
-    const idToken = await user.getIdToken();
-    return serverSignIn({
-      variables: { data: { idToken } },
-    })
-      .then((res) => {
-        const signInData = (res.data as any)?.signIn;
-        if (!signInData) return;
-        const authToken = signInData.token;
-        setToken(authToken || null);
-        setUser({ ...signInData.user, googleUser: user });
+  const handleUserSignIn = useCallback(
+    async (user: FirebaseAuthTypes.User) => {
+      const idToken = await user.getIdToken();
+      return serverSignIn({
+        variables: { data: { idToken } },
       })
-      .finally(() => reset());
-  }, [reset, serverSignIn, setToken, setUser]);
+        .then((res) => {
+          const signInData = res.data?.signIn;
+          if (!signInData) return;
+          const authToken = signInData.token;
+          setToken(authToken || null);
+          setUser({ ...signInData.user, googleUser: user });
+        })
+        .finally(() => reset());
+    },
+    [reset, serverSignIn, setToken, setUser],
+  );
 
+  const signInWithGoogle = useCallback(
+    async (onSuccess?: () => void) => {
+      try {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
+        const signInResult = await GoogleSignin.signIn();
+
+        let idToken: string | undefined =
+          signInResult.data?.idToken ?? (signInResult as any).idToken;
+
+        if (!idToken) {
+          throw new Error('No ID token found');
+        }
+
+        const googleCredential = GoogleAuthProvider.credential(idToken);
+
+        const response = await signInWithCredential(getAuth(), googleCredential);
+        await handleUserSignIn(response.user);
+        onSuccess?.();
+      } catch (error) {
+        setError(error);
+        throw error;
+      }
+    },
+    [handleUserSignIn],
+  );
 
   const error = _error || mutationError;
 
@@ -133,15 +150,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setError(error);
       }
     },
-    []
+    [handleUserSignIn],
   );
 
   const signOut = useCallback(async () => {
     try {
-      if (getAuth().currentUser)
-        await getAuth().signOut()
+      if (getAuth().currentUser) await getAuth().signOut();
     } catch (error) {
-      console.log('Error signing out:', error);
+      console.error('Error signing out:', error);
     }
 
     confirmationRef.current = null;
@@ -171,7 +187,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (isLoading) setIsLoading(false);
       }),
-    [isLoading, reset, setUser, setIsLoading, serverSignIn, setToken, signOut]
+    [
+      isLoading,
+      reset,
+      setUser,
+      setIsLoading,
+      serverSignIn,
+      setToken,
+      signOut,
+      token,
+      handleUserSignIn,
+    ],
   );
 
   const context = useMemo(
@@ -185,7 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       verifyCode: verifyOtp,
     }),
-    [error, isLoading, setUser, signInWithPhoneNumber, signInWithGoogle, signOut, user, verifyOtp]
+    [error, isLoading, setUser, signInWithPhoneNumber, signInWithGoogle, signOut, user, verifyOtp],
   );
 
   return <AuthContext.Provider value={context}>{children}</AuthContext.Provider>;

@@ -42,11 +42,7 @@ export class EventResolver {
     @Args('updateEventInput') updateEventInput: UpdateEventInput,
     @Context('req') req: { user?: User },
   ) {
-    return this.eventService.update(
-      updateEventInput.id,
-      updateEventInput,
-      req.user?.id,
-    );
+    return this.eventService.update(updateEventInput.id, updateEventInput, req.user?.id);
   }
 
   @Mutation(() => Event)

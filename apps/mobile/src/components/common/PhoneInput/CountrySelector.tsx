@@ -1,13 +1,14 @@
+import { AntDesign } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import useAppConfig from "~/hooks/useAppConfig";
+import countries from '~/json/countries.json';
+import cn from "~/utils/cn";
 
 import { Country } from ".";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import countries from '~/json/countries.json';
-import { AntDesign } from "@expo/vector-icons";
-import useAppConfig from "~/hooks/useAppConfig";
-import cn from "~/utils/cn";
 
 type CountrySelectorProps = {
   visible: boolean;

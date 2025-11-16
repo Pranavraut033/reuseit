@@ -18,9 +18,7 @@ export class CommentService {
     userId: string | undefined,
   ): Promise<Comment> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to create a comment',
-      );
+      throw new UnauthorizedException('User must be authenticated to create a comment');
     }
 
     // Verify that the post exists
@@ -29,9 +27,7 @@ export class CommentService {
     });
 
     if (!post) {
-      throw new NotFoundException(
-        `Post with ID ${createCommentInput.postId} not found`,
-      );
+      throw new NotFoundException(`Post with ID ${createCommentInput.postId} not found`);
     }
 
     const comment = await this.prisma.comment.create({
@@ -100,9 +96,7 @@ export class CommentService {
     userId: string | undefined,
   ): Promise<Comment> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to update a comment',
-      );
+      throw new UnauthorizedException('User must be authenticated to update a comment');
     }
 
     // Check if comment exists and belongs to user
@@ -134,9 +128,7 @@ export class CommentService {
 
   async remove(id: string, userId: string | undefined): Promise<Comment> {
     if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to delete a comment',
-      );
+      throw new UnauthorizedException('User must be authenticated to delete a comment');
     }
 
     // Check if comment exists and belongs to user
