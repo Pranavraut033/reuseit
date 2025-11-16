@@ -1,10 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { IS_PUBLIC_KEY, jwtConstants } from './constants';
-import { Request } from 'express';
-import { UserService } from '~/user/user.service';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+
+import { UserService } from '~/user/user.service';
+
+import { IS_PUBLIC_KEY, jwtConstants } from './constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

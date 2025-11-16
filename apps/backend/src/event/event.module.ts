@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { EventService } from './event.service';
-import { EventResolver } from './event.resolver';
+
 import { PrismaModule } from '../prisma/prisma.module';
+import { EventResolver } from './event.resolver';
+import { EventService } from './event.service';
 
 @Module({
   providers: [EventResolver, EventService],

@@ -1,9 +1,10 @@
-import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+
+import { User } from '../user/entities/user.entity';
 import { CommentService } from './comment.service';
-import { Comment } from './entities/comment.entity';
 import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
-import { User } from '../user/entities/user.entity';
+import { Comment } from './entities/comment.entity';
 
 @Resolver(() => Comment)
 export class CommentResolver {

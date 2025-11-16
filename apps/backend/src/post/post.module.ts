@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { PostService } from './post.service';
-import { PostResolver } from './post.resolver';
-import { CommentModule } from './comment.module';
+
 import { PrismaModule } from '../prisma/prisma.module';
+import { CommentModule } from './comment.module';
+import { PostResolver } from './post.resolver';
+import { PostService } from './post.service';
 
 @Module({
   providers: [PostResolver, PostService],

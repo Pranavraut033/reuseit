@@ -1,9 +1,10 @@
-import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
-import { EventService } from './event.service';
-import { Event } from './entities/event.entity';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+
+import { User } from '../user/entities/user.entity';
 import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
-import { User } from '../user/entities/user.entity';
+import { Event } from './entities/event.entity';
+import { EventService } from './event.service';
 
 @Resolver(() => Event)
 export class EventResolver {

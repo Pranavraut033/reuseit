@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { CreatePointInput } from './dto/create-point.input';
 import { UpdatePointInput } from './dto/update-point.input';
 

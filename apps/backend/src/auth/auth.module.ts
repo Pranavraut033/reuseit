@@ -1,10 +1,12 @@
-import { UserModule } from '~/user/user.module';
-import { AuthService } from './auth.service';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
-import { AuthResolver } from './auth.resolver';
+
 import { FirebaseModule } from '~/firebase/firebase.module';
+import { UserModule } from '~/user/user.module';
+
+import { AuthResolver } from './auth.resolver';
+import { AuthService } from './auth.service';
+import { jwtConstants } from './constants';
 
 @Module({
   providers: [AuthService, AuthResolver],

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CommentService } from './comment.service';
-import { CommentResolver } from './comment.resolver';
+
 import { PrismaModule } from '../prisma/prisma.module';
+import { CommentResolver } from './comment.resolver';
+import { CommentService } from './comment.service';
 
 @Module({
   providers: [CommentResolver, CommentService],

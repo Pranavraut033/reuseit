@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaModelName, PrismaModel, SafeUpsertOptions, ModelType } from './types/safeUpsert';
+
+import { ModelType, PrismaModel, PrismaModelName, SafeUpsertOptions } from './types/safeUpsert';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {

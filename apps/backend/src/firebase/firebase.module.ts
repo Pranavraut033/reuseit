@@ -1,4 +1,4 @@
-import { Module, Logger } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 import * as fs from 'fs';

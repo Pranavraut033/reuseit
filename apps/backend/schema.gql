@@ -2,20 +2,21 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Badge {
+type UserArticle {
   id: ID!
-  criteria: String
-  description: String!
-  iconUrl: String
   name: String!
-  users: [BadgeAssignment!]!
+  description: String
+  imageUrl: [String!]!
+  user: User!
+  post: Post
 }
 
-type BadgeAssignment {
+type Comment {
   id: ID!
-  awardedAt: DateTime!
-  badge: Badge!
-  user: User!
+  createdAt: DateTime!
+  author: User
+  content: String!
+  post: Post!
 }
 
 """
@@ -23,26 +24,19 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type EvenParticipant {
-  id: ID!
-  createdAt: DateTime!
-  event: Event!
-  user: User!
-}
-
-type Event {
+type Post {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  creator: User!
-  title: String!
-  imageUrl: [String!]!
-  description: String
-  startTime: DateTime!
-  endTime: DateTime
-  location: Location!
-  participants: EvenParticipant
-  post: [Post!]!
+  author: User
+  comments: [Comment!]!
+  content: String!
+  userArticles: [UserArticle!]!
+  event: Event
+  images: [String!]!
+  likes: Float!
+  likedByCurrentUser: Boolean
+  location: Location
 }
 
 type Location {
@@ -70,36 +64,26 @@ enum LocationType {
   WAREHOUSE
 }
 
-type UserArticle {
+type EvenParticipant {
   id: ID!
-  name: String!
-  description: String
-  imageUrl: [String!]!
+  createdAt: DateTime!
+  event: Event!
   user: User!
-  post: Post
 }
 
-type Post {
+type Event {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  author: User
-  comments: [Comment!]!
-  content: String!
-  userArticles: [UserArticle!]!
-  event: Event
-  images: [String!]!
-  likes: Float!
-  likedByCurrentUser: Boolean
-  location: Location
-}
-
-type Comment {
-  id: ID!
-  createdAt: DateTime!
-  author: User
-  content: String!
-  post: Post!
+  creator: User!
+  title: String!
+  imageUrl: [String!]!
+  description: String
+  startTime: DateTime!
+  endTime: DateTime
+  location: Location!
+  participants: EvenParticipant
+  post: [Post!]!
 }
 
 type PointsHistory {
@@ -133,6 +117,22 @@ type User {
   evenParticipant: [EvenParticipant!]!
 }
 
+type BadgeAssignment {
+  id: ID!
+  awardedAt: DateTime!
+  badge: Badge!
+  user: User!
+}
+
+type Badge {
+  id: ID!
+  criteria: String
+  description: String!
+  iconUrl: String
+  name: String!
+  users: [BadgeAssignment!]!
+}
+
 type Point {
   """Example field (placeholder)"""
   exampleField: Int!
@@ -155,6 +155,7 @@ type Query {
   userArticle(id: Int!): UserArticle!
   posts: [Post!]!
   postsByAuthor(authorId: String!): [Post!]!
+  postsByIds(ids: [String!]!): [Post!]!
   post(id: String!): Post!
   comments: [Comment!]!
   comment(id: String!): Comment!

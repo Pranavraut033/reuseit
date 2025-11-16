@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { UserService } from '~/user/user.service';
-import { SignInInput } from './dto/signin.input';
-import { PrismaService } from '~/prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import { Public } from './constants';
-import * as admin from 'firebase-admin';
 import { Inject } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as admin from 'firebase-admin';
+
+import { PrismaService } from '~/prisma/prisma.service';
+import { UserService } from '~/user/user.service';
+
+import { Public } from './constants';
+import { SignInInput } from './dto/signin.input';
 
 @Injectable()
 export class AuthService {

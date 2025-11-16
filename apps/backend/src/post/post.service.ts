@@ -1,12 +1,13 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  ForbiddenException,
 } from '@nestjs/common';
+
+import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
-import { PrismaService } from '../prisma/prisma.service';
 import { Post } from './entities/post.entity';
 
 @Injectable()
@@ -35,7 +36,26 @@ export class PostService {
       },
     });
 
-    return post as any;
+    return post as unknown as Post;
+  }
+
+  async findByIds(ids: string[]): Promise<Post[]> {
+    const posts = await this.prisma.post.findMany({
+      where: { id: { in: ids } },
+      include: {
+        author: true,
+        comments: {
+          include: {
+            author: true,
+          },
+        },
+        location: true,
+        event: true,
+        userArticles: true,
+      },
+    });
+
+    return posts as unknown as Post[];
   }
 
   async isLikedByUser(postId: string, userId: string | undefined): Promise<boolean> {
@@ -71,7 +91,7 @@ export class PostService {
       },
     });
 
-    return posts as any;
+    return posts as unknown as Post[];
   }
 
   async findByAuthor(authorId: string): Promise<Post[]> {
@@ -93,7 +113,7 @@ export class PostService {
       },
     });
 
-    return posts as any;
+    return posts as unknown as Post[];
   }
 
   async findOne(id: string): Promise<Post> {
@@ -116,7 +136,7 @@ export class PostService {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
 
-    return post as any;
+    return post as unknown as Post;
   }
 
   async update(
@@ -158,7 +178,7 @@ export class PostService {
       },
     });
 
-    return post as any;
+    return post as unknown as Post;
   }
 
   async remove(id: string, userId: string | undefined): Promise<Post> {
@@ -190,7 +210,7 @@ export class PostService {
       },
     });
 
-    return post as any;
+    return post as unknown as Post;
   }
 
   async likePost(postId: string, userId: string | undefined): Promise<Post> {
@@ -261,6 +281,6 @@ export class PostService {
       throw new NotFoundException(`Post with ID ${postId} not found after like toggle`);
     }
 
-    return updatedPost;
+    return updatedPost as unknown as Post;
   }
 }

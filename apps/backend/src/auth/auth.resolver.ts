@@ -1,9 +1,11 @@
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Public } from './constants';
-import { SignInInput } from './dto/signin.input';
-import { AuthService } from './auth.service';
-import { AuthResponse } from './dto/auth.response';
+
 import { User } from '~/user/entities/user.entity';
+
+import { AuthService } from './auth.service';
+import { Public } from './constants';
+import { AuthResponse } from './dto/auth.response';
+import { SignInInput } from './dto/signin.input';
 
 @Resolver()
 export class AuthResolver {

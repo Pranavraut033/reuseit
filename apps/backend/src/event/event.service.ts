@@ -1,13 +1,14 @@
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
+
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
-import { PrismaService } from '../prisma/prisma.service';
 import { Event } from './entities/event.entity';
 
 @Injectable()
@@ -51,7 +52,7 @@ export class EventService {
       },
     });
 
-    return event as any;
+    return event as unknown as Event;
   }
 
   async findAll(): Promise<Event[]> {
@@ -67,7 +68,7 @@ export class EventService {
       },
     });
 
-    return events as any;
+    return events as unknown as Event[];
   }
 
   async findOne(id: string): Promise<Event> {
@@ -85,7 +86,7 @@ export class EventService {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
 
-    return event as any;
+    return event as unknown as Event;
   }
 
   async findByCreator(creatorId: string): Promise<Event[]> {
@@ -102,7 +103,7 @@ export class EventService {
       },
     });
 
-    return events as any;
+    return events as unknown as Event[];
   }
 
   async findUpcoming(): Promise<Event[]> {
@@ -124,7 +125,7 @@ export class EventService {
       },
     });
 
-    return events as any;
+    return events as unknown as Event[];
   }
 
   async update(
@@ -187,7 +188,7 @@ export class EventService {
       },
     });
 
-    return event as any;
+    return event as unknown as Event;
   }
 
   async remove(id: string, userId: string | undefined): Promise<Event> {
@@ -218,6 +219,6 @@ export class EventService {
       },
     });
 
-    return event as any;
+    return event as unknown as Event;
   }
 }

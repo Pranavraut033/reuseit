@@ -1,6 +1,8 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Post } from './post.entity';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
+
 import { User } from '~/user/entities/user.entity';
+
+import { Post } from './post.entity';
 
 @ObjectType()
 export class Comment {

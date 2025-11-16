@@ -1,5 +1,6 @@
 // src/points/points.service.ts
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { POINTS_RULES } from './points.constants';
 

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserResolver } from './user.resolver';
-import { PointModule } from './point/point.module';
+
 import { BadgeModule } from './badge.module';
+import { PointModule } from './point/point.module';
+import { UserResolver } from './user.resolver';
+import { UserService } from './user.service';
 import { UserArticleModule } from './user-article.module';
 
 @Module({

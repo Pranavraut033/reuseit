@@ -1,14 +1,14 @@
 import type { Prisma } from '@prisma/client';
 import type {
-  User,
-  Post,
-  Event,
   Badge,
   BadgeAssignment,
   Comment,
-  PointsHistory,
-  UserArticle,
   EvenParticipant,
+  Event,
+  PointsHistory,
+  Post,
+  User,
+  UserArticle,
 } from '@prisma/client';
 
 /**
