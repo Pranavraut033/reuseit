@@ -130,15 +130,19 @@ model EvenParticipant {
 }
 
 model Location {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt     DateTime     @default(now())
-  name          String?
-  address       String?
-  type          LocationType
-  events        Event[]
-  posts         Post[]
-  coordinates   Float[]
-  googlePlaceId String?      @unique
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt      DateTime     @default(now())
+  address        String
+  addressLine2   String?
+  additionalInfo String?
+  city           String
+  country        String
+  postalCode     String
+  type           LocationType
+  events         Event[]
+  posts          Post[]
+  coordinates    Float[]
+  googlePlaceId  String?      @unique
 }
 
 model UserArticle {

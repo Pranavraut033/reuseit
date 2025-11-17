@@ -1,6 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
-import { Location } from '~/global/entities/location.entity';
+import { Location } from '~/location/entities/location.entity';
 import { Post } from '~/post/entities/post.entity';
 import { User } from '~/user/entities/user.entity';
 

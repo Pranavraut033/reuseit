@@ -49,8 +49,12 @@ type Post {
 type Location {
   id: ID!
   createdAt: DateTime!
-  name: String
-  address: String
+  address: String!
+  addressLine2: String
+  additionalInfo: String
+  city: String!
+  country: String!
+  postalCode: Int!
   type: LocationType!
   events: [Event!]!
   posts: [Post!]!
@@ -151,15 +155,18 @@ type AuthResponse {
 }
 
 type Query {
-  events: [Event!]!
-  event(id: String!): Event!
-  eventsByCreator(creatorId: String!): [Event!]!
-  upcomingEvents: [Event!]!
+  me: User!
   users: [User!]!
   user(id: String, email: String): User!
   point(id: Int!): Point!
   badge(id: Int!): Badge!
   userArticle(id: Int!): UserArticle!
+  events: [Event!]!
+  event(id: String!): Event!
+  eventsByCreator(creatorId: String!): [Event!]!
+  upcomingEvents: [Event!]!
+  locations: [Location!]!
+  location(id: String!): Location!
   posts: [Post!]!
   postsByAuthor(authorId: String!): [Post!]!
   postsByIds(ids: [String!]!): [Post!]!
@@ -167,13 +174,10 @@ type Query {
   comments: [Comment!]!
   comment(id: String!): Comment!
   commentsByPost(postId: String!): [Comment!]!
-  me: User!
 }
 
 type Mutation {
-  createEvent(createEventInput: CreateEventInput!): Event!
-  updateEvent(updateEventInput: UpdateEventInput!): Event!
-  removeEvent(id: String!): Event!
+  signIn(data: SignInInput!): AuthResponse!
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!): User!
   removeUser(id: String!): User!
@@ -186,6 +190,12 @@ type Mutation {
   createUserArticle(createUserArticleInput: CreateUserArticleInput!): UserArticle!
   updateUserArticle(updateUserArticleInput: UpdateUserArticleInput!): UserArticle!
   removeUserArticle(id: Int!): UserArticle!
+  createEvent(createEventInput: CreateEventInput!): Event!
+  updateEvent(updateEventInput: UpdateEventInput!): Event!
+  removeEvent(id: String!): Event!
+  createLocation(createLocationInput: CreateLocationInput!): Location!
+  updateLocation(updateLocationInput: UpdateLocationInput!): Location!
+  removeLocation(id: String!): Location!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: String!): Post!
@@ -193,48 +203,11 @@ type Mutation {
   createComment(createCommentInput: CreateCommentInput!): Comment!
   updateComment(updateCommentInput: UpdateCommentInput!): Comment!
   removeComment(id: String!): Comment!
-  signIn(data: SignInInput!): AuthResponse!
 }
 
-input CreateEventInput {
-  """Event title"""
-  title: String!
-
-  """Event image URLs"""
-  imageUrl: [String!]!
-
-  """Event description"""
-  description: String
-
-  """Event start time"""
-  startTime: DateTime!
-
-  """Event end time"""
-  endTime: DateTime
-
-  """Location ID where the event will take place"""
-  locationId: String!
-}
-
-input UpdateEventInput {
-  """Event title"""
-  title: String
-
-  """Event image URLs"""
-  imageUrl: [String!]
-
-  """Event description"""
-  description: String
-
-  """Event start time"""
-  startTime: DateTime
-
-  """Event end time"""
-  endTime: DateTime
-
-  """Location ID where the event will take place"""
-  locationId: String
-  id: String!
+input SignInInput {
+  """Firebase ID token (JWT) obtained after client auth"""
+  idToken: String!
 }
 
 input CreateUserInput {
@@ -279,6 +252,106 @@ input UpdateUserArticleInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+}
+
+input CreateEventInput {
+  """Event title"""
+  title: String!
+
+  """Event image URLs"""
+  imageUrl: [String!]!
+
+  """Event description"""
+  description: String
+
+  """Event start time"""
+  startTime: DateTime!
+
+  """Event end time"""
+  endTime: DateTime
+
+  """Location ID where the event will take place"""
+  locationId: String!
+}
+
+input UpdateEventInput {
+  """Event title"""
+  title: String
+
+  """Event image URLs"""
+  imageUrl: [String!]
+
+  """Event description"""
+  description: String
+
+  """Event start time"""
+  startTime: DateTime
+
+  """Event end time"""
+  endTime: DateTime
+
+  """Location ID where the event will take place"""
+  locationId: String
+  id: String!
+}
+
+input CreateLocationInput {
+  """Location address"""
+  address: String!
+
+  """Location line 2"""
+  addressLine2: String
+
+  """Additional address information"""
+  additionalInfo: String
+
+  """City"""
+  city: String!
+
+  """Country"""
+  country: String!
+
+  """Postal code"""
+  postalCode: Float!
+
+  """Coordinates [longitude, latitude]"""
+  coordinates: [Float!]!
+
+  """Google Place ID"""
+  googlePlaceId: String
+
+  """Location type"""
+  type: String!
+}
+
+input UpdateLocationInput {
+  """Location address"""
+  address: String
+
+  """Location line 2"""
+  addressLine2: String
+
+  """Additional address information"""
+  additionalInfo: String
+
+  """City"""
+  city: String
+
+  """Country"""
+  country: String
+
+  """Postal code"""
+  postalCode: Float
+
+  """Coordinates [longitude, latitude]"""
+  coordinates: [Float!]
+
+  """Google Place ID"""
+  googlePlaceId: String
+
+  """Location type"""
+  type: String
+  id: String!
 }
 
 input CreatePostInput {
@@ -355,9 +428,4 @@ input UpdateCommentInput {
   """Post ID that this comment belongs to"""
   postId: String
   id: String!
-}
-
-input SignInInput {
-  """Firebase ID token (JWT) obtained after client auth"""
-  idToken: String!
 }

@@ -14,14 +14,10 @@ import { PrismaModule } from '~/prisma/prisma.module';
 import { UserModule } from '~/user/user.module';
 
 import { FirebaseModule } from './firebase/firebase.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
-    PrismaModule,
-    EventModule,
-    UserModule,
-    PostModule,
-    PointsModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       // Enable GraphQL Playground in development
@@ -32,7 +28,13 @@ import { FirebaseModule } from './firebase/firebase.module';
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
     }),
     AuthModule,
+    EventModule,
     FirebaseModule,
+    LocationModule,
+    PointsModule,
+    PostModule,
+    PrismaModule,
+    UserModule,
   ],
   controllers: [],
   providers: [
