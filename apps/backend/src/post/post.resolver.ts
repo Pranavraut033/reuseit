@@ -76,4 +76,9 @@ export class PostResolver {
   likeCount(@Parent() post: Post) {
     return this.postService.getLikeCount(post.id);
   }
+
+  @ResolveField(() => User, { name: 'author' })
+  author(@Parent() post: Post) {
+    return post.anonymous ? { id: '', name: 'Anonymous', avatarUrl: '' } : post.author;
+  }
 }

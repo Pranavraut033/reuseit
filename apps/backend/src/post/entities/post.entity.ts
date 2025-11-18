@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, ID, ObjectType } from '@nestjs/graphql';
 
 import { Event } from '~/event/entities/event.entity';
 import { Location } from '~/location/entities/location.entity';
@@ -12,10 +12,10 @@ export class Post {
   @Field(() => ID)
   id: string;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   createdAt: Date;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   updatedAt: Date;
 
   @Field(() => User, { nullable: true })
@@ -24,23 +24,23 @@ export class Post {
   @Field(() => String)
   title: string;
 
-  @Field(() => String)
-  category: string;
+  @Field(() => String, { nullable: true })
+  category?: string;
 
-  @Field(() => String)
-  condition: string;
+  @Field(() => String, { nullable: true })
+  condition?: string;
 
   @Field(() => [String])
   tags: string[];
 
-  @Field(() => Date, { nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   pickupDate?: Date;
 
   @Field(() => [Comment])
   comments: Comment[];
 
-  @Field()
-  content: string;
+  @Field(() => String, { description: 'Post description' })
+  description: string;
 
   @Field(() => [UserArticle])
   userArticles: UserArticle[];
@@ -62,4 +62,7 @@ export class Post {
 
   @Field(() => Location, { nullable: true })
   location?: Location;
+
+  @Field(() => Boolean)
+  anonymous: boolean;
 }

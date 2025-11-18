@@ -1,5 +1,6 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { CurrentUser } from '~/decorators/CurrentUser';
 import { User } from '~/user/entities/user.entity';
 
 import { AuthService } from './auth.service';
@@ -17,9 +18,8 @@ export class AuthResolver {
     return this.authService.signIn(data);
   }
 
-  // Returns the currently authenticated user
-  @Query(() => User)
-  me(@Context('req') req: { user?: User }) {
-    return req.user;
+  @Query(() => User, { nullable: true })
+  me(@CurrentUser() user?: User) {
+    return user;
   }
 }

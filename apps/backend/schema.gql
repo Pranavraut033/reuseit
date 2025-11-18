@@ -30,12 +30,14 @@ type Post {
   updatedAt: DateTime!
   author: User
   title: String!
-  category: String!
-  condition: String!
+  category: String
+  condition: String
   tags: [String!]!
   pickupDate: DateTime
   comments: [Comment!]!
-  content: String!
+
+  """Post description"""
+  description: String!
   userArticles: [UserArticle!]!
   event: Event
   images: [String!]!
@@ -43,23 +45,26 @@ type Post {
   likeCount: Float!
   commentsCount: Float!
   location: Location
+  anonymous: Boolean!
   commentCount: Float!
 }
 
 type Location {
   id: ID!
   createdAt: DateTime!
-  address: String!
+  street: String!
   addressLine2: String
   additionalInfo: String
-  city: String!
+  city: String
   country: String!
-  postalCode: Int!
+  postalCode: String
   type: LocationType!
   events: [Event!]!
   posts: [Post!]!
   coordinates: [Float!]!
   googlePlaceId: String
+  userId: String
+  createdBy: User
 }
 
 enum LocationType {
@@ -72,6 +77,7 @@ enum LocationType {
   PICKUP_LOCATION
   RECYCLING_CENTER
   USER_CHECKIN
+  USER_LOCATION
   WAREHOUSE
 }
 
@@ -155,7 +161,7 @@ type AuthResponse {
 }
 
 type Query {
-  me: User!
+  me: User
   users: [User!]!
   user(id: String, email: String): User!
   point(id: Int!): Point!
@@ -271,7 +277,39 @@ input CreateEventInput {
   endTime: DateTime
 
   """Location ID where the event will take place"""
-  locationId: String!
+  locationId: String
+
+  """Location details for the event"""
+  location: CreateLocationInput
+}
+
+input CreateLocationInput {
+  """Street address"""
+  street: String!
+
+  """Location line 2"""
+  addressLine2: String
+
+  """Additional address information"""
+  additionalInfo: String
+
+  """City"""
+  city: String
+
+  """Country"""
+  country: String!
+
+  """Postal code"""
+  postalCode: String
+
+  """Coordinates [longitude, latitude]"""
+  coordinates: [Float!]!
+
+  """Google Place ID"""
+  googlePlaceId: String
+
+  """Location type"""
+  type: String!
 }
 
 input UpdateEventInput {
@@ -292,41 +330,15 @@ input UpdateEventInput {
 
   """Location ID where the event will take place"""
   locationId: String
+
+  """Location details for the event"""
+  location: CreateLocationInput
   id: String!
 }
 
-input CreateLocationInput {
-  """Location address"""
-  address: String!
-
-  """Location line 2"""
-  addressLine2: String
-
-  """Additional address information"""
-  additionalInfo: String
-
-  """City"""
-  city: String!
-
-  """Country"""
-  country: String!
-
-  """Postal code"""
-  postalCode: Float!
-
-  """Coordinates [longitude, latitude]"""
-  coordinates: [Float!]!
-
-  """Google Place ID"""
-  googlePlaceId: String
-
-  """Location type"""
-  type: String!
-}
-
 input UpdateLocationInput {
-  """Location address"""
-  address: String
+  """Street address"""
+  street: String
 
   """Location line 2"""
   addressLine2: String
@@ -341,7 +353,7 @@ input UpdateLocationInput {
   country: String
 
   """Postal code"""
-  postalCode: Float
+  postalCode: String
 
   """Coordinates [longitude, latitude]"""
   coordinates: [Float!]
@@ -358,14 +370,14 @@ input CreatePostInput {
   """Post title"""
   title: String!
 
-  """Post content"""
-  content: String!
+  """Post description"""
+  description: String!
 
   """Post category"""
-  category: String!
+  category: String
 
   """Post condition"""
-  condition: String!
+  condition: String
 
   """Post tags"""
   tags: [String!]!
@@ -379,16 +391,22 @@ input CreatePostInput {
   """Location ID"""
   locationId: String
 
+  """Location details"""
+  location: CreateLocationInput
+
   """Event ID"""
   eventId: String
+
+  """Whether the post is created anonymously"""
+  anonymous: Boolean!
 }
 
 input UpdatePostInput {
   """Post title"""
   title: String
 
-  """Post content"""
-  content: String
+  """Post description"""
+  description: String
 
   """Post category"""
   category: String
@@ -408,8 +426,14 @@ input UpdatePostInput {
   """Location ID"""
   locationId: String
 
+  """Location details"""
+  location: CreateLocationInput
+
   """Event ID"""
   eventId: String
+
+  """Whether the post is created anonymously"""
+  anonymous: Boolean
   id: String!
 }
 

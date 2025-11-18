@@ -5,6 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import { LocationService } from '~/location/location.service';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
@@ -12,22 +14,31 @@ import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly locationService: LocationService,
+  ) {}
 
   async create(createPostInput: CreatePostInput, userId: string | undefined): Promise<Post> {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to create a post');
     }
 
+    const locationId = await this.locationService.verifyOrCreate(
+      createPostInput.locationId,
+      createPostInput.location,
+      true,
+    );
+
     const post = await this.prisma.post.create({
       data: {
         authorId: userId,
         category: createPostInput.category,
         condition: createPostInput.condition,
-        content: createPostInput.content,
+        description: createPostInput.description,
         eventId: createPostInput.eventId,
         images: createPostInput.images || [],
-        locationId: createPostInput.locationId,
+        locationId,
         pickupDate: createPostInput.pickupDate,
         tags: createPostInput.tags,
         title: createPostInput.title,
@@ -169,7 +180,7 @@ export class PostService {
     const post = await this.prisma.post.update({
       where: { id },
       data: {
-        content: updatePostInput.content,
+        description: updatePostInput.description,
         images: updatePostInput.images,
         locationId: updatePostInput.locationId,
         eventId: updatePostInput.eventId,

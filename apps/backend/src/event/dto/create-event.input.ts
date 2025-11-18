@@ -1,5 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 
+import { CreateLocationInput } from '~/location/dto/create-location.input';
+
 @InputType()
 export class CreateEventInput {
   @Field(() => String, { description: 'Event title' })
@@ -19,6 +21,13 @@ export class CreateEventInput {
 
   @Field(() => String, {
     description: 'Location ID where the event will take place',
+    nullable: true,
   })
-  locationId: string;
+  locationId?: string;
+
+  @Field(() => CreateLocationInput, {
+    description: 'Location details for the event',
+    nullable: true,
+  })
+  location?: CreateLocationInput;
 }

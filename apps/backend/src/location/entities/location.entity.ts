@@ -1,7 +1,8 @@
-import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 
 import { Event } from '~/event/entities/event.entity';
 import { Post } from '~/post/entities/post.entity';
+import { User } from '~/user/entities/user.entity';
 
 import { LocationType } from './location-type.entity';
 
@@ -14,7 +15,7 @@ export class Location {
   createdAt: Date;
 
   @Field(() => String)
-  address: string;
+  street: string;
 
   @Field(() => String, { nullable: true })
   addressLine2?: string;
@@ -22,14 +23,14 @@ export class Location {
   @Field(() => String, { nullable: true })
   additionalInfo?: string;
 
-  @Field(() => String)
-  city: string;
+  @Field(() => String, { nullable: true })
+  city?: string;
 
   @Field(() => String)
   country: string;
 
-  @Field(() => Int)
-  postalCode: number;
+  @Field(() => String, { nullable: true })
+  postalCode?: string;
 
   @Field(() => LocationType)
   type: LocationType;
@@ -45,4 +46,10 @@ export class Location {
 
   @Field(() => String, { nullable: true })
   googlePlaceId?: string;
+
+  @Field(() => String, { nullable: true })
+  userId?: string;
+
+  @Field(() => User, { nullable: true })
+  createdBy?: User;
 }

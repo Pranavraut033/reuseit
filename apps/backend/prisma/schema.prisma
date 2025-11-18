@@ -18,25 +18,26 @@ model User {
   id              String            @id @default(auto()) @map("_id") @db.ObjectId
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  lastLogin       DateTime?
   avatarUrl       String?
   badges          BadgeAssignment[]
   comments        Comment[]
   email           String            @unique
   emailVerified   Boolean           @default(false)
-  eventsCreated   Event[]           @relation("EventCreator")
+  evenParticipant EvenParticipant[]
   googleId        String?           @unique
+  lastLogin       DateTime?
+  likes           Like[]
+  myEvents        Event[]           @relation("EventCreator")
+  myPosts         Post[]
   name            String
   password        String?
   phoneNumber     String?
   phoneVerified   Boolean           @default(false)
   points          Int               @default(0)
   pointsHistory   PointsHistory[]
-  posts           Post[]
-  username        String?           @unique
   userArticle     UserArticle[]
-  evenParticipant EvenParticipant[]
-  likes           Like[]
+  username        String?           @unique
+  locations       Location[]
 }
 
 model Badge {
@@ -52,31 +53,34 @@ model BadgeAssignment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   awardedAt DateTime @default(now())
   badge     Badge    @relation(fields: [badgeId], references: [id])
-  badgeId   String   @db.ObjectId
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @db.ObjectId
+
+  badgeId String @db.ObjectId
+  userId  String @db.ObjectId
 }
 
 model Post {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  anonymous    Boolean       @default(false)
   author       User?         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId     String?       @db.ObjectId
+  category     String?
   comments     Comment[]
-  content      String
-  title        String
-  category     String
-  condition    String
-  tags         String[]
-  pickupDate   DateTime?
-  location     Location?     @relation(fields: [locationId], references: [id])
-  locationId   String?       @db.ObjectId
-  userArticles UserArticle[]
+  condition    String?
+  description  String
   event        Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId      String?       @db.ObjectId
   images       String[] // S3/GCS URLs or cloud storage links
   likes        Like[]
+  location     Location?     @relation(fields: [locationId], references: [id])
+  pickupDate   DateTime?
+  tags         String[]
+  title        String
+  userArticles UserArticle[]
+
+  authorId   String? @db.ObjectId
+  eventId    String? @db.ObjectId
+  locationId String? @db.ObjectId
 }
 
 model Like {
@@ -94,37 +98,40 @@ model Comment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
   author    User?    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String?  @db.ObjectId
   content   String
   post      Post     @relation(fields: [postId], references: [id])
-  postId    String   @db.ObjectId
+
+  authorId String? @db.ObjectId
+  postId   String  @db.ObjectId
 }
 
 model Event {
-  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  creator             User             @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  title               String
-  imageUrl            String[]
-  description         String?
-  startTime           DateTime
-  endTime             DateTime?
-  location            Location         @relation(fields: [locationId], references: [id])
-  participants        EvenParticipant?
-  post                Post[]
-  eventParticipantsId String?          @unique @db.ObjectId
-  creatorId           String           @db.ObjectId
-  locationId          String           @db.ObjectId
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  creator      User             @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  description  String?
+  endTime      DateTime?
+  imageUrl     String[]
+  location     Location         @relation(fields: [locationId], references: [id])
+  participants EvenParticipant?
+  posts        Post[]
+  startTime    DateTime
+  title        String
+
+  eventParticipantsId String? @unique @db.ObjectId
+  creatorId           String  @db.ObjectId
+  locationId          String  @db.ObjectId
 }
 
 model EvenParticipant {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
   event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String   @unique @db.ObjectId
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @db.ObjectId
+
+  eventId String @unique @db.ObjectId
+  userId  String @db.ObjectId
 
   @@unique([eventId, userId])
 }
@@ -132,28 +139,32 @@ model EvenParticipant {
 model Location {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   createdAt      DateTime     @default(now())
-  address        String
-  addressLine2   String?
+  createdBy      User?        @relation(fields: [userId], references: [id])
   additionalInfo String?
-  city           String
-  country        String
-  postalCode     String
-  type           LocationType
-  events         Event[]
-  posts          Post[]
+  addressLine2   String?
+  city           String?
   coordinates    Float[]
+  country        String
+  events         Event[]
   googlePlaceId  String?      @unique
+  postalCode     String?
+  posts          Post[]
+  street         String
+  type           LocationType
+
+  userId String? @db.ObjectId
 }
 
 model UserArticle {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
   description String?
   imageUrl    String[]
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
   post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId      String?  @db.ObjectId
-  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId String? @db.ObjectId
+  userId String  @db.ObjectId
 }
 
 enum LocationType {
@@ -166,6 +177,7 @@ enum LocationType {
   PICKUP_LOCATION
   RECYCLING_CENTER
   USER_CHECKIN
+  USER_LOCATION
   WAREHOUSE
 }
 
@@ -175,5 +187,6 @@ model PointsHistory {
   amount    Int
   reason    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @db.ObjectId
+
+  userId String @db.ObjectId
 }

@@ -6,6 +6,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import { LocationService } from '~/location/location.service';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
@@ -13,21 +15,20 @@ import { Event } from './entities/event.entity';
 
 @Injectable()
 export class EventService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly locationService: LocationService,
+  ) {}
 
-  async create(createEventInput: CreateEventInput, userId: string | undefined): Promise<Event> {
-    if (!userId) {
+  async create(createEventInput: CreateEventInput, creatorId?: string): Promise<Event> {
+    if (!creatorId) {
       throw new UnauthorizedException('User must be authenticated to create an event');
     }
 
-    // Verify that the location exists
-    const location = await this.prisma.location.findUnique({
-      where: { id: createEventInput.locationId },
-    });
-
-    if (!location) {
-      throw new NotFoundException(`Location with ID ${createEventInput.locationId} not found`);
-    }
+    const locationId = await this.locationService.verifyOrCreate(
+      createEventInput.locationId,
+      createEventInput.location,
+    );
 
     // Validate dates
     if (createEventInput.endTime && createEventInput.startTime > createEventInput.endTime) {
@@ -41,13 +42,13 @@ export class EventService {
         description: createEventInput.description,
         startTime: createEventInput.startTime,
         endTime: createEventInput.endTime,
-        locationId: createEventInput.locationId,
-        creatorId: userId,
+        creatorId,
+        locationId,
       },
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
     });
@@ -60,7 +61,7 @@ export class EventService {
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
       orderBy: {
@@ -77,7 +78,7 @@ export class EventService {
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
     });
@@ -95,7 +96,7 @@ export class EventService {
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
       orderBy: {
@@ -117,7 +118,7 @@ export class EventService {
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
       orderBy: {
@@ -183,7 +184,7 @@ export class EventService {
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
     });
@@ -214,7 +215,7 @@ export class EventService {
       include: {
         creator: true,
         location: true,
-        post: true,
+        posts: true,
         participants: true,
       },
     });

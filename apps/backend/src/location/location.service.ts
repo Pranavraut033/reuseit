@@ -9,8 +9,13 @@ import { UpdateLocationInput } from './dto/update-location.input';
 export class LocationService {
   constructor(private prismaService: PrismaService) {}
 
-  create(data: CreateLocationInput) {
-    return this.prismaService.location.create({ data });
+  create(data: CreateLocationInput, userId?: string) {
+    return this.prismaService.location.create({
+      data: {
+        ...data,
+        userId,
+      },
+    });
   }
 
   findAll() {
@@ -47,5 +52,39 @@ export class LocationService {
         },
       ],
     });
+  }
+
+  async verifyOrCreate(
+    id: string | undefined,
+    createLocationInput: CreateLocationInput | undefined,
+    optional: true,
+  ): Promise<string | undefined>;
+
+  async verifyOrCreate(
+    id: string | undefined,
+    createLocationInput: CreateLocationInput | undefined,
+    optional?: false,
+  ): Promise<string>;
+
+  async verifyOrCreate(
+    id: string | undefined,
+    createLocationInput: CreateLocationInput | undefined,
+    optional: boolean = false,
+  ): Promise<string | undefined> {
+    if (id) {
+      await this.prismaService.location.findFirstOrThrow({ where: { id } });
+      return id;
+    }
+
+    if (createLocationInput) {
+      const location = await this.create(createLocationInput);
+      return location.id;
+    }
+
+    if (optional) {
+      return undefined;
+    }
+
+    throw new Error('Either locationId or location data must be provided');
   }
 }

@@ -1,4 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { User } from '@prisma/client';
+
+import { CurrentUser } from '~/decorators/CurrentUser';
 
 import { CreateLocationInput } from './dto/create-location.input';
 import { UpdateLocationInput } from './dto/update-location.input';
@@ -30,8 +33,11 @@ export class LocationResolver {
   }
 
   @Mutation(() => Location)
-  createLocation(@Args('createLocationInput') createLocationInput: CreateLocationInput) {
-    return this.locationService.create(createLocationInput);
+  createLocation(
+    @Args('createLocationInput') createLocationInput: CreateLocationInput,
+    @CurrentUser() user?: User,
+  ) {
+    return this.locationService.create(createLocationInput, user?.id);
   }
 
   @Mutation(() => Location)
