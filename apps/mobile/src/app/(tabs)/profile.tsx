@@ -42,7 +42,7 @@ export default function Home() {
       <View className="mb-6 overflow-hidden rounded-xl bg-white shadow-sm">
         <Pressable
           className="flex-row items-center border-b border-gray-100 px-5 py-4 active:bg-gray-50"
-          onPress={() => router.push('/my-posts')}
+          onPress={() => router.push('/posts')}
           accessible={true}
           accessibilityLabel="View My Posts"
           accessibilityRole="button"

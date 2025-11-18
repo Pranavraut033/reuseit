@@ -1,4 +1,3 @@
-import { Portal } from '@rn-primitives/portal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Toast } from 'toastify-react-native';
@@ -35,8 +34,7 @@ function SignInWithPhone() {
 
   const onSubmit = useCallback(async () => {
     const { phoneNumber, country } = getValues();
-    if (!phoneNumber || !country)
-      return console.log('no phone number or country', { phoneNumber, country });
+    if (!phoneNumber || !country) return Toast.error('Please enter a valid phone number', 'bottom');
 
     const full = country.dial_code + phoneNumber;
     showLoading();
@@ -48,14 +46,14 @@ function SignInWithPhone() {
 
   useEffect(() => {
     if (!error) return;
-    const message = (error as any)?.message;
+    const message = (error as any)?.message as string;
 
     Toast.error(message, 'bottom');
   }, [error]);
 
   const onCodeSubmit = useCallback(() => {
     const { code } = getValues();
-    if (!code) return console.log('no code');
+    if (!code) return Toast.error('Please enter the verification code', 'bottom');
 
     showLoading();
     verifyCode(code, () => {
@@ -84,7 +82,8 @@ function SignInWithPhone() {
               value: /^\d{9,14}$/,
               message: 'Please enter a valid phone number',
             },
-          }}>
+          }}
+        >
           {({ onChange, onBlur, value }) => (
             <PhoneInput
               value={value}
@@ -102,19 +101,17 @@ function SignInWithPhone() {
           onPress={handleSubmit(onSubmit)}
         />
       </FormProvider>
-      <Portal name="root">
-        <FormProvider {...methods}>
-          <CodeModal
-            visible={codeModalVisible}
-            onSubmit={handleSubmit(onCodeSubmit)}
-            onResend={onResend}
-            onClose={() => {
-              setCodeModalVisible(false);
-              setValue('code', '');
-            }}
-          />
-        </FormProvider>
-      </Portal>
+      <FormProvider {...methods}>
+        <CodeModal
+          visible={codeModalVisible}
+          onSubmit={handleSubmit(onCodeSubmit)}
+          onResend={onResend}
+          onClose={() => {
+            setCodeModalVisible(false);
+            setValue('code', '');
+          }}
+        />
+      </FormProvider>
     </>
   );
 }

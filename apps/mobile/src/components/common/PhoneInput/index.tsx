@@ -1,4 +1,3 @@
-import { Portal } from '@rn-primitives/portal';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as RNLocalize from 'react-native-localize';
@@ -44,7 +43,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
       onCountrySelect?.(c);
       setShowSelector(false);
     },
-    [onCountrySelect]
+    [onCountrySelect],
   );
 
   const handlePhoneChange = useCallback(
@@ -52,7 +51,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
       onChange?.(text);
       onCountrySelect?.(selectedCountry);
     },
-    [onChange, onCountrySelect, selectedCountry]
+    [onChange, onCountrySelect, selectedCountry],
   );
 
   return (
@@ -61,7 +60,8 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         <View className="flex flex-row items-center rounded-lg border border-gray-300 focus-within:border-primary">
           <TouchableOpacity
             className="border-r border-gray-300 px-4 py-2"
-            onPress={() => setShowSelector(true)}>
+            onPress={() => setShowSelector(true)}
+          >
             <Text className="text-gray-700">{selectedCountry.dial_code}</Text>
           </TouchableOpacity>
           <TextInput
@@ -78,17 +78,14 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         </View>
       </View>
 
-      <Portal name="countrySelector">
-        <CountrySelector
-          visible={showSelector}
-          currentCountryCode={selectedCountry.code}
-          onSelect={handleCountrySelect}
-          onClose={() => setShowSelector(false)}
-        />
-      </Portal>
+      <CountrySelector
+        visible={showSelector}
+        currentCountryCode={selectedCountry.code}
+        onSelect={handleCountrySelect}
+        onClose={() => setShowSelector(false)}
+      />
     </>
   );
 };
-
 
 export default PhoneInput;

@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 
-const useMounted = (callback: (mounted: boolean) => void) => {
+const useMounted = (callback?: (mounted: boolean) => void) => {
   const mounted = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
-    callback(mounted.current);
+    callback?.(mounted.current);
     return () => {
       mounted.current = false;
     };

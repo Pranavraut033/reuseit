@@ -3,7 +3,7 @@ import { BlurView } from 'expo-blur';
 import { Tabs, usePathname } from 'expo-router';
 import { MotiView } from 'moti';
 import { ComponentProps, memo, useMemo } from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import MainFabButton from '~/components/MainFabButton';
@@ -45,11 +45,9 @@ const AnimatedTabIcon = memo(function AnimatedTabIcon({
 }) {
   const animate = focused ? { translateY: -6 } : { translateY: 0 };
   return (
-    <TouchableOpacity activeOpacity={0.7}>
-      <MotiView animate={animate} style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name={iconName} solid color={color} size={18} />
-      </MotiView>
-    </TouchableOpacity>
+    <MotiView animate={animate} style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name={iconName} solid color={color} size={18} />
+    </MotiView>
   );
 });
 

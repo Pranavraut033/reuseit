@@ -8,7 +8,7 @@ import Container from '~/components/common/Container';
 import { FabButton } from '~/components/common/FabButton';
 import PostList from '~/components/post/PostList';
 import { useAuth } from '~/context/AuthContext';
-import { POST_FIELDS } from '~/gql/posts/getPosts';
+import { POST_FIELDS } from '~/gql/fragments';
 import { GET_USER_POSTS } from '~/gql/posts/getUserPosts';
 
 export default function MyPosts() {

@@ -1,14 +1,14 @@
-import { AntDesign } from "@expo/vector-icons";
-import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { AntDesign } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { useMemo, useRef, useState } from 'react';
+import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import useAppConfig from "~/hooks/useAppConfig";
+import useAppConfig from '~/hooks/useAppConfig';
 import countries from '~/json/countries.json';
-import cn from "~/utils/cn";
+import cn from '~/utils/cn';
 
-import { Country } from ".";
+import { Country } from '.';
 
 type CountrySelectorProps = {
   visible: boolean;
@@ -25,7 +25,12 @@ const getFlagEmoji = (countryCode: string) => {
     .join('');
 };
 
-const CountrySelector: React.FC<CountrySelectorProps> = ({ visible, onSelect, onClose, currentCountryCode }) => {
+const CountrySelector: React.FC<CountrySelectorProps> = ({
+  visible,
+  onSelect,
+  onClose,
+  currentCountryCode,
+}) => {
   const sheetRef = useRef<BottomSheet>(null);
   const [searchText, setSearchText] = useState('');
 
@@ -33,43 +38,44 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({ visible, onSelect, on
     const search = searchText.trim().toLowerCase();
     return search
       ? countries.filter(
-        (c) => c.name.toLowerCase().includes(search) || c.dial_code.toLowerCase().includes(search)
-      )
+          (c) =>
+            c.name.toLowerCase().includes(search) || c.dial_code.toLowerCase().includes(search),
+        )
       : countries;
   }, [searchText]);
 
-  useEffect(() => {
-    if (visible) sheetRef.current?.expand();
-    else {
-      setSearchText('');
-      sheetRef.current?.close();
-    }
-  }, [visible]);
   const { primaryColor } = useAppConfig();
 
   return (
-    <Modal transparent visible={visible} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="fade" transparent>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <BottomSheet
           ref={sheetRef}
           snapPoints={['40%', '70%', '100%']}
           enableDynamicSizing={false}
-          backgroundStyle={{ backgroundColor: '#ffffff', borderTopLeftRadius: 20, borderTopRightRadius: 20 }}
+          backgroundStyle={{
+            backgroundColor: '#ffffff',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+          }}
+          enablePanDownToClose
           handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40, height: 4 }}
           backdropComponent={({ style }) => (
             <TouchableOpacity
-              style={[style, { backgroundColor: 'rgba(0,0,0,0.6)' }]}
+              style={[style, { backgroundColor: 'rgba(0,0,0,0.4)' }]}
               activeOpacity={1}
               onPress={onClose}
             />
           )}
-          onChange={() => { }}>
+          onClose={onClose}
+        >
           <View className="flex-1 bg-white">
             <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200">
               <Text className="text-lg font-semibold text-gray-900">Select Country</Text>
               <TouchableOpacity
                 className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
-                onPress={onClose}>
+                onPress={onClose}
+              >
                 <Text className="text-gray-600 text-lg">×</Text>
               </TouchableOpacity>
             </View>
@@ -92,20 +98,22 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({ visible, onSelect, on
               showsVerticalScrollIndicator={false}
               renderItem={({ item }: { item: Country }) => (
                 <TouchableOpacity
-                  className={cn("flex-row items-center px-4 py-3 border-b border-gray-100 active:bg-gray-50", {
-                    'bg-black/5': item.code === currentCountryCode,
-                  })}
-                  onPress={() => onSelect(item)}>
+                  className={cn(
+                    'flex-row items-center px-4 py-3 border-b border-gray-100 active:bg-gray-50',
+                    {
+                      'bg-black/5': item.code === currentCountryCode,
+                    },
+                  )}
+                  onPress={() => onSelect(item)}
+                >
                   <Text className="text-2xl mr-3">{getFlagEmoji(item.code)}</Text>
                   <View className="flex-1">
                     <Text className="text-gray-900 font-medium">{item.name}</Text>
                     <Text className="text-gray-500 text-sm">{item.dial_code}</Text>
                   </View>
-                  {
-                    item.code === currentCountryCode && (
-                      <AntDesign name="check" size={16} color={primaryColor} />
-                    )
-                  }
+                  {item.code === currentCountryCode && (
+                    <AntDesign name="check" size={16} color={primaryColor} />
+                  )}
                 </TouchableOpacity>
               )}
             />
@@ -115,6 +123,5 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({ visible, onSelect, on
     </Modal>
   );
 };
-
 
 export default CountrySelector;

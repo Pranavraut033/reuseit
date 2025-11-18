@@ -1,10 +1,10 @@
 import { FontAwesome6 as Icon } from '@expo/vector-icons';
-import clsx from "clsx";
-import { Href, usePathname, useRouter } from "expo-router";
-import { memo } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import clsx from 'clsx';
+import { Href, usePathname, useRouter } from 'expo-router';
+import { memo } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { FabButton } from "./common/FabButton";
+import { FabButton } from './common/FabButton';
 
 type FabOptionType = {
   title: string;
@@ -12,21 +12,21 @@ type FabOptionType = {
   iconName: keyof typeof Icon.glyphMap;
   route: Href;
   routes?: Href[];
-}
+};
 const CameraOptions: FabOptionType = {
   title: 'Scan Item',
   accessibilityLabel: 'Scan item to identify recyclable materials',
-    iconName: 'camera',
+  iconName: 'camera',
   route: '/identify',
-}
+};
 
 const CreatePostOptions: FabOptionType = {
   title: 'Create Post',
   accessibilityLabel: 'Create a new post',
   iconName: 'plus',
   route: '/posts/create',
-  routes: ['/posts']
-}
+  routes: ['/posts'],
+};
 
 const MainFabButton = memo(function MainFabButton() {
   const router = useRouter();
@@ -38,10 +38,8 @@ const MainFabButton = memo(function MainFabButton() {
 
   return (
     <FabButton
-      className={clsx(
-        'absolute bottom-4 right-4 z-[30] shadow shadow-primary'
-      )}
-      size="regular"
+      className={clsx('absolute bottom-4 right-4 z-[30] shadow shadow-primary')}
+      size="large"
       style={{
         bottom: bottom + 17,
         elevation: 3,

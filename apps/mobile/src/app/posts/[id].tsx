@@ -17,8 +17,9 @@ import {
 import { getFragmentData } from '~/__generated__/fragment-masking';
 import Container from '~/components/common/Container';
 import { useAuth } from '~/context/AuthContext';
-import { GET_POST_BY_ID, POST_FIELDS } from '~/gql/posts/getPosts';
+import { POST_FIELDS } from '~/gql/fragments';
 import { CREATE_COMMENT, GET_COMMENTS_BY_POST } from '~/gql/posts/postMutations';
+import { GET_POST_BY_ID } from '~/gql/posts/posts';
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -130,7 +131,7 @@ export default function PostDetail() {
               </View>
             )}
 
-            <Text className="mb-4 text-gray-800 text-base leading-6">{post.content}</Text>
+            <Text className="mb-4 text-gray-800 text-base leading-6">{post.description}</Text>
 
             {post.images && post.images.length > 0 && (
               <View className="mb-4 space-y-2">

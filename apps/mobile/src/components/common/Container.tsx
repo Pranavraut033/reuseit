@@ -17,7 +17,7 @@ type ContainerProps = {
   paddingForTabs?: boolean;
 };
 
-const PATH_WITH_TABS = ['/', 'explore', '/rewards', '/scan'];
+const PATH_WITH_TABS = ['/', '/explore', '/rewards', '/scan', '/profile'];
 
 const Container: React.FC<ContainerProps> = ({ children, noPadding, paddingForTabs }) => {
   const pathname = usePathname();

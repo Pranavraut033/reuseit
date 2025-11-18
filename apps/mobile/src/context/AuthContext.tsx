@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client/react';
 import {
   FirebaseAuthTypes,
   getAuth,
+  getIdToken,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
@@ -92,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleUserSignIn = useCallback(
     async (user: FirebaseAuthTypes.User) => {
-      const idToken = await user.getIdToken();
+      const idToken = await getIdToken(user);
       return serverSignIn({
         variables: { data: { idToken } },
       })
