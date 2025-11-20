@@ -5,7 +5,6 @@ import { ApolloProvider } from '@apollo/client/react';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, usePathname } from 'expo-router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ToastManager from 'toastify-react-native';
 
@@ -25,22 +24,20 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ApolloProvider client={apolloClient}>
-          <AuthProvider>
-            <QueryClientProvider client={queryClient}>
-              <AppProvider>
-                <SplashScreenController />
-                <App />
-                <PortalHost />
-                <ToastManager />
-              </AppProvider>
-            </QueryClientProvider>
-          </AuthProvider>
-        </ApolloProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <ApolloProvider client={apolloClient}>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <AppProvider>
+              <SplashScreenController />
+              <App />
+              <PortalHost />
+              <ToastManager />
+            </AppProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      </ApolloProvider>
+    </SafeAreaProvider>
   );
 }
 

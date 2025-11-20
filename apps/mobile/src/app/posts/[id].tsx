@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 
 import { getFragmentData } from '~/__generated__/fragment-masking';
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { useAuth } from '~/context/AuthContext';
 import { POST_FIELDS } from '~/gql/fragments';
 import { CREATE_COMMENT, GET_COMMENTS_BY_POST } from '~/gql/posts/postMutations';
@@ -66,29 +66,29 @@ export default function PostDetail() {
 
   if (postsLoading || !post) {
     return (
-      <Container>
+      <ScreenContainer>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="mt-4 text-gray-600">Loading post...</Text>
         </View>
-      </Container>
+      </ScreenContainer>
     );
   }
 
   if (!post) {
     return (
-      <Container>
+      <ScreenContainer>
         <View className="flex-1 items-center justify-center">
           <Text className="mt-4 text-gray-600">Post not found.</Text>
         </View>
-      </Container>
+      </ScreenContainer>
     );
   }
 
   const comments = commentsData?.commentsByPost || [];
 
   return (
-    <Container>
+    <ScreenContainer>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -229,6 +229,6 @@ export default function PostDetail() {
           </View>
         )}
       </KeyboardAvoidingView>
-    </Container>
+    </ScreenContainer>
   );
 }

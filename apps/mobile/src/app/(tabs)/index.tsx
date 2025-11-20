@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { useAuth } from '~/context/AuthContext';
 import useAppConfig from '~/hooks/useAppConfig';
 
@@ -56,7 +56,7 @@ const FeedsScreen = () => {
   ];
 
   return (
-    <Container paddingForTabs>
+    <ScreenContainer>
       {/* Modern Header */}
       <LinearGradient
         colors={['#3B82F6', '#8B5CF6', '#EC4899']}
@@ -181,7 +181,7 @@ const FeedsScreen = () => {
           ))}
         </View>
       </View>
-    </Container>
+    </ScreenContainer>
   );
 };
 

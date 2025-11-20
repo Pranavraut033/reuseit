@@ -6,7 +6,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import SignInWithApple from '~/components/Auth/SignInWithApple';
 import SignInWithGoogle from '~/components/Auth/SignInWithGoogle';
 import SignInWithPhone from '~/components/Auth/SignInWithPhone';
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { useAuth } from '~/context/AuthContext';
 
 export default function Login() {
@@ -16,7 +16,7 @@ export default function Login() {
   if (user && pathname === '/login') return <Redirect href="/" />;
 
   return (
-    <Container>
+    <ScreenContainer>
       <ScrollView>
         <View>
           <View className="flex-1"></View>
@@ -54,6 +54,6 @@ export default function Login() {
       </ScrollView>
 
       <PortalHost name="root" />
-    </Container>
+    </ScreenContainer>
   );
 }

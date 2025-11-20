@@ -1,30 +1,32 @@
 import { useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
+import { getFragmentData } from '~/__generated__';
 import { GetPostsQuery } from '~/__generated__/graphql';
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import PostList from '~/components/post/PostList';
-import { GET_POSTS } from '~/gql/posts/getPosts';
+import { POST_FIELDS } from '~/gql/fragments';
+import { GET_POSTS } from '~/gql/posts/posts';
 
 const FeedsScreen = () => {
   const { data, loading, error, refetch } = useQuery<GetPostsQuery>(GET_POSTS);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
+  const onRefresh = useCallback(async () => {
     await refetch();
-    setRefreshing(false);
-  };
+  }, [refetch]);
+
+  const posts = getFragmentData(POST_FIELDS, data?.posts);
+
   return (
-    <Container>
+    <ScreenContainer>
       {/* Latest Posts */}
       <View className="mb-4 flex-row items-center justify-between">
         <Text className="text-xl font-bold text-gray-800">Latest Posts</Text>
       </View>
 
-      {loading && (
+      {!posts && loading && (
         <View className="items-center justify-center py-12">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="mt-4 text-gray-600">Loading posts...</Text>
@@ -43,14 +45,22 @@ const FeedsScreen = () => {
         </View>
       )}
 
-      {data?.posts && (
+      {posts?.length ? (
         <PostList
-          posts={data.posts}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          posts={posts}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}
           onSwipeRefresh={() => refetch()}
         />
+      ) : (
+        !loading &&
+        !error && (
+          <View className="items-center justify-center py-12">
+            <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
+            <Text className="mt-4 text-gray-600">No posts available.</Text>
+          </View>
+        )
       )}
-    </Container>
+    </ScreenContainer>
   );
 };
 

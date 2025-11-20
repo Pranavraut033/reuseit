@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client/react';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView, Text, View } from 'react-native';
 
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { useAuth } from '~/context/AuthContext';
 import { GET_USER_POINTS } from '~/gql/points/getUserPoints';
 
@@ -17,7 +17,7 @@ const PointsScreen = () => {
   const pointsHistory = data?.user?.pointsHistory ?? [];
 
   return (
-    <Container paddingForTabs>
+    <ScreenContainer>
       {/* Header Card with User Info */}
       <View className="mb-6 mt-4 rounded-2xl bg-white p-6 shadow-md">
         <View className="items-center">
@@ -114,7 +114,7 @@ const PointsScreen = () => {
         {/* Bottom padding for scroll */}
         <View className="h-6" />
       </ScrollView>
-    </Container>
+    </ScreenContainer>
   );
 };
 

@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { getFragmentData } from '~/__generated__';
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { FabButton } from '~/components/common/FabButton';
 import PostList from '~/components/post/PostList';
 import { useAuth } from '~/context/AuthContext';
@@ -23,7 +23,7 @@ export default function MyPosts() {
   const posts = getFragmentData(POST_FIELDS, data?.postsByAuthor ?? []);
 
   return (
-    <Container>
+    <ScreenContainer>
       {/* Header */}
       <View className="mb-6 mt-4 flex-row items-center justify-between">
         <Pressable
@@ -114,6 +114,6 @@ export default function MyPosts() {
         accessibilityLabel="Create new post"
         accessibilityRole="button"
       />
-    </Container>
+    </ScreenContainer>
   );
 }

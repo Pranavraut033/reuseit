@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 import { Button } from '~/components/common/Button';
-import Container from '~/components/common/Container';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { useAuth } from '~/context/AuthContext';
 
 export default function Home() {
@@ -11,19 +11,19 @@ export default function Home() {
 
   if (!user) {
     return (
-      <Container>
+      <ScreenContainer>
         <View className="flex-1 items-center justify-center rounded-xl bg-white p-8 shadow-sm">
           <Ionicons name="person-circle-outline" size={80} color="#9CA3AF" />
           <Text className="mt-4 text-center text-lg font-semibold text-gray-700">
             Please log in to view your profile.
           </Text>
         </View>
-      </Container>
+      </ScreenContainer>
     );
   }
 
   return (
-    <Container paddingForTabs>
+    <ScreenContainer>
       {/* Profile Header Card */}
       <View className="mb-6 mt-4 items-center rounded-2xl bg-white p-6 shadow-md">
         <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-blue-100">
@@ -121,6 +121,6 @@ export default function Home() {
           Made with <Text style={{ color: '#e11d48' }}>♥</Text> in Germany
         </Text>
       </View>
-    </Container>
+    </ScreenContainer>
   );
 }
