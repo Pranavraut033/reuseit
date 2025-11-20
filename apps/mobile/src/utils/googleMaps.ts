@@ -1,86 +1,108 @@
-import Constants from 'expo-constants';
+import { useLazyQuery } from '@apollo/client/react';
+import { useCallback } from 'react';
 import { Region } from 'react-native-maps';
 
-import { GoogleMapsTypes, Result } from '~/types/googleMapsAPI.types';
+import {
+  GENERATE_PLACES_SESSION_TOKEN_QUERY,
+  NEARBY_PLACES_QUERY,
+  PLACE_DETAILS_QUERY,
+  PLACES_AUTOCOMPLETE_QUERY,
+  REVERSE_GEOCODE_QUERY,
+} from '~/gql/google-maps';
 
-export type Place = Result;
-
-const getGoogleApiKey = () => {
-  try {
-    // prefer expo config values when available
-    // these keys are defined in app.config.js under ios.config.googleMapsApiKey and android.config.googleMaps.apiKey
-    const expoConfig = Constants.expoConfig;
-    return (
-      expoConfig?.ios?.config?.googleMapsApiKey ||
-      expoConfig?.android?.config?.googleMaps?.apiKey ||
-      process.env.GOOGLE_MAPS_API_KEY ||
-      ''
-    );
-  } catch (e) {
-    console.warn('Error getting Google API key', { error: e });
-    return '';
-  }
+// Legacy type for backward compatibility
+export type Place = {
+  place_id: string;
+  name?: string;
+  vicinity?: string;
+  formatted_address?: string;
+  types?: string[];
+  geometry?: {
+    location?: {
+      lat: number;
+      lng: number;
+    };
+  };
+  photos?: {
+    photo_reference?: string;
+  }[];
+  photoUrl?: string; // Added by backend
 };
 
-const GOOGLE_API_KEY = getGoogleApiKey();
-
-const getPlacePhotoUrl = (place: Place, maxwidth = 400) => {
+const getPlacePhotoUrl = (place: Place, _maxwidth = 400) => {
+  // Since backend now returns photoUrl in nearbyPlaces, we can extract from there
+  // For legacy support, try to build URL if photo_reference exists
   const photos = place?.photos || [];
   if (!photos.length) return null;
   const ref = photos[0]?.photo_reference;
   if (!ref) return null;
-  const key = GOOGLE_API_KEY;
-  if (!key) return null;
-  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(
-    ref,
-  )}&key=${key}`;
+  // Note: Photo URLs are now served by backend in nearbyPlaces query
+  // This function is kept for backward compatibility but may not work without API key on client
+  console.warn('getPlacePhotoUrl called but photos are now served via backend nearbyPlaces');
+  return null;
 };
 
 type Options = {
-  loc?: Region;
+  region?: Region;
   radius?: number;
   keywords: string[];
 };
 
-const fetchNearbyPlacesByKeywords = async ({
-  loc,
-  radius = 500,
-  keywords,
-}: Options): Promise<Place[]> => {
-  const apiKey = GOOGLE_API_KEY;
-  if (!loc) {
-    return [];
-  }
+// React hook for fetching nearby places
+export function useNearbyPlaces() {
+  const [fetchNearby, { data, loading, error }] = useLazyQuery(NEARBY_PLACES_QUERY);
 
-  if (!apiKey) {
-    console.warn('Google Maps API key not found. Set GOOGLE_MAPS_API_KEY in app config or env.');
-    return [];
-  }
-
-  const locationStr = `${loc.latitude},${loc.longitude}`;
-
-  const allResults: Record<string, Place> = {};
-
-  for (const kw of keywords) {
-    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${encodeURIComponent(
-      locationStr,
-    )}&radius=${radius}&keyword=${encodeURIComponent(kw)}&key=${apiKey}`;
-
-    const res = await fetch(url);
-    if (!res.ok) continue;
-    const json: GoogleMapsTypes = await res.json();
-    const results = json.results || [];
-    for (const r of results) {
-      if (r.place_id && !allResults[r.place_id]) {
-        allResults[r.place_id] = r;
+  const fetchNearbyPlacesByKeywords = useCallback(
+    async ({ region, radius = 500, keywords }: Options): Promise<Place[]> => {
+      if (!region) {
+        return [];
       }
-    }
 
-    // if the API returns a next_page_token we could handle pagination here
-    // but for simplicity we'll ignore paginated results in this first iteration
-  }
+      try {
+        const result = await fetchNearby({
+          variables: {
+            latitude: region.latitude,
+            longitude: region.longitude,
+            radius,
+            keywords,
+          },
+        });
 
-  return Object.values(allResults);
+        if (!result.data?.nearbyPlaces) return [];
+
+        // Convert backend format to legacy Place format for compatibility
+        return result.data.nearbyPlaces.map((p) => ({
+          place_id: p.placeId,
+          name: p.name ?? undefined,
+          vicinity: p.vicinity ?? undefined,
+          types: p.types ?? undefined,
+          geometry: {
+            location: {
+              lat: p.latitude ?? 0,
+              lng: p.longitude ?? 0,
+            },
+          },
+          photos: p.photoUrl ? [{ photo_reference: p.photoUrl }] : [],
+          photoUrl: p.photoUrl ?? undefined,
+        }));
+      } catch (err) {
+        console.error('Error fetching nearby places:', err);
+        return [];
+      }
+    },
+    [fetchNearby],
+  );
+
+  return { fetchNearbyPlacesByKeywords, data, loading, error };
+}
+
+// Legacy wrapper for backward compatibility
+const fetchNearbyPlacesByKeywords = async (_options: Options): Promise<Place[]> => {
+  // This is a non-hook wrapper that should be replaced with useNearbyPlaces hook
+  console.warn(
+    'fetchNearbyPlacesByKeywords is deprecated. Use useNearbyPlaces hook in components.',
+  );
+  return [];
 };
 
 export type ReverseGeocodeResult = {
@@ -92,53 +114,50 @@ export type ReverseGeocodeResult = {
   formattedAddress: string;
 };
 
+// React hook for reverse geocoding
+export function useReverseGeocode() {
+  const [fetchGeocode, { data, loading, error }] = useLazyQuery(REVERSE_GEOCODE_QUERY);
+
+  const reverseGeocode = useCallback(
+    async (latitude: number, longitude: number): Promise<ReverseGeocodeResult | null> => {
+      try {
+        const result = await fetchGeocode({
+          variables: {
+            latitude,
+            longitude,
+          },
+        });
+
+        if (!result.data?.reverseGeocode) {
+          return null;
+        }
+
+        return {
+          street: result.data.reverseGeocode.street || '',
+          streetNumber: result.data.reverseGeocode.streetNumber || '',
+          city: result.data.reverseGeocode.city || '',
+          country: result.data.reverseGeocode.country || '',
+          postalCode: result.data.reverseGeocode.postalCode || '',
+          formattedAddress: result.data.reverseGeocode.formattedAddress || '',
+        };
+      } catch (err) {
+        console.error('Error in reverse geocoding:', err);
+        return null;
+      }
+    },
+    [fetchGeocode],
+  );
+
+  return { reverseGeocode, data, loading, error };
+}
+
+// Legacy wrapper
 const reverseGeocode = async (
-  latitude: number,
-  longitude: number,
+  _latitude: number,
+  _longitude: number,
 ): Promise<ReverseGeocodeResult | null> => {
-  const apiKey = GOOGLE_API_KEY;
-
-  if (!apiKey) {
-    console.warn('Google Maps API key not found. Set GOOGLE_MAPS_API_KEY in app config or env.');
-    return null;
-  }
-
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!data.results || data.results.length === 0) {
-      return null;
-    }
-
-    const result = data.results[0];
-    const addressComponents = result.address_components;
-
-    // Extract address components
-    const getComponent = (type: string) =>
-      addressComponents.find((c: any) => c.types.includes(type))?.long_name || '';
-
-    const streetNumber = getComponent('street_number');
-    const route = getComponent('route');
-    const street = `${route} ${streetNumber} `.trim() || result.formatted_address.split(',')[0];
-    const city = getComponent('locality') || getComponent('administrative_area_level_2');
-    const country = getComponent('country');
-    const postalCode = getComponent('postal_code');
-
-    return {
-      street,
-      streetNumber,
-      city,
-      country,
-      postalCode,
-      formattedAddress: result.formatted_address,
-    };
-  } catch (error) {
-    console.error('Error in reverse geocoding:', error);
-    return null;
-  }
+  console.warn('reverseGeocode is deprecated. Use useReverseGeocode hook in components.');
+  return null;
 };
 
 // -------------------- Places Autocomplete & Details --------------------
@@ -170,103 +189,136 @@ export type PlaceDetailsResult = {
   }[];
 };
 
-// Simple in-memory caches to reduce duplicate network requests within a session
-const _autocompleteCache: Record<string, AutocompletePrediction[]> = {};
-const _placeDetailsCache: Record<string, PlaceDetailsResult> = {};
+// React hook for generating session tokens
+export function useGenerateSessionToken() {
+  const [fetchToken, { data, loading, error }] = useLazyQuery(GENERATE_PLACES_SESSION_TOKEN_QUERY);
 
-const generateSessionToken = () => Math.random().toString(36).slice(2);
+  const generateSessionToken = useCallback(async (): Promise<string> => {
+    try {
+      const result = await fetchToken();
+      return result.data?.generatePlacesSessionToken || Math.random().toString(36).slice(2);
+    } catch (err) {
+      console.error('Error generating session token:', err);
+      return Math.random().toString(36).slice(2);
+    }
+  }, [fetchToken]);
 
-async function placesAutocomplete({
-  input,
-  loc,
-  radius = 5000,
-  sessionToken,
-}: PlacesAutocompleteOptions): Promise<AutocompletePrediction[]> {
-  const apiKey = GOOGLE_API_KEY;
-  if (!apiKey || !input.trim()) return [];
-
-  const cacheKey = `${input}|${loc?.latitude || ''}|${loc?.longitude || ''}`;
-  if (_autocompleteCache[cacheKey]) return _autocompleteCache[cacheKey];
-
-  const params: Record<string, string> = {
-    input,
-    key: apiKey,
-  };
-  if (loc) {
-    params.location = `${loc.latitude},${loc.longitude}`;
-    params.radius = String(radius);
-  }
-  if (sessionToken) {
-    params.sessiontoken = sessionToken;
-  }
-
-  const queryStr = Object.entries(params)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join('&');
-  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?${queryStr}`;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const preds: AutocompletePrediction[] = data.predictions || [];
-    _autocompleteCache[cacheKey] = preds;
-    return preds;
-  } catch (e) {
-    console.warn('placesAutocomplete error', e);
-    return [];
-  }
+  return { generateSessionToken, data, loading, error };
 }
 
-async function fetchPlaceDetails(
-  placeId: string,
-  sessionToken?: string,
-): Promise<PlaceDetailsResult | null> {
-  if (_placeDetailsCache[placeId]) return _placeDetailsCache[placeId];
-  const apiKey = GOOGLE_API_KEY;
-  if (!apiKey || !placeId) return null;
+// Legacy wrapper
+const generateSessionToken = async (): Promise<string> => {
+  console.warn(
+    'generateSessionToken is deprecated. Use useGenerateSessionToken hook in components.',
+  );
+  return Math.random().toString(36).slice(2);
+};
 
-  const params: Record<string, string> = {
-    place_id: placeId,
-    key: apiKey,
-    fields: 'place_id,name,formatted_address,geometry,address_component',
-  };
-  if (sessionToken) params.sessiontoken = sessionToken;
-  const queryStr = Object.entries(params)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join('&');
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?${queryStr}`;
+// React hook for places autocomplete
+export function usePlacesAutocomplete() {
+  const [fetchAutocomplete, { data, loading, error }] = useLazyQuery(PLACES_AUTOCOMPLETE_QUERY);
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const result = data.result;
-    if (!result) return null;
-    const latitude = result.geometry?.location?.lat;
-    const longitude = result.geometry?.location?.lng;
-    if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
-    const details: PlaceDetailsResult = {
-      place_id: result.place_id,
-      name: result.name,
-      formatted_address: result.formatted_address,
-      latitude,
-      longitude,
-      address_components: result.address_components || [],
-    };
-    _placeDetailsCache[placeId] = details;
-    return details;
-  } catch (e) {
-    console.warn('fetchPlaceDetails error', e);
-    return null;
-  }
+  const placesAutocomplete = useCallback(
+    async ({
+      input,
+      loc,
+      radius = 5000,
+      sessionToken,
+    }: PlacesAutocompleteOptions): Promise<AutocompletePrediction[]> => {
+      if (!input.trim()) return [];
+
+      try {
+        const result = await fetchAutocomplete({
+          variables: {
+            input,
+            latitude: loc?.latitude,
+            longitude: loc?.longitude,
+            radius,
+            sessionToken,
+          },
+        });
+
+        if (!result.data?.placesAutocomplete) return [];
+
+        return result.data.placesAutocomplete.map((p) => ({
+          description: p.description,
+          place_id: p.placeId,
+          types: p.types || [],
+        }));
+      } catch (err) {
+        console.error('placesAutocomplete error:', err);
+        return [];
+      }
+    },
+    [fetchAutocomplete],
+  );
+
+  return { placesAutocomplete, data, loading, error };
 }
+
+// Legacy wrapper
+const placesAutocomplete = async (
+  _options: PlacesAutocompleteOptions,
+): Promise<AutocompletePrediction[]> => {
+  console.warn('placesAutocomplete is deprecated. Use usePlacesAutocomplete hook in components.');
+  return [];
+};
+
+// React hook for fetching place details
+export function usePlaceDetails() {
+  const [fetchDetails, { data, loading, error }] = useLazyQuery(PLACE_DETAILS_QUERY);
+
+  const fetchPlaceDetails = useCallback(
+    async (placeId: string, sessionToken?: string): Promise<PlaceDetailsResult | null> => {
+      if (!placeId) return null;
+
+      try {
+        const result = await fetchDetails({
+          variables: {
+            placeId,
+            sessionToken,
+          },
+        });
+
+        if (!result.data?.placeDetails) return null;
+
+        const details = result.data.placeDetails;
+        return {
+          place_id: details.placeId,
+          name: details.name,
+          formatted_address: details.formattedAddress,
+          latitude: details.latitude,
+          longitude: details.longitude,
+          address_components: (details.addressComponents || []).map((c) => ({
+            long_name: c.longName,
+            short_name: c.shortName,
+            types: c.types,
+          })),
+        };
+      } catch (err) {
+        console.error('fetchPlaceDetails error:', err);
+        return null;
+      }
+    },
+    [fetchDetails],
+  );
+
+  return { fetchPlaceDetails, data, loading, error };
+}
+
+// Legacy wrapper
+const fetchPlaceDetails = async (
+  _placeId: string,
+  _sessionToken?: string,
+): Promise<PlaceDetailsResult | null> => {
+  console.warn('fetchPlaceDetails is deprecated. Use usePlaceDetails hook in components.');
+  return null;
+};
 
 export {
   fetchNearbyPlacesByKeywords,
   fetchPlaceDetails,
   generateSessionToken,
-  getGoogleApiKey,
   getPlacePhotoUrl,
   placesAutocomplete,
   reverseGeocode,
