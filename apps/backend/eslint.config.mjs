@@ -29,6 +29,9 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.url.replace('file://', '').replace('/eslint.config.mjs', ''),
       },
     },
-  }
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+    },
+  },
   // rules are provided via the shared config (eslint.shared.json)
 );

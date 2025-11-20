@@ -160,6 +160,46 @@ type AuthResponse {
   token: String!
 }
 
+type NearbyPlace {
+  placeId: String!
+  name: String
+  vicinity: String
+  types: [String!]
+  latitude: Float
+  longitude: Float
+  photoUrl: String
+}
+
+type PlaceAutocompletePrediction {
+  description: String!
+  placeId: String!
+  types: [String!]
+}
+
+type AddressComponent {
+  longName: String!
+  shortName: String!
+  types: [String!]!
+}
+
+type PlaceDetails {
+  placeId: String!
+  name: String!
+  formattedAddress: String!
+  latitude: Float!
+  longitude: Float!
+  addressComponents: [AddressComponent!]!
+}
+
+type ReverseGeocodeResult {
+  street: String
+  streetNumber: String
+  city: String
+  country: String
+  postalCode: String
+  formattedAddress: String
+}
+
 type Query {
   me: User
   users: [User!]!
@@ -180,6 +220,11 @@ type Query {
   comments: [Comment!]!
   comment(id: String!): Comment!
   commentsByPost(postId: String!): [Comment!]!
+  placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
+  placeDetails(placeId: String!, sessionToken: String): PlaceDetails
+  nearbyPlaces(latitude: Float!, longitude: Float!, radius: Float, keywords: [String!]!): [NearbyPlace!]!
+  reverseGeocode(latitude: Float!, longitude: Float!): ReverseGeocodeResult
+  generatePlacesSessionToken: String!
 }
 
 type Mutation {

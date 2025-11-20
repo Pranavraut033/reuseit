@@ -26,6 +26,7 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
 - Modular NestJS structure (User, Post, Event, etc.)
 - Prisma schema auto-generation
 - E2E and unit testing
+- Google Maps integration (Places, Autocomplete, Reverse Geocoding) via backend GraphQL
 
 ---
 
@@ -62,6 +63,7 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
    ```
    DATABASE_URL=mongodb://localhost:27017/reuseit
    JWT_SECRET=your_jwt_secret
+  GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    ```
 
    Adjust `DATABASE_URL` as needed.
@@ -77,7 +79,7 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
   npx prisma generate
   ```
 
-- **MongoDB Replica Set:**  
+- **MongoDB Replica Set:**
   MongoDB must run as a replica set for Prisma transactions to work.
 
 - **Create 2dsphere index for geospatial queries:**
@@ -114,8 +116,23 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
 
 ## GraphQL Playground
 
-- Once running, access the GraphQL Playground at:  
+- Once running, access the GraphQL Playground at:
   `http://localhost:3000/graphql`
+
+  ### Google Maps Queries
+
+  The `GoogleMapsModule` provides cached Google Maps features so the mobile app no longer calls Google APIs directly:
+
+  | Query | Arguments | Description |
+  |-------|-----------|-------------|
+  | `placesAutocomplete` | `input` (String!), optional `latitude`, `longitude`, `radius`, `sessionToken` | Returns place predictions near optional location bias. |
+  | `placeDetails` | `placeId` (String!), optional `sessionToken` | Returns detailed place info (name, coordinates, address components). |
+  | `nearbyPlaces` | `latitude` (Float!), `longitude` (Float!), optional `radius`, `keywords` ([String!]!) | Aggregates nearby places matching any keyword (deduplicated). |
+  | `reverseGeocode` | `latitude` (Float!), `longitude` (Float!) | Converts coordinates to structured address. |
+  | `generatePlacesSessionToken` | — | Returns a random token for grouping billing sessions. |
+
+  Caching TTLs (approx): Autocomplete 60s, Place Details 300s, Nearby 120s, Reverse Geocode 600s.
+
 
 ---
 
@@ -173,10 +190,10 @@ Config tips:
 
 ## Troubleshooting
 
-- **MongoDB Transactions:**  
+- **MongoDB Transactions:**
   Ensure MongoDB is running as a replica set for Prisma transactions.
 
-- **Geo Index:**  
+- **Geo Index:**
   Run `node scripts/createGeoIndex.js` after setting up the database.
 
 ---

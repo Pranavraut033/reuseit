@@ -1,8 +1,12 @@
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import KeyvRedis from '@keyv/redis';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
+import { CacheableMemory } from 'cacheable';
+import { Keyv } from 'keyv';
 import { join } from 'path';
 
 import { AuthGuard } from '~/auth/auth.guard';
@@ -14,6 +18,7 @@ import { PrismaModule } from '~/prisma/prisma.module';
 import { UserModule } from '~/user/user.module';
 
 import { FirebaseModule } from './firebase/firebase.module';
+import { GoogleMapsModule } from './google-maps/google-maps.module';
 import { LocationModule } from './location/location.module';
 
 @Module({
@@ -35,6 +40,19 @@ import { LocationModule } from './location/location.module';
     PostModule,
     PrismaModule,
     UserModule,
+    GoogleMapsModule,
+    CacheModule.registerAsync({
+      useFactory: () => {
+        return {
+          stores: [
+            new Keyv({
+              store: new CacheableMemory({ ttl: 60000, lruSize: 5000 }),
+            }),
+            new KeyvRedis(process.env.REDIS_URL || 'redis://localhost:6379'),
+          ],
+        };
+      },
+    }),
   ],
   controllers: [],
   providers: [
