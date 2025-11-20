@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: reuseit-mongodb
+    restart: unless-stopped
+    ports:
+      - '${MONGO_PORT:-27017}:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-admin123}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-reuseit}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./mongo-keyfile:/data/keyfile:ro
+    entrypoint:
+      - bash
+      - -c
+      - |
+        chmod 400 /data/keyfile
+        chown 999:999 /data/keyfile
+        exec docker-entrypoint.sh $$@
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all', '--keyFile', '/data/keyfile']
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}) }" | mongosh -u ${MONGO_USERNAME:-admin} -p ${MONGO_PASSWORD:-admin123} --authenticationDatabase admin --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    networks:
+      - reuseit-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: reuseit-redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - reuseit-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  reuseit-network:
+    driver: bridge

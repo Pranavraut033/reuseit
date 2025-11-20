@@ -35,6 +35,7 @@ module.exports = {
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
       '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
