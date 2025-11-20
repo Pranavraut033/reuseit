@@ -11,6 +11,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import useMounted from '~/hooks/useMounted';
 import cn from '~/utils/cn';
 
 type FabButtonType = 'primary' | 'error' | 'neutral';
@@ -106,11 +107,13 @@ export const FabButton = forwardRef<View, FabButtonProps>(
       },
       [isFabVisible],
     );
+    const mounted = useMounted();
 
-    // Attach scroll listener if scrollRef and hideOnScrollDown are provided
     useEffect(() => {
+      if (!mounted.current) return;
+
       setScrollHandler?.(hideOnScrollDown ? handleScroll : undefined);
-    }, [setScrollHandler, hideOnScrollDown, handleScroll]);
+    }, [setScrollHandler, hideOnScrollDown, mounted, handleScroll]);
 
     const resolvedIconColor = useMemo(
       () => iconColor ?? (type === 'neutral' ? 'black' : 'white'),

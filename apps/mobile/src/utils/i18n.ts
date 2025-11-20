@@ -9,6 +9,26 @@ export const getCurrentLanguage = (): Language => {
 };
 
 const translations_en = {
+  explore: {
+    title: 'Explore Nearby',
+    subtitle: 'Discover local recycling centers and resources.',
+    loading: 'Loading nearby places...',
+    directions: 'Directions',
+    close: 'Close',
+    filterAll: 'All',
+    tooltipCurrentLocation: 'Go to Current Location',
+    categories: {
+      general: 'General',
+      glass: 'Glass',
+      paper: 'Paper',
+      plastic: 'Plastic',
+      clothes: 'Clothes',
+      electronics: 'Electronics',
+      batteries: 'Batteries',
+      metal: 'Metal',
+      bulkyWaste: 'Bulky Waste',
+    },
+  },
   postCreate: {
     addPhotos: 'Add Photos',
     anonymous: 'Anonymous',
@@ -122,6 +142,26 @@ type TranslationKey<T = TranslationObject> = {
 export const translations: Record<string, TranslationObject> = {
   en: translations_en,
   de: {
+    explore: {
+      title: 'In der Nähe erkunden',
+      subtitle: 'Entdecken Sie lokale Recyclingzentren und Ressourcen.',
+      loading: 'Lade Orte in deiner Nähe...',
+      directions: 'Route',
+      close: 'Schließen',
+      filterAll: 'Alle',
+      tooltipCurrentLocation: 'Zum aktuellen Standort gehen',
+      categories: {
+        general: 'Allgemein',
+        glass: 'Glas',
+        paper: 'Papier',
+        plastic: 'Plastik',
+        clothes: 'Kleidung',
+        electronics: 'Elektronik',
+        batteries: 'Batterien',
+        metal: 'Metall',
+        bulkyWaste: 'Sperrmüll',
+      },
+    },
     postCreate: {
       addPhotos: 'Fotos hinzufügen',
       anonymous: 'Anonym',

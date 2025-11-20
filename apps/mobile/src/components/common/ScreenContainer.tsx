@@ -36,6 +36,9 @@ type ScreenContainerProps = {
 
   /** Hide or style the StatusBar */
   statusBarStyle?: StatusBarStyle;
+
+  /** Additional className for styling */
+  className?: string;
 };
 
 export default function ScreenContainer({
@@ -46,12 +49,13 @@ export default function ScreenContainer({
   safeArea = true,
   padding = 16,
   style,
-  statusBarStyle = 'default',
+  statusBarStyle = 'dark-content',
 }: ScreenContainerProps) {
   const ContentWrapper = scroll ? ScrollView : View;
 
   const Base = (
     <ContentWrapper
+      className="flex-1"
       contentContainerStyle={scroll ? [{ padding }, style] : undefined}
       style={!scroll ? [{ padding }, style] : undefined}
       keyboardShouldPersistTaps="handled"

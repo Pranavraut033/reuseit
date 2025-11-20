@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { useNearbyPlaces } from '~/utils/googleMaps';
+import { useNearbyPlaces } from './useNearbyPlaces';
 
 function useFetchNearbyPlacesByKeywords(
   ...[{ region, radius, keywords }]: Parameters<
