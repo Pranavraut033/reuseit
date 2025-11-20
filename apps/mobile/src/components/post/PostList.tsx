@@ -1,10 +1,10 @@
 import React from 'react';
-import { FlatList, RefreshControlProps } from 'react-native';
+import { FlatList, RefreshControlProps, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { Post } from '~/gql/posts/getPosts';
+import { Post } from '~/gql/fragments';
 
-import PostItem from './PostItem';
+import { PostCard } from '.';
 
 interface PostListProps {
   posts: Post[];
@@ -12,12 +12,16 @@ interface PostListProps {
   onSwipeRefresh?: () => void;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts, refreshControl, onSwipeRefresh }) => (
+const PostList: React.FC<PostListProps> = ({ posts, refreshControl }) => (
   <GestureHandlerRootView>
     <FlatList
       data={posts}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <PostItem post={item} onSwipeRefresh={onSwipeRefresh} />}
+      renderItem={({ item }) => (
+        <View className="mb-4 mx-4">
+          <PostCard post={item} />
+        </View>
+      )}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 100 }}
       refreshControl={refreshControl}

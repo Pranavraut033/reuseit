@@ -58,7 +58,7 @@ export class Post {
   likeCount: number;
 
   @Field(() => Number)
-  commentsCount: number;
+  commentCount: number;
 
   @Field(() => Location, { nullable: true })
   location?: Location;

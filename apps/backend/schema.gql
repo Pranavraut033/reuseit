@@ -43,10 +43,9 @@ type Post {
   images: [String!]!
   likedByCurrentUser: Boolean
   likeCount: Float!
-  commentsCount: Float!
+  commentCount: Float!
   location: Location
   anonymous: Boolean!
-  commentCount: Float!
 }
 
 type Location {

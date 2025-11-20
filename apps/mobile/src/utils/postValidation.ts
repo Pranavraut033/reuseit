@@ -1,24 +1,19 @@
 import * as yup from 'yup';
 
+import { CreateLocationInput } from '~/__generated__/graphql';
+import { CreatePostInput } from '~/__generated__/types';
+import { Flatten } from '~/gql/utils';
+
 import { t } from './i18n';
 
-export interface PostCreateFormData {
-  title: string;
-      description?: string;
-  category: string;
-  condition: string;
-  tags: string[];
-  images: string[];
-  location: {
-    name?: string;
-    address?: string;
-    coordinates: [number, number];
-    googlePlaceId?: string;
-  } | null;
-  pickupDate: Date | null;
-}
+export type PostCreateFormData = Flatten<CreatePostInput> & {
+  pickupDate?: Date | null;
+  location?: Flatten<CreateLocationInput> | null;
+  anonymous: boolean;
+};
 
 export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object({
+  anonymous: yup.boolean().required().defined().default(false),
   title: yup
     .string()
     .required(t('postCreate.titleRequired'))
@@ -29,16 +24,15 @@ export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object
 
   description: yup
     .string()
-    .optional()
-    .max(1000, 'Description must be less than 1000 characters')
+    .required(t('postCreate.descriptionRequired'))
+    .max(1000, t('postCreate.descriptionMaxLength'))
     .trim(),
 
   category: yup
     .string()
-    .required(t('postCreate.categoryRequired'))
     .oneOf(
       ['electronics', 'toys', 'homeGoods', 'clothing', 'furniture', 'books', 'sports', 'other'],
-      'Invalid category'
+      'Invalid category',
     )
     .defined(),
 
@@ -48,12 +42,7 @@ export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object
     .oneOf(['new', 'likeNew', 'good', 'fair', 'used'], 'Invalid condition')
     .defined(),
 
-  tags: yup
-    .array()
-    .of(yup.string().required())
-    .required()
-    .default([])
-    .defined(),
+  tags: yup.array().of(yup.string().required()).required().default([]).defined(),
 
   images: yup
     .array()
@@ -63,12 +52,24 @@ export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object
     .default([])
     .defined(),
 
-  location: yup.object({
-    name: yup.string().optional(),
-    address: yup.string().optional(),
-    coordinates: yup.tuple([yup.number().required(), yup.number().required()]).required(),
-    googlePlaceId: yup.string().optional(),
-  }).nullable().optional().default(null),
+  location: yup
+    .object({
+      name: yup.string().optional(),
+      street: yup.string().required(),
+      city: yup.string().required(),
+      country: yup.string().required(),
+      postalCode: yup.string().required(),
+      type: yup.string().required(),
+      coordinates: yup.tuple([yup.number().required(), yup.number().required()]).required(),
+      googlePlaceId: yup.string().optional(),
+    })
+    .nullable()
+    .optional()
+    .default(null),
+
+  locationId: yup.string().optional(),
+
+  eventId: yup.string().optional(),
 
   pickupDate: yup
     .date()

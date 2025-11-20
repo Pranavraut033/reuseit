@@ -1,35 +1,29 @@
 import { useMutation } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { yupResolver } from '@hookform/resolvers/yup';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import NetInfo from '@react-native-community/netinfo';
 import { format } from 'date-fns';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { Toast } from 'toastify-react-native';
 
-import Container from '~/components/common/Container';
+import { LocationType } from '~/__generated__/graphql';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import { LocationPicker } from '~/components/post/LocationPicker';
 import { MediaItem, MediaPicker } from '~/components/post/MediaPicker';
 import { PostCard } from '~/components/post/PostCard';
 import { TagEditor } from '~/components/post/TagEditor';
 import { useAuth } from '~/context/AuthContext';
+import { Post } from '~/gql/fragments';
 import { CREATE_POST } from '~/gql/posts/createPost';
-import { GET_POSTS } from '~/gql/posts/getPosts';
+import { GET_POSTS } from '~/gql/posts/posts';
+import cn from '~/utils/cn';
 import { t } from '~/utils/i18n';
 import { compressImages } from '~/utils/imageCompression';
-import { saveOfflinePost } from '~/utils/offlineStorage';
 import {
   categories,
   conditions,
@@ -39,24 +33,16 @@ import {
 import { uploadImages } from '~/utils/storage';
 import { suggestTagsFromImages } from '~/utils/tagSuggestion';
 
+import { Button } from '../common/Button';
+import { FabButton } from '../common/FabButton';
+
 export const PostCreateScreen: React.FC = () => {
   const { user } = useAuth();
   const [images, setImages] = useState<MediaItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  // const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [scrollHandler, setScrollHandler] = useState<(event: any) => void>();
 
-  // Check network connectivity
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      setIsOnline(state.isConnected ?? true);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // React Hook Form setup
   const {
     control,
     handleSubmit,
@@ -68,10 +54,11 @@ export const PostCreateScreen: React.FC = () => {
     resolver: yupResolver(postCreateSchema),
     mode: 'onChange',
     defaultValues: {
+      anonymous: false,
       title: '',
+      category: '',
       description: '',
-      category: '' as any,
-      condition: '' as any,
+      condition: '',
       tags: [],
       images: [],
       location: null,
@@ -117,7 +104,7 @@ export const PostCreateScreen: React.FC = () => {
     }
   };
 
-  const uploadPostImages = async (): Promise<string[]> => {
+  const uploadPostImages = useCallback(async (): Promise<string[]> => {
     if (images.length === 0) return [];
 
     setIsUploading(true);
@@ -136,38 +123,13 @@ export const PostCreateScreen: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const handleOfflineSubmit = async (data: PostCreateFormData) => {
-    try {
-      const offlineId = await saveOfflinePost({
-        data: {
-          ...data,
-          images: images.map((img) => img.uri),
-        },
-        images: images.map((img) => img.uri),
-      });
-
-      Toast.info(t('postCreate.offline'));
-      resetForm();
-      router.back();
-    } catch (error) {
-      console.error('Error saving offline post:', error);
-      Alert.alert('Error', 'Failed to save post offline. Please try again.');
-    }
-  };
+  }, [images, user?.id]);
 
   const onSubmit = async (data: PostCreateFormData) => {
     try {
       // Validate images
       if (images.length === 0 && !data.title && !data.description) {
         Alert.alert('Invalid Post', 'Please add at least a title, description, or images.');
-        return;
-      }
-
-      // Handle offline mode
-      if (!isOnline) {
-        await handleOfflineSubmit(data);
         return;
       }
 
@@ -178,37 +140,46 @@ export const PostCreateScreen: React.FC = () => {
       }
 
       // Prepare mutation input
-      const createPostInput: any = {
-        content: `${data.title}\n\n${data.description || ''}`.trim(),
+      const createPostInput: PostCreateFormData = {
+        ...data,
+        pickupDate: new Date(data.pickupDate),
         images: imageUrls,
       };
 
-      // Add location if provided
-      if (data.location) {
-        createPostInput.locationId = data.location.googlePlaceId;
-      }
+      const post: Post = {
+        __typename: 'Post',
+        ...createPostInput,
+        id: `temp-id ${Math.random()}`,
+        commentCount: 0,
+        images: imageUrls,
+        description: createPostInput.description,
+        createdAt: new Date().toISOString(),
+        author: {
+          __typename: 'User',
+          id: user?.id || '',
+          name: user?.name || 'User',
+          avatarUrl: user?.avatarUrl || null,
+        },
+        event: null,
+        likeCount: 0,
+        likedByCurrentUser: false,
+        updatedAt: new Date().toISOString(),
+        location: createPostInput.location
+          ? {
+              __typename: 'Location',
+              id: 'temp-location-id',
+              ...createPostInput.location,
+              createdAt: new Date().toISOString(),
+              type: LocationType.UserLocation,
+            }
+          : null,
+      };
 
       // Create post
-      await createPost({
+      return await createPost({
         variables: { createPostInput },
         optimisticResponse: {
-          createPost: {
-            __typename: 'Post',
-            id: `temp-${Date.now()}`,
-            content: createPostInput.content,
-            createdAt: new Date().toISOString(),
-            images: imageUrls,
-            likes: 0,
-            likedByCurrentUser: false,
-            author: {
-              __typename: 'User',
-              id: user?.id || '',
-              name: user?.name || 'User',
-              avatarUrl: user?.avatarUrl || null,
-            },
-            comments: [],
-            location: null,
-          },
+          createPost: post,
         },
       });
     } catch (error) {
@@ -244,11 +215,9 @@ export const PostCreateScreen: React.FC = () => {
   const isLoading = isCreating || isUploading;
 
   return (
-    <Container noPadding>
+    <ScreenContainer keyboardAvoiding padding={0}>
       {/* Header */}
-      <View
-        className={`flex-row ab justify-between items-center px-4 py-3 bg-white border-b border-gray-200`}
-      >
+      <View className={`flex-row items-center px-4 py-3 bg-white border-b border-gray-200`}>
         <TouchableOpacity
           onPress={handleCancel}
           disabled={isLoading}
@@ -256,43 +225,60 @@ export const PostCreateScreen: React.FC = () => {
           accessibilityLabel={t('accessibility.cancelButton')}
           accessibilityRole="button"
         >
-          <Ionicons name="close" size={28} color="#1F2937" />
+          <Ionicons name="arrow-back" size={28} color="#1F2937" />
         </TouchableOpacity>
 
-        <Text className="text-lg font-bold text-gray-800">{t('postCreate.title')}</Text>
-
-        <TouchableOpacity
+        <Text className="text-xl mx-4 font-bold text-gray-800">{t('postCreate.title')}</Text>
+        <View className="flex-1" />
+        <Button
           onPress={handleSubmit(onSubmit)}
           disabled={isLoading || !isValid}
-          className={`px-4 py-2 rounded-full min-w-[80px] items-center ${!isValid || isLoading ? 'bg-gray-300' : 'bg-blue-500'}`}
+          className="rounded-full py-2"
           accessible={true}
           accessibilityLabel={t('accessibility.publishButton')}
           accessibilityRole="button"
+          loading={isLoading}
         >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#FFF" />
-          ) : (
-            <Text className="text-[15px] font-semibold text-white">{t('postCreate.publish')}</Text>
-          )}
-        </TouchableOpacity>
+          {t('postCreate.publish')}
+        </Button>
       </View>
       <ScrollView
         className="flex-1"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={(e) => {
+          scrollHandler?.(e);
+        }}
       >
-        {/* Offline Indicator */}
-        {!isOnline && (
-          <View className="flex-row items-center gap-2 p-3 bg-amber-100 border-b border-amber-200">
-            <Ionicons name="cloud-offline" size={16} color="#F59E0B" />
-            <Text className="text-[13px] text-amber-900">Offline - Post will be saved locally</Text>
-          </View>
-        )}
-
-        {/* Form Fields */}
         <View className="p-4">
-          {/* Title */}
           <View className="mb-5">
+            <View className="flex-row justify-between items-center mb-3 border border-gray-200 p-2 bg-gray-50 rounded-xl">
+              <Text>
+                Post as{' '}
+                <Text
+                  className={cn({ strikethrough: formValues.anonymous })}
+                  style={formValues.anonymous ? { textDecorationLine: 'line-through' } : undefined}
+                >
+                  {user?.name}
+                </Text>
+                {formValues.anonymous ? ` (${t('postCreate.anonymous')})` : ''}
+              </Text>
+              <Controller
+                control={control}
+                name="anonymous"
+                render={({ field: { onChange, value } }) => (
+                  <TouchableOpacity
+                    className="flex-row items-center"
+                    onPress={() => onChange(!value)}
+                    accessible={true}
+                    accessibilityLabel={t('accessibility.anonymousToggle')}
+                  >
+                    <Ionicons name={value ? 'eye-off' : 'eye'} size={24} color="#1F2937" />
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
             <Text className="text-[15px] font-semibold text-gray-800 mb-2">
               {t('postCreate.title')} <Text className="text-red-500">*</Text>
             </Text>
@@ -449,7 +435,7 @@ export const PostCreateScreen: React.FC = () => {
             control={control}
             name="location"
             render={({ field: { onChange, value } }) => (
-              <LocationPicker location={value} onLocationChange={onChange} />
+              <LocationPicker location={value ?? null} onLocationChange={onChange} />
             )}
           />
 
@@ -493,16 +479,105 @@ export const PostCreateScreen: React.FC = () => {
               )}
             />
           </View>
-
-          {/* Preview Card */}
-          <PostCard
-            post={formValues}
-            images={images.map((img) => img.uri)}
-            userName={user?.name}
-            userAvatar={user?.avatarUrl || undefined}
-          />
         </View>
       </ScrollView>
-    </Container>
+      <ModalPreview formValues={formValues} images={images} setScrollHandler={setScrollHandler} />
+    </ScreenContainer>
+  );
+};
+
+type ModalPreviewProps = {
+  formValues: PostCreateFormData;
+  images: MediaItem[];
+  setScrollHandler: (handler?: (event: any) => void) => void;
+};
+
+const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScrollHandler }) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const { user } = useAuth();
+  const sheetRef = useRef<BottomSheet>(null);
+
+  const handleOpen = () => {
+    setIsModalVisible(true);
+    setTimeout(() => {
+      sheetRef.current?.expand();
+    }, 100);
+  };
+
+  const handleClose = () => {
+    sheetRef.current?.close();
+    setTimeout(() => {
+      setIsModalVisible(false);
+    }, 300);
+  };
+
+  return (
+    <>
+      <FabButton
+        setScrollHandler={setScrollHandler}
+        hideOnScrollDown
+        className="absolute bottom-4 right-4"
+        icon={() => <Ionicons name="eye" size={24} color="#FFFFFF" />}
+        onPress={handleOpen}
+      >
+        {t('postCreate.preview')}
+      </FabButton>
+      <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={handleClose}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <BottomSheet
+            ref={sheetRef}
+            snapPoints={['50%', '80%', '100%']}
+            enableDynamicSizing={false}
+            index={0}
+            backgroundStyle={{
+              backgroundColor: '#ffffff',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
+            handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40, height: 4 }}
+            backdropComponent={({ style }) => (
+              <TouchableOpacity
+                style={[style, { backgroundColor: 'rgba(0,0,0,0.6)' }]}
+                activeOpacity={1}
+                onPress={handleClose}
+              />
+            )}
+            enablePanDownToClose
+            onClose={handleClose}
+          >
+            <View className="flex-1 bg-white">
+              {/* Header */}
+              <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+                <View className="flex-row items-center">
+                  <Ionicons name="eye" size={20} color="#6B7280" />
+                  <Text className="text-lg font-semibold text-gray-900 ml-2">
+                    {t('postCreate.preview')}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                  onPress={handleClose}
+                >
+                  <Ionicons name="close" size={20} color="#374151" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Preview Card */}
+              <BottomSheetScrollView
+                contentContainerStyle={{ paddingBottom: 20, padding: 16 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <PostCard
+                  formData={formValues}
+                  images={images.map((img) => img.uri)}
+                  userName={user?.name}
+                  userAvatar={user?.avatarUrl || undefined}
+                />
+              </BottomSheetScrollView>
+            </View>
+          </BottomSheet>
+        </GestureHandlerRootView>
+      </Modal>
+    </>
   );
 };

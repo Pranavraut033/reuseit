@@ -122,7 +122,7 @@ function TabBarBackground() {
         zIndex: 20,
         borderRadius: 999,
         overflow: 'hidden',
-        backgroundColor: isExplore ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.1)',
+        backgroundColor: isExplore ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.9)',
       }}
     />
   );

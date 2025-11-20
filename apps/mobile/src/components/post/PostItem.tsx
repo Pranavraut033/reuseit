@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import Row from '~/components/common/SpaceHelper';
-import { Post } from '~/gql/posts/getPosts';
+import { Post } from '~/gql/posts/posts';
 import { LIKE_POST } from '~/gql/posts/likePost';
 
 interface PostItemProps {
@@ -171,7 +171,7 @@ const PostItem: React.FC<PostItemProps> = ({ post }) => {
           >
             <Row space={4}>
               <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
-              <Text className="text-gray-600 text-sm">{post.commentsCount}</Text>
+              <Text className="text-gray-600 text-sm">{post.commentCount}</Text>
             </Row>
           </TouchableOpacity>
         </Row>

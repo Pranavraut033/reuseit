@@ -4,7 +4,7 @@ export const POST_FIELDS = gql(`
   fragment PostFields on Post {
     id
     category
-    commentsCount
+    commentCount
     condition
     description
     createdAt

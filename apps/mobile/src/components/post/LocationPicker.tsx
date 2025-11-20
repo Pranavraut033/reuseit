@@ -1,162 +1,147 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import React, { useEffect,useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Modal,
-  Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Toast } from 'toastify-react-native';
 
+import { LocationType } from '~/__generated__/graphql';
+import { LocationCreateFormData } from '~/gql/helper.types';
+import { PlaceDetailsResult, useReverseGeocode } from '~/hooks/GoogleMaps';
 import { t } from '~/utils/i18n';
 
-export interface LocationData {
-  name?: string;
-  address?: string;
-  coordinates: [number, number]; // [longitude, latitude]
-  googlePlaceId?: string;
-}
+import { LocationAutocomplete } from './LocationAutocomplete';
 
 interface LocationPickerProps {
-  location: LocationData | null;
-  onLocationChange: (location: LocationData | null) => void;
+  location: LocationCreateFormData | null;
+  onLocationChange: (location: LocationCreateFormData | null) => void;
 }
 
-export const LocationPicker: React.FC<LocationPickerProps> = ({
-  location,
-  onLocationChange,
-}) => {
+export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLocationChange }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [tempLocation, setTempLocation] = useState<LocationData | null>(location);
-  const [manualAddress, setManualAddress] = useState('');
+  const [tempLocation, setTempLocation] = useState<LocationCreateFormData | null>(location);
+  const { reverseGeocode } = useReverseGeocode();
 
-  useEffect(() => {
-    if (location?.address) {
-      setManualAddress(location.address);
-    }
-  }, [location]);
+  // Selected place (if any) is represented by `location` prop via parent state
 
-  const requestLocationPermission = async (): Promise<boolean> => {
+  const getLocationFromCoords = useCallback(
+    async ([latitude, longitude]: [
+      latitude: number,
+      longitude: number,
+    ]): Promise<LocationCreateFormData> => {
+      const geocodeResult = await reverseGeocode(latitude, longitude);
+
+      if (!geocodeResult) {
+        throw new Error('No geocode data found');
+      }
+
+      return {
+        coordinates: [longitude, latitude],
+        street: geocodeResult.street,
+        city: geocodeResult.city,
+        country: geocodeResult.country,
+        postalCode: geocodeResult.postalCode || undefined,
+        type: LocationType.UserLocation,
+      };
+    },
+    [reverseGeocode],
+  );
+
+  const requestLocationPermission = useCallback(async (): Promise<boolean> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== 'granted') {
         Alert.alert(
           'Permission Required',
-          'We need location permission to detect your current location.'
+          'We need location permission to detect your current location.',
         );
         return false;
       }
 
       return true;
-    } catch (error) {
-      console.error('Error requesting location permission:', error);
+    } catch (_error) {
+      console.error('Error requesting location permission:', _error);
       return false;
     }
-  };
+  }, []);
 
-  const getCurrentLocation = async () => {
+  const getCurrentLocation = useCallback(async () => {
+    setIsLoading(true);
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) return;
 
-    setIsLoading(true);
     try {
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
 
-      const [geocode] = await Location.reverseGeocodeAsync({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
+      onLocationChange(
+        await getLocationFromCoords([
+          currentLocation.coords.latitude,
+          currentLocation.coords.longitude,
+        ]),
+      );
+    } catch (_error) {
+      Toast.show({
+        type: 'error',
+        text1: t('postCreate.locationErrorTitle'),
+        text2: t('postCreate.locationErrorMessage'),
       });
-
-      const locationData: LocationData = {
-        coordinates: [currentLocation.coords.longitude, currentLocation.coords.latitude],
-        address: geocode
-          ? `${geocode.street || ''} ${geocode.streetNumber || ''}, ${geocode.city || ''}, ${geocode.postalCode || ''}`.trim()
-          : undefined,
-        name: geocode?.city || geocode?.district || 'Current Location',
-      };
-
-      onLocationChange(locationData);
-    } catch (error) {
-      console.error('Error getting current location:', error);
-      Alert.alert('Error', 'Failed to get your current location. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onLocationChange, requestLocationPermission, getLocationFromCoords]);
 
-  const handleMapPress = async (event: any) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
+  const handleMapPress = useCallback(
+    async (event: any) => {
+      const { latitude, longitude } = event.nativeEvent.coordinate;
 
-    try {
-      const [geocode] = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude,
-      });
+      try {
+        setTempLocation(await getLocationFromCoords([latitude, longitude]));
+      } catch (_error) {
+        console.error('Error geocoding location:', _error);
+        setTempLocation(null);
+      }
+    },
+    [getLocationFromCoords],
+  );
 
-      const locationData: LocationData = {
-        coordinates: [longitude, latitude],
-        address: geocode
-          ? `${geocode.street || ''} ${geocode.streetNumber || ''}, ${geocode.city || ''}, ${geocode.postalCode || ''}`.trim()
-          : undefined,
-        name: geocode?.city || geocode?.district || 'Selected Location',
-      };
-
-      setTempLocation(locationData);
-    } catch (error) {
-      console.error('Error geocoding location:', error);
-      setTempLocation({
-        coordinates: [longitude, latitude],
-        address: undefined,
-        name: 'Selected Location',
-      });
-    }
-  };
-
-  const confirmMapLocation = () => {
+  const confirmMapLocation = useCallback(() => {
     if (tempLocation) {
       onLocationChange(tempLocation);
       setShowMap(false);
     }
-  };
+  }, [tempLocation, onLocationChange]);
 
-  const handleManualEntry = () => {
-    if (manualAddress.trim()) {
-      const locationData: LocationData = {
-        coordinates: location?.coordinates || [13.4050, 52.5200], // Default to Berlin center
-        address: manualAddress.trim(),
-        name: 'Manual Entry',
-      };
-      onLocationChange(locationData);
-    }
-  };
-
-  const removeLocation = () => {
+  const removeLocation = useCallback(() => {
     onLocationChange(null);
-    setManualAddress('');
-  };
+  }, [onLocationChange]);
 
-  const openMapPicker = async () => {
+  const openMapPicker = useCallback(async () => {
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) return;
 
     setTempLocation(location);
     setShowMap(true);
-  };
+  }, [location, requestLocationPermission]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{t('postCreate.locationOptional')}</Text>
+    <View className="mb-4">
+      <View className="flex-row justify-between items-center mb-3">
+        <Text className="text-base font-semibold text-gray-800">
+          {t('postCreate.locationOptional')}
+        </Text>
         {location && (
           <TouchableOpacity onPress={removeLocation}>
             <Ionicons name="close-circle" size={20} color="#EF4444" />
@@ -166,22 +151,34 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
       {/* Current Location Display */}
       {location && (
-        <View style={styles.locationDisplay}>
+        <View className="flex-row items-center p-3 bg-blue-50 rounded-xl mb-3 gap-3">
           <Ionicons name="location" size={20} color="#3B82F6" />
-          <View style={styles.locationInfo}>
-            <Text style={styles.locationName}>{location.name || 'Location'}</Text>
-            {location.address && (
-              <Text style={styles.locationAddress}>{location.address}</Text>
+          <View className="flex-1">
+            <Text className="text-[15px] font-semibold text-gray-800 mb-0.5">
+              {location.street || 'Location'}
+            </Text>
+            {location.street && (
+              <Text className="text-[13px] text-gray-500">{location.street}</Text>
             )}
           </View>
         </View>
       )}
+      {/* Autocomplete search (shown only if no location selected yet) */}
+      {!location && (
+        <LocationAutocomplete
+          containerClassName="mb-3"
+          onSelect={(details) => {
+            const mapped = mapPlaceDetailsToFormData(details);
+            onLocationChange(mapped);
+          }}
+        />
+      )}
 
       {/* Action Buttons */}
       {!location && (
-        <View style={styles.actions}>
+        <View className="flex-row gap-2 mb-3">
           <TouchableOpacity
-            style={styles.actionButton}
+            className="flex-1 flex-row items-center justify-center p-3 bg-blue-50 rounded-xl gap-2"
             onPress={getCurrentLocation}
             disabled={isLoading}
             accessible={true}
@@ -193,7 +190,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             ) : (
               <>
                 <Ionicons name="locate" size={20} color="#3B82F6" />
-                <Text style={styles.actionButtonText}>
+                <Text className="text-sm font-medium text-blue-500">
                   {t('postCreate.useCurrentLocation')}
                 </Text>
               </>
@@ -201,215 +198,119 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionButton}
+            className="flex-1 flex-row items-center justify-center p-3 bg-blue-50 rounded-xl gap-2"
             onPress={openMapPicker}
             accessible={true}
             accessibilityLabel="Select location on map"
             accessibilityRole="button"
           >
             <Ionicons name="map" size={20} color="#3B82F6" />
-            <Text style={styles.actionButtonText}>{t('postCreate.selectOnMap')}</Text>
+            <Text className="text-sm font-medium text-blue-500">{t('postCreate.selectOnMap')}</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Manual Entry */}
-      <View style={styles.manualEntry}>
-        <TextInput
-          style={styles.manualInput}
-          placeholder={t('postCreate.enterManually')}
-          value={manualAddress}
-          onChangeText={setManualAddress}
-          onBlur={handleManualEntry}
-          editable={!isLoading}
-        />
-      </View>
-
       {/* Map Modal */}
-      <Modal
-        visible={showMap}
-        animationType="slide"
-        onRequestClose={() => setShowMap(false)}
-      >
-        <View style={styles.mapContainer}>
-          <View style={styles.mapHeader}>
-            <TouchableOpacity onPress={() => setShowMap(false)}>
-              <Ionicons name="close" size={28} color="#1F2937" />
-            </TouchableOpacity>
-            <Text style={styles.mapTitle}>{t('postCreate.selectOnMap')}</Text>
-            <TouchableOpacity onPress={confirmMapLocation}>
-              <Ionicons name="checkmark" size={28} color="#3B82F6" />
-            </TouchableOpacity>
-          </View>
-
-          <MapView
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={{
-              latitude: tempLocation?.coordinates[1] || 52.5200,
-              longitude: tempLocation?.coordinates[0] || 13.4050,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-            onPress={handleMapPress}
-          >
-            {tempLocation && (
-              <Marker
-                coordinate={{
-                  latitude: tempLocation.coordinates[1],
-                  longitude: tempLocation.coordinates[0],
-                }}
-                title={tempLocation.name}
-                description={tempLocation.address}
-              />
-            )}
-          </MapView>
-
-          {tempLocation && (
-            <View style={styles.mapInfoCard}>
-              <Text style={styles.mapInfoText}>{tempLocation.address || 'Tap on the map to select a location'}</Text>
+      <Modal visible={showMap} animationType="slide" onRequestClose={() => setShowMap(false)}>
+        <SafeAreaView className="flex-1 ">
+          <View className="flex-1">
+            <View
+              className={`flex-row absolute top-4 inset-x-4 z-10  justify-between items-center p-4 border border-black/10 bg-white/60 rounded-full`}
+            >
+              <TouchableOpacity onPress={() => setShowMap(false)}>
+                <Ionicons name="close" size={28} color="#1F2937" />
+              </TouchableOpacity>
+              <Text className="text-lg font-semibold text-gray-800">
+                {t('postCreate.selectOnMap')}
+              </Text>
+              <TouchableOpacity onPress={confirmMapLocation}>
+                <Ionicons name="checkmark" size={28} color="#3B82F6" />
+              </TouchableOpacity>
             </View>
-          )}
-        </View>
-      </Modal>
 
-      {/* Education Tip */}
-      <View style={styles.tipContainer}>
-        <Ionicons name="information-circle-outline" size={16} color="#6B7280" />
-        <Text style={styles.tipText}>
-          Adding location helps others find items nearby
-        </Text>
-      </View>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_GOOGLE}
+              // initialRegion={location}
+              zoomEnabled
+              initialRegion={{
+                latitude: tempLocation?.coordinates[1] || 52.52,
+                longitude: tempLocation?.coordinates[0] || 13.405,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }}
+              showsMyLocationButton={false}
+              followsUserLocation
+              showsUserLocation
+              onPress={handleMapPress}
+            >
+              {tempLocation && (
+                <Marker
+                  coordinate={{
+                    latitude: tempLocation.coordinates[1],
+                    longitude: tempLocation.coordinates[0],
+                  }}
+                  title={tempLocation.street}
+                  description={getAddressString(tempLocation)}
+                />
+              )}
+            </MapView>
+
+            {tempLocation && (
+              <View className="absolute bottom-5 left-5 right-5 p-4 bg-white rounded-xl shadow-lg">
+                <Text className="text-sm text-gray-800">{getAddressString(tempLocation)}</Text>
+              </View>
+            )}
+          </View>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  headerText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  locationDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
-  },
-  locationInfo: {
-    flex: 1,
-  },
-  locationName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  locationAddress: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    gap: 8,
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#3B82F6',
-  },
-  manualEntry: {
-    marginBottom: 12,
-  },
-  manualInput: {
-    padding: 12,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    fontSize: 15,
-    color: '#1F2937',
-  },
   mapContainer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 0,
+    overflow: 'hidden',
     flex: 1,
-  },
-  mapHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    ...Platform.select({
-      ios: {
-        paddingTop: 50,
-      },
-      android: {
-        paddingTop: 16,
-      },
-    }),
-  },
-  mapTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
   },
   map: {
-    flex: 1,
-  },
-  mapInfoCard: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    padding: 16,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  mapInfoText: {
-    fontSize: 14,
-    color: '#1F2937',
-  },
-  tipContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    gap: 8,
-  },
-  tipText: {
-    flex: 1,
-    fontSize: 13,
-    color: '#6B7280',
+    ...StyleSheet.absoluteFillObject,
   },
 });
+
+function getAddressString(location?: LocationCreateFormData): string | undefined {
+  if (!location) {
+    return undefined;
+  }
+
+  return (
+    [location.street, location.city, location.country].filter(Boolean).join(', ') +
+    (location.postalCode ? ', ' + location.postalCode + '.' : '.')
+  );
+}
+
+// Map Google Place Details to internal LocationCreateFormData
+function mapPlaceDetailsToFormData(details: PlaceDetailsResult): LocationCreateFormData {
+  const getComponent = (type: string) =>
+    details.address_components.find((c) => c.types.includes(type))?.long_name || '';
+
+  const streetNumber = getComponent('street_number');
+  const route = getComponent('route');
+  const street =
+    (route ? `${route} ${streetNumber}`.trim() : details.name) ||
+    details.formatted_address.split(',')[0];
+  const city = getComponent('locality') || getComponent('administrative_area_level_2');
+  const country = getComponent('country');
+  const postalCode = getComponent('postal_code');
+
+  return {
+    coordinates: [details.longitude, details.latitude],
+    street,
+    city,
+    country,
+    postalCode: postalCode || undefined,
+    type: LocationType.UserLocation,
+  };
+}

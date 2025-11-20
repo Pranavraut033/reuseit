@@ -3,11 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
-import { getFragmentData } from '~/__generated__';
 import { GetPostsQuery } from '~/__generated__/graphql';
 import ScreenContainer from '~/components/common/ScreenContainer';
 import PostList from '~/components/post/PostList';
-import { POST_FIELDS } from '~/gql/fragments';
+import { Post } from '~/gql/fragments';
 import { GET_POSTS } from '~/gql/posts/posts';
 
 const FeedsScreen = () => {
@@ -16,17 +15,15 @@ const FeedsScreen = () => {
   const onRefresh = useCallback(async () => {
     await refetch();
   }, [refetch]);
-
-  const posts = getFragmentData(POST_FIELDS, data?.posts);
-
+  const posts = (data?.posts ?? []) as Post[];
   return (
-    <ScreenContainer>
+    <ScreenContainer padding={0}>
       {/* Latest Posts */}
-      <View className="mb-4 flex-row items-center justify-between">
+      <View className="mb-4 flex-row items-center justify-between p-4">
         <Text className="text-xl font-bold text-gray-800">Latest Posts</Text>
       </View>
 
-      {!posts && loading && (
+      {!posts.length && loading && (
         <View className="items-center justify-center py-12">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="mt-4 text-gray-600">Loading posts...</Text>
@@ -45,7 +42,7 @@ const FeedsScreen = () => {
         </View>
       )}
 
-      {posts?.length ? (
+      {posts.length ? (
         <PostList
           posts={posts}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}

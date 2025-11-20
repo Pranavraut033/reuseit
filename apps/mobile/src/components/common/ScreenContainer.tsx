@@ -39,6 +39,9 @@ type ScreenContainerProps = {
 
   /** Additional className for styling */
   className?: string;
+
+  /** Add extra padding at the bottom for tab bar */
+  paddingForTabs?: boolean;
 };
 
 export default function ScreenContainer({
@@ -48,6 +51,7 @@ export default function ScreenContainer({
   dismissKeyboardOnPress = keyboardAvoiding,
   safeArea = true,
   padding = 16,
+  paddingForTabs = false,
   style,
   statusBarStyle = 'dark-content',
 }: ScreenContainerProps) {
@@ -85,9 +89,11 @@ export default function ScreenContainer({
   );
 
   const FinalSafeArea = safeArea ? (
-    <SafeAreaView style={{ flex: 1 }}>{WrappedWithDismiss}</SafeAreaView>
+    <SafeAreaView style={{ flex: 1, paddingBottom: paddingForTabs ? 100 : 0 }}>
+      {WrappedWithDismiss}
+    </SafeAreaView>
   ) : (
-    <View style={{ flex: 1 }}>{WrappedWithDismiss}</View>
+    <View style={{ flex: 1, paddingBottom: paddingForTabs ? 100 : 0 }}>{WrappedWithDismiss}</View>
   );
 
   return (
