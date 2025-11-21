@@ -24,6 +24,13 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Like {
+  id: ID!
+  createdAt: DateTime!
+  user: User!
+  post: Post!
+}
+
 type Post {
   id: ID!
   createdAt: DateTime!
@@ -41,6 +48,7 @@ type Post {
   userArticles: [UserArticle!]!
   event: Event
   images: [String!]!
+  likes: [Like!]!
   likedByCurrentUser: Boolean
   likeCount: Float!
   commentCount: Float!
@@ -99,7 +107,7 @@ type Event {
   endTime: DateTime
   location: Location!
   participants: EvenParticipant
-  post: [Post!]!
+  posts: [Post!]!
 }
 
 type PointsHistory {
@@ -120,17 +128,21 @@ type User {
   comments: [Comment!]!
   email: String!
   emailVerified: Boolean!
-  eventsCreated: [Event!]!
+  myEvents: [Event!]!
   googleId: String
   name: String!
   phoneNumber: String
   phoneVerified: Boolean!
   points: Float!
   pointsHistory: [PointsHistory!]!
-  posts: [Post!]!
+  myPosts: [Post!]!
   username: String
   userArticle: [UserArticle!]!
   evenParticipant: [EvenParticipant!]!
+  locations: [Location!]!
+  likes: [Like!]!
+  posts: [Post!]!
+  eventsCreated: [Event!]!
 }
 
 type BadgeAssignment {
@@ -249,7 +261,7 @@ type Mutation {
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: String!): Post!
-  likePost(postId: String!): Boolean!
+  togglePostLike(postId: String!): Boolean!
   createComment(createCommentInput: CreateCommentInput!): Comment!
   updateComment(updateCommentInput: UpdateCommentInput!): Comment!
   removeComment(id: String!): Comment!

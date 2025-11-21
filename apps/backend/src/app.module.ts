@@ -3,10 +3,11 @@ import KeyvRedis from '@keyv/redis';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
+import { DataLoaderInterceptor } from 'nestjs-dataloader';
 import { join } from 'path';
 
 import { AuthGuard } from '~/auth/auth.guard';
@@ -29,7 +30,10 @@ import { LocationModule } from './location/location.module';
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
       // Ensure the HTTP request is available in GraphQL context for guards/decorators
-      context: ({ req, res }) => ({ req, res }),
+      context: ({ req, res }) => ({
+        req,
+        res,
+      }),
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
     }),
     AuthModule,
@@ -59,6 +63,10 @@ import { LocationModule } from './location/location.module';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DataLoaderInterceptor,
     },
   ],
 })

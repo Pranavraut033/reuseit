@@ -42,5 +42,5 @@ export class Event {
   participants?: EvenParticipant;
 
   @Field(() => [Post])
-  post: Post[];
+  posts: Post[];
 }

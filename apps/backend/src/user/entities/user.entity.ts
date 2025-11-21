@@ -4,11 +4,13 @@ import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 import { Event } from '~/event/entities/event.entity';
 import { EvenParticipant } from '~/event/entities/event-participant.entity';
+import { Location } from '~/location/entities/location.entity';
 import { Comment } from '~/post/entities/comment.entity';
+import { Like } from '~/post/entities/like.entity';
 import { Post } from '~/post/entities/post.entity';
 
+import { PointsHistory } from '../../points/dto/point-history.entity';
 import { BadgeAssignment } from './badge-assignment';
-import { PointsHistory } from './point-history.entity';
 import { UserArticle } from './user-article.entity';
 
 @ObjectType()
@@ -41,7 +43,7 @@ export class User {
   emailVerified: boolean; // Boolean @default(false)
 
   @Field(() => [Event])
-  eventsCreated: Event[]; // Event[] @relation("EventCreator")
+  myEvents: Event[]; // Event[] @relation("EventCreator")
 
   @Field({ nullable: true })
   googleId?: string; // String? @unique
@@ -65,7 +67,7 @@ export class User {
   pointsHistory: PointsHistory[]; // PointsHistory[]
 
   @Field(() => [Post])
-  posts: Post[]; // Post[]
+  myPosts: Post[]; // Post[]
 
   @Field({ nullable: true })
   username?: string; // String? @unique
@@ -75,4 +77,10 @@ export class User {
 
   @Field(() => [EvenParticipant])
   evenParticipant: EvenParticipant[]; // EvenParticipant[]
+
+  @Field(() => [Location])
+  locations: Location[]; // Location[]
+
+  @Field(() => [Like])
+  likes: Like[]; // Like[]
 }

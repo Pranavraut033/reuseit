@@ -1,10 +1,15 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import type { Post as PrismaPost, User as PrismaUser } from '@prisma/client';
+import DataLoader from 'dataloader';
+import { Loader } from 'nestjs-dataloader';
 
 import { User } from '../user/entities/user.entity';
+import { CommentAuthorLoader, CommentPostLoader } from './comment.loader';
 import { CommentService } from './comment.service';
 import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
 import { Comment } from './entities/comment.entity';
+import { Post } from './entities/post.entity';
 
 @Resolver(() => Comment)
 export class CommentResolver {
@@ -47,5 +52,23 @@ export class CommentResolver {
     @Context('req') req: { user?: User },
   ) {
     return this.commentService.remove(id, req.user?.id);
+  }
+
+  // Field resolvers for relations
+  @ResolveField('author', () => User, { nullable: true })
+  async author(
+    @Parent() comment: Comment & { authorId?: string | null },
+    @Loader(CommentAuthorLoader) loader: DataLoader<string, PrismaUser | null>,
+  ): Promise<PrismaUser | null> {
+    if (!comment.authorId) return null;
+    return loader.load(comment.authorId);
+  }
+
+  @ResolveField('post', () => Post)
+  async post(
+    @Parent() comment: Comment & { postId: string },
+    @Loader(CommentPostLoader) loader: DataLoader<string, PrismaPost | null>,
+  ): Promise<PrismaPost | null> {
+    return loader.load(comment.postId);
   }
 }

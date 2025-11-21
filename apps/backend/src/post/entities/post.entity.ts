@@ -6,6 +6,7 @@ import { User } from '~/user/entities/user.entity';
 import { UserArticle } from '~/user/entities/user-article.entity';
 
 import { Comment } from './comment.entity';
+import { Like } from './like.entity';
 
 @ObjectType()
 export class Post {
@@ -50,6 +51,9 @@ export class Post {
 
   @Field(() => [String])
   images: string[];
+
+  @Field(() => [Like])
+  likes: Like[];
 
   @Field(() => Boolean, { nullable: true })
   likedByCurrentUser?: boolean | null;

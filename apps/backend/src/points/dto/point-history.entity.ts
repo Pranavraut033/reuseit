@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
-import { User } from './user.entity';
+import { User } from '../../user/entities/user.entity';
 
 @ObjectType()
 export class PointsHistory {

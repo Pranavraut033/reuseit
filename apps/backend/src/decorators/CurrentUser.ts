@@ -6,6 +6,8 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 
 import { User } from '~/user/entities/user.entity';
 
+export { User };
+
 export const CurrentUser = createParamDecorator(
   (_data: unknown, context: ExecutionContext): User | undefined => {
     const type = context.getType();

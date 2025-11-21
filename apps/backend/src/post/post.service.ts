@@ -6,20 +6,21 @@ import {
 } from '@nestjs/common';
 
 import { LocationService } from '~/location/location.service';
+import { PointsService } from '~/points/points.service';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
-import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly locationService: LocationService,
+    private readonly pointsService: PointsService,
   ) {}
 
-  async create(createPostInput: CreatePostInput, userId: string | undefined): Promise<Post> {
+  async create(createPostInput: CreatePostInput, userId: string | undefined) {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to create a post');
     }
@@ -43,35 +44,18 @@ export class PostService {
         tags: createPostInput.tags,
         title: createPostInput.title,
       },
-      include: {
-        author: true,
-        comments: true,
-        location: true,
-        event: true,
-        userArticles: true,
-      },
     });
 
-    return post as unknown as Post;
+    await this.pointsService.addPoints(userId, 'CREATE_POST');
+    return post;
   }
 
-  async findByIds(ids: string[]): Promise<Post[]> {
+  async findByIds(ids: string[]) {
     const posts = await this.prisma.post.findMany({
       where: { id: { in: ids } },
-      include: {
-        author: true,
-        comments: {
-          include: {
-            author: true,
-          },
-        },
-        location: true,
-        event: true,
-        userArticles: true,
-      },
     });
 
-    return posts as unknown as Post[];
+    return posts;
   }
 
   async isLikedByUser(postId: string, userId: string | undefined): Promise<boolean> {
@@ -89,77 +73,40 @@ export class PostService {
     return !!existingLike;
   }
 
-  async findAll(): Promise<Post[]> {
+  async findAll() {
     const posts = await this.prisma.post.findMany({
-      include: {
-        author: true,
-        comments: {
-          include: {
-            author: true,
-          },
-        },
-        location: true,
-        event: true,
-        userArticles: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    return posts as unknown as Post[];
+    return posts;
   }
 
-  async findByAuthor(authorId: string): Promise<Post[]> {
+  async findByAuthor(authorId: string) {
     const posts = await this.prisma.post.findMany({
       where: { authorId },
-      include: {
-        author: true,
-        comments: {
-          include: {
-            author: true,
-          },
-        },
-        location: true,
-        event: true,
-        userArticles: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    return posts as unknown as Post[];
+    return posts;
   }
 
-  async findOne(id: string): Promise<Post> {
+  async findOne(id: string) {
     const post = await this.prisma.post.findUnique({
       where: { id },
-      include: {
-        author: true,
-        comments: {
-          include: {
-            author: true,
-          },
-        },
-        location: true,
-        event: true,
-        userArticles: true,
-      },
     });
 
     if (!post) {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
 
-    return post as unknown as Post;
+    return post;
   }
 
-  async update(
-    id: string,
-    updatePostInput: UpdatePostInput,
-    userId: string | undefined,
-  ): Promise<Post> {
+  async update(id: string, updatePostInput: UpdatePostInput, userId: string | undefined) {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to update a post');
     }
@@ -185,19 +132,12 @@ export class PostService {
         locationId: updatePostInput.locationId,
         eventId: updatePostInput.eventId,
       },
-      include: {
-        author: true,
-        comments: true,
-        location: true,
-        event: true,
-        userArticles: true,
-      },
     });
 
-    return post as unknown as Post;
+    return post;
   }
 
-  async remove(id: string, userId: string | undefined): Promise<Post> {
+  async remove(id: string, userId: string | undefined) {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to delete a post');
     }
@@ -217,19 +157,12 @@ export class PostService {
 
     const post = await this.prisma.post.delete({
       where: { id },
-      include: {
-        author: true,
-        comments: true,
-        location: true,
-        event: true,
-        userArticles: true,
-      },
     });
 
-    return post as unknown as Post;
+    return post;
   }
 
-  async likePost(postId: string, userId: string | undefined): Promise<void> {
+  async togglePostLike(postId: string, userId: string | undefined): Promise<boolean> {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to like a post');
     }
@@ -258,6 +191,8 @@ export class PostService {
     } else {
       await this.prisma.like.create({ data: { userId, postId } });
     }
+
+    return !existingLike;
   }
 
   getCommentCount(postId: string): Promise<number> {

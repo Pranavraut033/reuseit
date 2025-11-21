@@ -30,11 +30,21 @@ export class PointsService {
         reason: action,
       },
     });
+
     return this.prisma.user.update({
       where: { id: userId },
       data: {
         points: { increment: amount },
       },
+    });
+  }
+
+  async getPointHistories(userId: string, skip = 0, take = 10) {
+    return this.prisma.pointsHistory.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
     });
   }
 
