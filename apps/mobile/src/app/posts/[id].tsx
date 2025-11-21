@@ -16,10 +16,10 @@ import {
 
 import { getFragmentData } from '~/__generated__/fragment-masking';
 import ScreenContainer from '~/components/common/ScreenContainer';
+import { PostCard } from '~/components/post';
 import { useAuth } from '~/context/AuthContext';
-import { POST_FIELDS } from '~/gql/fragments';
-import { CREATE_COMMENT, GET_COMMENTS_BY_POST } from '~/gql/posts/postMutations';
-import { GET_POST_BY_ID } from '~/gql/posts/posts';
+import { LOCATION_FIELDS, POST_FIELDS } from '~/gql/fragments';
+import { CREATE_COMMENT, GET_COMMENTS_BY_POST, GET_POST_BY_ID } from '~/gql/posts';
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,7 +31,14 @@ export default function PostDetail() {
     variables: { id: id },
   });
 
-  const post = getFragmentData(POST_FIELDS, data?.post);
+  let a = getFragmentData(POST_FIELDS, data?.post);
+  const post = a
+    ? {
+        ...a,
+        id: a.id ?? '',
+        location: a.location ? getFragmentData(LOCATION_FIELDS, a.location) : null,
+      }
+    : null;
 
   // Get comments for this post
   const {
@@ -88,9 +95,9 @@ export default function PostDetail() {
   const comments = commentsData?.commentsByPost || [];
 
   return (
-    <ScreenContainer>
+    <ScreenContainer padding={0}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
         {/* Header */}
@@ -105,59 +112,12 @@ export default function PostDetail() {
           <View className="w-10" />
         </View>
 
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
           {/* Post Content */}
-          <View className="mb-6 rounded-2xl bg-white p-4 shadow-lg">
-            {post.author && (
-              <View className="mb-3 flex-row items-center">
-                {post.author.avatarUrl && (
-                  <Image
-                    source={{ uri: post.author.avatarUrl }}
-                    className="mr-3 h-12 w-12 rounded-full border-2 border-gray-200"
-                  />
-                )}
-                <View className="flex-1">
-                  <Text className="font-semibold text-gray-900 text-lg">{post.author.name}</Text>
-                  <Text className="text-sm text-gray-500">
-                    {new Date(post.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            <Text className="mb-4 text-gray-800 text-base leading-6">{post.description}</Text>
-
-            {post.images && post.images.length > 0 && (
-              <View className="mb-4 space-y-2">
-                {post.images.map((image, index) => (
-                  <View key={index} className="rounded-xl overflow-hidden">
-                    <Image source={{ uri: image }} className="h-64 w-full" resizeMode="cover" />
-                  </View>
-                ))}
-              </View>
-            )}
-
-            <View className="flex-row items-center space-x-6 pt-3 border-t border-gray-100">
-              <View className="flex-row items-center space-x-1">
-                <Ionicons name="heart-outline" size={20} color="#6B7280" />
-                <Text className="text-gray-600 text-sm">{Math.floor(post.likeCount)}</Text>
-              </View>
-
-              <View className="flex-row items-center space-x-1">
-                <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
-                <Text className="text-gray-600 text-sm">{comments.length}</Text>
-              </View>
-            </View>
-          </View>
+          <PostCard post={post} disableLink />
 
           {/* Comments Section */}
-          <View className="mb-20">
+          <View className="mb-20 mt-6">
             <Text className="mb-4 text-lg font-semibold text-gray-800">Comments</Text>
 
             {commentsLoading ? (
@@ -210,7 +170,7 @@ export default function PostDetail() {
                 value={commentText}
                 onChangeText={setCommentText}
                 placeholder="Write a comment..."
-                className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm"
+                className="flex-1 rounded-full border mr-3 border-gray-300 px-4 py-2 text-sm"
                 multiline
                 maxLength={500}
               />

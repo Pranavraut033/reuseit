@@ -3,11 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
+import { getFragmentData } from '~/__generated__';
 import { GetPostsQuery } from '~/__generated__/graphql';
 import ScreenContainer from '~/components/common/ScreenContainer';
 import PostList from '~/components/post/PostList';
-import { Post } from '~/gql/fragments';
-import { GET_POSTS } from '~/gql/posts/posts';
+import { LOCATION_FIELDS, POST_FIELDS } from '~/gql/fragments';
+import { GET_POSTS } from '~/gql/posts';
 
 const FeedsScreen = () => {
   const { data, loading, error, refetch } = useQuery<GetPostsQuery>(GET_POSTS);
@@ -15,7 +16,21 @@ const FeedsScreen = () => {
   const onRefresh = useCallback(async () => {
     await refetch();
   }, [refetch]);
-  const posts = (data?.posts ?? []) as Post[];
+  const posts = (data?.posts ?? []).map((_post) => {
+    let post = getFragmentData(POST_FIELDS, _post);
+    return {
+      ...post,
+      location: post.location ? getFragmentData(LOCATION_FIELDS, post.location) : null,
+    };
+  });
+
+  console.log({
+    error,
+    data,
+    posts,
+    loading,
+  });
+
   return (
     <ScreenContainer padding={0}>
       {/* Latest Posts */}

@@ -98,6 +98,9 @@ importers:
       cacheable:
         specifier: ^2.2.0
         version: 2.2.0
+      dataloader:
+        specifier: ^2.2.3
+        version: 2.2.3
       firebase-admin:
         specifier: ^12.6.0
         version: 12.7.0
@@ -110,6 +113,9 @@ importers:
       keyv:
         specifier: ^5.5.4
         version: 5.5.4
+      nestjs-dataloader:
+        specifier: ^9.0.0
+        version: 9.0.0(@nestjs/common@11.1.8)(@nestjs/core@11.1.8)(@nestjs/graphql@13.2.0)(graphql@16.12.0)
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -231,6 +237,9 @@ importers:
       '@dev-plugins/apollo-client':
         specifier: ^0.4.0
         version: 0.4.0(expo@54.0.23)(react@19.1.0)
+      '@expo/config':
+        specifier: ^12.0.10
+        version: 12.0.10
       '@expo/vector-icons':
         specifier: ^15.0.3
         version: 15.0.3(expo-font@14.0.9)(react-native@0.81.5)(react@19.1.0)
@@ -4709,6 +4718,39 @@ packages:
     dev: true
     optional: true
 
+  /@nestjs/apollo@10.2.1(@nestjs/common@11.1.8)(@nestjs/core@11.1.8)(@nestjs/graphql@13.2.0)(graphql@16.12.0):
+    resolution: {integrity: sha512-xAui+/ZQ5THeO09YgAyP+AZyPvJplH8F3azwV8sMJjbbEaQev6gyzbZsCCbcVcCiHIL0t20JmNPmLIY9BIdRrg==}
+    peerDependencies:
+      '@apollo/gateway': ^0.44.1 || ^0.46.0 || ^0.48.0 || ^0.49.0 || ^0.50.0 || ^2.0.0
+      '@apollo/subgraph': ^2.0.0
+      '@nestjs/common': ^8.2.3 || ^9.0.0
+      '@nestjs/core': ^8.2.3 || ^9.0.0
+      '@nestjs/graphql': ^10.0.0
+      apollo-server-core: ^3.5.0
+      apollo-server-express: ^3.5.0
+      apollo-server-fastify: ^3.5.0
+      graphql: ^15.8.0 || ^16.0.0
+    peerDependenciesMeta:
+      '@apollo/gateway':
+        optional: true
+      '@apollo/subgraph':
+        optional: true
+      apollo-server-core:
+        optional: true
+      apollo-server-express:
+        optional: true
+      apollo-server-fastify:
+        optional: true
+    dependencies:
+      '@nestjs/common': 11.1.8(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.8(@nestjs/common@11.1.8)(@nestjs/platform-express@11.1.8)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/graphql': 13.2.0(@nestjs/common@11.1.8)(@nestjs/core@11.1.8)(graphql@16.12.0)(reflect-metadata@0.2.2)
+      graphql: 16.12.0
+      iterall: 1.3.0
+      lodash.omit: 4.5.0
+      tslib: 2.5.0
+    dev: false
+
   /@nestjs/apollo@13.2.1(@apollo/server@5.1.0)(@as-integrations/express5@1.1.2)(@nestjs/common@11.1.8)(@nestjs/core@11.1.8)(@nestjs/graphql@13.2.0)(graphql@16.12.0):
     resolution: {integrity: sha512-BJPNw8xqs4DfdEEmjaAbI6cIJsHouWjcZN70BKTPl8rZcw4Tf61RonqFRn0F/rr/aiccWGAuXJuWY4dPsgah4Q==}
     peerDependencies:
@@ -9027,7 +9069,6 @@ packages:
 
   /dataloader@2.2.3:
     resolution: {integrity: sha512-y2krtASINtPFS1rSDjacrFgn1dcUuoREVabwlOGOe4SdxenREqwjwjElAdwvbGM7kgZz9a3KVicWR7vcz8rnzA==}
-    dev: true
 
   /date-fns@2.30.0:
     resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
@@ -13860,6 +13901,24 @@ packages:
     resolution: {integrity: sha512-SrQrok4CATudVzBS7coSz26QRSmlK9TzzoFbeKfcPBUFPjcQM9Rqvr/DlJkOrwI/0KcgvMub1n1g5Jt9EgRn4A==}
     dev: false
 
+  /nestjs-dataloader@9.0.0(@nestjs/common@11.1.8)(@nestjs/core@11.1.8)(@nestjs/graphql@13.2.0)(graphql@16.12.0):
+    resolution: {integrity: sha512-BiBEY+dhmhXxMjLOYjBOXs7kR1GF5z6cCBLLtwtRWGBAl7mz9EliyHk1gwlEgag+PK5w/pToqMUCV3D+SQkx9Q==}
+    dependencies:
+      '@nestjs/apollo': 10.2.1(@nestjs/common@11.1.8)(@nestjs/core@11.1.8)(@nestjs/graphql@13.2.0)(graphql@16.12.0)
+      dataloader: 2.2.3
+      rxjs: 7.8.2
+    transitivePeerDependencies:
+      - '@apollo/gateway'
+      - '@apollo/subgraph'
+      - '@nestjs/common'
+      - '@nestjs/core'
+      - '@nestjs/graphql'
+      - apollo-server-core
+      - apollo-server-express
+      - apollo-server-fastify
+      - graphql
+    dev: false
+
   /no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
@@ -16762,6 +16821,10 @@ packages:
       minimist: 1.2.8
       strip-bom: 3.0.0
     dev: true
+
+  /tslib@2.5.0:
+    resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
+    dev: false
 
   /tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}

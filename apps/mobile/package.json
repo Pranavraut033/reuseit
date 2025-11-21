@@ -19,6 +19,7 @@
   "dependencies": {
     "@apollo/client": "^4.0.9",
     "@dev-plugins/apollo-client": "^0.4.0",
+    "@expo/config": "^12.0.10",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.6",
     "@hookform/resolvers": "^5.2.2",

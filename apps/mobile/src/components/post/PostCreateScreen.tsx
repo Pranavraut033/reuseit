@@ -19,8 +19,7 @@ import { PostCard } from '~/components/post/PostCard';
 import { TagEditor } from '~/components/post/TagEditor';
 import { useAuth } from '~/context/AuthContext';
 import { Post } from '~/gql/fragments';
-import { CREATE_POST } from '~/gql/posts/createPost';
-import { GET_POSTS } from '~/gql/posts/posts';
+import { CREATE_POST, GET_POSTS } from '~/gql/posts';
 import cn from '~/utils/cn';
 import { t } from '~/utils/i18n';
 import { compressImages } from '~/utils/imageCompression';
@@ -568,6 +567,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
                 showsVerticalScrollIndicator={false}
               >
                 <PostCard
+                  isPreview
                   formData={formValues}
                   images={images.map((img) => img.uri)}
                   userName={user?.name}

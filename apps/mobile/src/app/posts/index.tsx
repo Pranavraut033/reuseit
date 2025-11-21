@@ -3,13 +3,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
-import { getFragmentData } from '~/__generated__';
-import ScreenContainer from '~/components/common/ScreenContainer';
+import { Button } from '~/components/common/Button';
 import { FabButton } from '~/components/common/FabButton';
+import ScreenContainer from '~/components/common/ScreenContainer';
 import PostList from '~/components/post/PostList';
 import { useAuth } from '~/context/AuthContext';
-import { POST_FIELDS } from '~/gql/fragments';
-import { GET_USER_POSTS } from '~/gql/posts/getUserPosts';
+import { Post } from '~/gql/fragments';
+import { GET_USER_POSTS } from '~/gql/posts';
 
 export default function MyPosts() {
   const { user } = useAuth();
@@ -20,7 +20,7 @@ export default function MyPosts() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const posts = getFragmentData(POST_FIELDS, data?.postsByAuthor ?? []);
+  const posts = (data?.postsByAuthor ?? []) as Post[];
 
   return (
     <ScreenContainer>
@@ -85,6 +85,15 @@ export default function MyPosts() {
             </Text>
             <Text className="mt-1 text-center text-sm text-red-600">{error.message}</Text>
           </View>
+          <Button
+            onPress={() => refetch()}
+            className="mt-4 "
+            accessible={true}
+            accessibilityLabel="Retry loading posts"
+            accessibilityRole="button"
+          >
+            <Text className="text-center text-white">Retry</Text>
+          </Button>
         </View>
       )}
 
