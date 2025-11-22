@@ -1,139 +1,106 @@
-# ReuseIt Documentation
+# ReUseIt Documentation
 
-Welcome to the ReuseIt documentation! This folder contains comprehensive guides and references for the entire monorepo.
+**Cross-platform mobile application for recycling gamification and community engagement**
 
-## 📚 Table of Contents
+---
 
-### Getting Started
-- **[Quick Start Guide](./QUICK_START.md)** - Get up and running in minutes
-- **[Quick Reference](./QUICK_REFERENCE.md)** - Common commands and workflows
+## 📖 Documentation Index
 
-### Development Setup
-- **[VS Code Integration Guide](./VSCODE_GUIDE.md)** - Editor setup and shortcuts
-- **[Linting & Formatting](./LINTING_FORMATTING.md)** - ESLint and Prettier configuration
+Follow the documentation in order for a complete understanding:
 
-### Feature Documentation
-- **[Google Maps Migration](./GOOGLE_MAPS_MIGRATION.md)** - Google Maps API architecture
-- **[Post Create Screen - Implementation](./IMPLEMENTATION_SUMMARY.md)** - Detailed feature implementation
-- **[Post Create Screen - Architecture](./ARCHITECTURE.md)** - System architecture diagrams
+1. **[Introduction](01-introduction.md)** - Project overview and Phase 3 objectives
+2. **[Requirements](02-requirements.md)** - Functional and non-functional requirements
+3. **[Architecture](03-architecture.md)** - System design and component breakdown
+4. **[Implementation](04-implementation.md)** - Development methodology and tech stack
+5. **[Testing](05-testing.md)** - Testing strategy and execution results
+6. **[Installation](06-installation.md)** - Setup and operation manual
+7. **[API Reference](07-api-reference.md)** - GraphQL API documentation
+8. **[Known Issues](08-known-issues.md)** - Technical debt and limitations
+9. **[Lessons Learned](09-lessons-learned.md)** - Reflections and insights
+10. **[References](references.md)** - Citations and resources
 
-## 🚀 Quick Links
+---
 
-### For New Developers
-1. Start with [Quick Start Guide](./QUICK_START.md) to set up your environment
-2. Configure your editor with [VS Code Integration Guide](./VSCODE_GUIDE.md)
-3. Review [Linting & Formatting](./LINTING_FORMATTING.md) for code quality standards
+## 🚀 Quick Start
 
-### For Mobile Development
-- [Post Create Screen - Implementation](./IMPLEMENTATION_SUMMARY.md) - Complete feature walkthrough
-- [Post Create Screen - Architecture](./ARCHITECTURE.md) - System design and data flow
-- [Google Maps Migration](./GOOGLE_MAPS_MIGRATION.md) - Location services integration
-
-### For Backend Development
-- [Google Maps Migration](./GOOGLE_MAPS_MIGRATION.md) - API integration details
-- [Quick Reference](./QUICK_REFERENCE.md) - Common backend commands
-
-## 📖 Documentation Structure
-
-```
-docs/
-├── README.md                      # This file - Documentation index
-├── QUICK_START.md                 # Getting started guide
-├── QUICK_REFERENCE.md             # Command reference
-├── VSCODE_GUIDE.md                # Editor setup
-├── LINTING_FORMATTING.md          # Code quality tools
-├── GOOGLE_MAPS_MIGRATION.md       # Google Maps integration
-├── IMPLEMENTATION_SUMMARY.md      # Post create feature details
-└── ARCHITECTURE.md                # System architecture diagrams
-```
-
-## 🔍 What's in Each Document?
-
-### Quick Start Guide
-- Prerequisites and installation
-- Environment setup
-- Running the backend and mobile app
-- Docker configuration
-
-### Quick Reference
-- Common pnpm commands
-- Development workflows
-- Useful shortcuts
-- Troubleshooting tips
-
-### VS Code Integration Guide
-- Extension recommendations
-- Auto-formatting setup
-- Keyboard shortcuts
-- Troubleshooting VS Code issues
-
-### Linting & Formatting
-- ESLint configuration
-- Prettier setup
-- NPM scripts for linting
-- Monorepo structure
-
-### Google Maps Migration
-- Backend GraphQL integration
-- Mobile client updates
-- API key security
-- Caching strategy
-
-### Post Create Screen - Implementation
-- Component breakdown (5 components + 5 utilities)
-- Feature list (image management, ML tags, location)
-- Technical stack and dependencies
-- Performance metrics
-- Localization (English/German)
-
-### Post Create Screen - Architecture
-- System architecture diagrams
-- Data flow visualization
-- Component hierarchy
-- Service layer design
-
-## 🛠️ Common Tasks
-
-### Start Development Environment
+**For Evaluators:**
 ```bash
-# Start backend
+# 1. Clone repository
+git clone https://github.com/Pranavraut033/reuseit.git
+cd reuseit
+
+# 2. Install dependencies
+pnpm install
+
+# 3. Configure environment
+cp apps/backend/.env.example apps/backend/.env
+cp apps/mobile/.env.example apps/mobile/.env
+
+# 4. Start backend
 pnpm --filter backend run start:dev
 
-# Start mobile app
+# 5. Start mobile app
 pnpm --filter mobile run start
 ```
 
-### Code Quality
-```bash
-# Format all files
-pnpm format
+**Detailed instructions:** See [Installation Guide](06-installation.md)
 
-# Lint all packages
-pnpm lint
+---
 
-# Fix linting issues
-pnpm lint:fix
-```
+## 🎯 Key Features
 
-### Database Management
-```bash
-# Migrate database
-pnpm --filter backend prisma:migrate
+- **AI-Powered Identification** - TensorFlow Lite for on-device waste classification
+- **Gamification** - Points, badges, and leaderboards
+- **Community Marketplace** - Post items for donation/trade
+- **Event Management** - Register and check-in to recycling events
+- **Location Services** - Find nearby recycling centers
+- **Educational Content** - Guides and articles on sustainable practices
 
-# Open Prisma Studio
-pnpm --filter backend prisma:studio
-```
+---
 
-## 🤝 Contributing
+## 🏗️ Technology Stack
 
-When adding new documentation:
-1. Place files in the `docs/` folder
-2. Update this README.md index
-3. Use clear, descriptive filenames
-4. Include a table of contents for long documents
-5. Add code examples where applicable
+| Layer | Technology |
+|-------|-----------|
+| Mobile Client | React Native (Expo) |
+| Backend API | NestJS + GraphQL |
+| Database | MongoDB Atlas + Prisma ORM |
+| AI/ML | TensorFlow Lite |
+| Authentication | Firebase Auth + JWT |
+| Maps | Google Maps API |
 
-## 📝 Documentation Guidelines
+---
+
+## 📱 Deployment Artifacts
+
+- **Android APK:** Available in `/builds` folder
+- **Source Code:** Complete monorepo structure
+- **GitHub Repository:** [github.com/Pranavraut033/reuseit](https://github.com/Pranavraut033/reuseit)
+
+---
+
+## 📊 Project Metadata
+
+- **Course:** Software Engineering (DLMCSPSE01)
+- **Author:** Pranav Virendra Raut
+- **Matriculation No:** 4243687
+- **Phase:** 3 - Finalization
+- **Date:** November 2024
+
+---
+
+## 🔗 External Links
+
+- **GitHub Pages:** [Documentation Site](https://pranavraut033.github.io/reuseit/)
+- **GraphQL Playground:** `http://localhost:4000/graphql` (when running locally)
+- **Expo Dev:** Launch via Expo Go mobile app
+
+---
+
+## 📄 License
+
+This project is submitted as academic coursework for IU International University of Applied Sciences.
+
 
 - **Use Markdown** for all documentation
 - **Keep it updated** - Update docs when code changes
