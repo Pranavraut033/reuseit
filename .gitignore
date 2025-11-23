@@ -1,3 +1,15 @@
+# ML training artifacts
+apps/ml-training/.venv/
+apps/ml-training/__pycache__/
+apps/ml-training/models/
+apps/ml-training/raw_datasets/
+apps/ml-training/merged_dataset/
+apps/ml-training/repr_samples/
+apps/ml-training/*.zip
+apps/ml-training/*.h5
+apps/ml-training/*.tflite
+apps/ml-training/*.keras
+apps/ml-training/.python-version
 node_modules
 .ds_store
 

@@ -1,0 +1,13 @@
+
+# For Python 3.10, use latest compatible TensorFlow (Apple Silicon users can add tensorflow-metal for GPU)
+tensorflow==2.15.1
+tensorflow-metal==1.1.0  # Optional: Apple Silicon GPU acceleration
+
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+Pillow==10.3.0
+matplotlib==3.8.4
+seaborn==0.13.2
+rich==13.7.1
+kaggle==1.6.14

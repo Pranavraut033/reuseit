@@ -1,0 +1,18 @@
+[project]
+name = "reuseit-waste-classifier"
+version = "0.1.0"
+description = "Waste classification model training for ReUseIt"
+requires-python = ">=3.10,<3.11"
+readme = "README.md"
+license = {text = "Proprietary"}
+keywords = ["tensorflow", "recycling", "classification", "tflite"]
+
+[project.optional-dependencies]
+# Example: add dev tools if needed later
+dev = ["black", "ruff", "pytest"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
