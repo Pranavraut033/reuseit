@@ -76,9 +76,9 @@ chmod 600 ~/.kaggle/kaggle.json
 ## Train
 For dynamic range TFLite (recommended for mixed precision models):
 ```bash
-python train.py --datasets mostafaabla/garbage-classification karansolanki01/garbage-classification sumn2u/garbage-classification-v2 glhdamar/new-trash-classfication-dataset joebeachcapital/realwaste asdasdasasdas/garbage-classification\
-  --image-size 224 --epochs 25 --batch-size 32 --model-dir models \
-  --mixed-precision --fine-tune-from 50
+  python train.py --datasets mostafaabla/garbage-classification karansolanki01/garbage-classification sumn2u/garbage-classification-v2 glhdamar/new-trash-classfication-dataset joebeachcapital/realwaste asdasdasasdas/garbage-classification\
+    --image-size 224 --epochs 25 --batch-size 32 --model-dir models \
+    --mixed-precision --fine-tune-from 50
 ```
 
 For full int8 TFLite (train WITHOUT --mixed-precision):
@@ -98,7 +98,7 @@ python train.py --datasets mostafaabla/garbage-classification karansolanki01/gar
 ## Convert to TFLite
 Dynamic range only:
 ```bash
-python export_tflite.py --model-path models/waste_classifier.h5 --output models/waste_classifier_dynamic.tflite
+python export_tflite.py --model-path models/waste_classifier.keras --output models/waste_classifier_dynamic.tflite
 ```
 Full int8 (requires model trained WITHOUT --mixed-precision flag):
 ```bash
@@ -109,7 +109,7 @@ python export_tflite.py --model-path models/waste_classifier.h5 \
 ## Test and Visualize Model
 Evaluate model performance and generate visualizations:
 ```bash
-python test_and_visualize.py --model-path models/waste_classifier.h5 \
+python test_and_visualize.py --model-path models/waste_classifier.keras \
   --merged-dir merged_dataset --output-dir results --num-samples 10
 ```
 

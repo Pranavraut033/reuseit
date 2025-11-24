@@ -30,7 +30,9 @@ def parse_args():
 
 def load_model_and_labels(model_path: str, labels_path: str):
     """Load model and class labels."""
-    model = keras.models.load_model(model_path)
+    model = keras.models.load_model(model_path, compile=False)
+    # Compile the model for evaluation
+    model.compile(loss="categorical_crossentropy", metrics=["accuracy"])
     # Use canonical classes instead of labels.json which might be incomplete
     from dataset_utils import get_canonical_classes
 

@@ -30,7 +30,7 @@ def main():
     if os.path.isdir(args.model_path):
         converter = tf.lite.TFLiteConverter.from_saved_model(args.model_path)
     else:
-        model = tf.keras.models.load_model(args.model_path)
+        model = tf.keras.models.load_model(args.model_path, compile=False)
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
 
     if args.int8:
