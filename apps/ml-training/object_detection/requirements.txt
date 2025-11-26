@@ -1,0 +1,6 @@
+# Object Detection Model Requirements
+# Additional dependencies for the object detection module
+
+opencv-python>=4.8.0
+matplotlib>=3.7.0
+numpy<2  # Required for TensorFlow compatibility
