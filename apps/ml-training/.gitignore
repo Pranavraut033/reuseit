@@ -22,6 +22,7 @@ raw_datasets/
 repr_samples/
 results/
 models/
+alt/
 
 # Object detection directories
 object_detection/models/
