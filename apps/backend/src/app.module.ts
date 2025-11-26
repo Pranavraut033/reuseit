@@ -21,6 +21,7 @@ import { UserModule } from '~/user/user.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { GoogleMapsModule } from './google-maps/google-maps.module';
 import { LocationModule } from './location/location.module';
+import { RecyclingModule } from './recycling/recycling.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { LocationModule } from './location/location.module';
     PointsModule,
     PostModule,
     PrismaModule,
+    RecyclingModule,
     UserModule,
     GoogleMapsModule,
     CacheModule.registerAsync({

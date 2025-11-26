@@ -211,6 +211,33 @@ type ReverseGeocodeResult {
   formattedAddress: String
 }
 
+type RecyclingInfo {
+  objectName: String!
+  materials: [String!]!
+  bin: GermanBin!
+  rules: [String!]!
+  cityOverride: String
+}
+
+enum GermanBin {
+  GELBER_SACK
+  PAPIER
+  GLAS
+  RESTMUELL
+  SPERRMUELL
+  ELEKTROSCHROTT
+  BIOMUELL
+  SCHADSTOFFSAMMLUNG
+  UNKNOWN
+}
+
+type FinalRecyclingResult {
+  objectName: String!
+  materials: [String!]!
+  recycling: RecyclingInfo!
+  instructions: String!
+}
+
 type Query {
   me: User
   users: [User!]!
@@ -231,11 +258,19 @@ type Query {
   comments: [Comment!]!
   comment(id: String!): Comment!
   commentsByPost(postId: String!): [Comment!]!
+  finalizeRecycling(input: FinalizeRecyclingInput!): FinalRecyclingResult!
   placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
   placeDetails(placeId: String!, sessionToken: String): PlaceDetails
   nearbyPlaces(latitude: Float!, longitude: Float!, radius: Float, keywords: [String!]!): [NearbyPlace!]!
   reverseGeocode(latitude: Float!, longitude: Float!): ReverseGeocodeResult
   generatePlacesSessionToken: String!
+}
+
+input FinalizeRecyclingInput {
+  objectName: String!
+  materials: [String!]!
+  city: String
+  imageBase64: String
 }
 
 type Mutation {
