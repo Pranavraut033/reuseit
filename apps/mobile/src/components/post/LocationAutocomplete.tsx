@@ -100,7 +100,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
   const renderItem = ({ item }: { item: AutocompletePrediction }) => (
     <TouchableOpacity
-      className="px-3 py-2 flex-row items-start gap-2"
+      className="flex-row items-start gap-2 px-3 py-2"
       onPress={() => handleSelect(item.place_id)}
       accessibilityRole="button"
       accessibilityLabel={item.description}
@@ -130,7 +130,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         {loading && <ActivityIndicator size="small" color="#3B82F6" />}
       </View>
       {predictions.length > 0 && (
-        <View className="mt-2 rounded-xl bg-white shadow border border-black/10 overflow-hidden">
+        <View className="mt-2 overflow-hidden rounded-xl border border-black/10 bg-white shadow">
           <FlatList
             data={predictions}
             keyExtractor={(p) => p.place_id}

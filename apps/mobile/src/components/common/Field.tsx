@@ -43,14 +43,16 @@ const Field: React.FC<FieldProps<FieldValues>> = ({
         name={name}
         rules={rules}
         render={(props) => {
-          const { onChange, onBlur, value } = props.field;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const { onChange, onBlur, value: _v } = props.field;
+          const value = _v as string;
 
           return (
             children?.(props.field) || (
               <RNTextInput
                 className={cn(
                   'rounded-lg border border-gray-300 p-4 focus:border-primary',
-                  inputClassName
+                  inputClassName,
                 )}
                 onBlur={onBlur}
                 onChangeText={onChange}

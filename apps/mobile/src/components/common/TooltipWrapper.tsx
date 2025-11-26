@@ -1,5 +1,5 @@
-import React, { PropsWithChildren, ReactNode,useState } from 'react';
-import { Platform, Pressable, TextStyle,View, ViewStyle } from 'react-native';
+import React, { PropsWithChildren, ReactNode, useState } from 'react';
+import { Platform, Pressable, TextStyle, View, ViewStyle } from 'react-native';
 import * as Tooltip from 'universal-tooltip';
 
 type TooltipWrapperProps = PropsWithChildren<{
@@ -30,7 +30,8 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
           open,
           onDismiss: () => setOpen(false),
         },
-      })}>
+      })}
+    >
       <Tooltip.Trigger>
         <TriggerView
           {...Platform.select({
@@ -40,7 +41,8 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
               open,
             },
           })}
-          {...triggerProps}>
+          {...triggerProps}
+        >
           {children}
         </TriggerView>
       </Tooltip.Trigger>
@@ -59,7 +61,8 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
         side={side}
         presetAnimation="fadeIn"
         backgroundColor="black"
-        borderRadius={12}>
+        borderRadius={12}
+      >
         {typeof content === 'string' ? (
           <Tooltip.Text text={content} style={{ color: '#fff', fontSize: 16, ...textStyle }} />
         ) : (

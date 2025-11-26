@@ -4,6 +4,7 @@ import { ScrollView, Text, View } from 'react-native';
 
 import ScreenContainer from '~/components/common/ScreenContainer';
 import { useAuth } from '~/context/AuthContext';
+import { DateTime } from '~/gql/helper.types';
 import { GET_USER_POINTS } from '~/gql/points/getUserPoints';
 
 const PointsScreen = () => {
@@ -89,28 +90,30 @@ const PointsScreen = () => {
           </View>
         )}
 
-        {pointsHistory.map((entry: any) => (
-          <View
-            key={entry.id}
-            className="mb-3 flex-row items-center rounded-xl bg-white p-4 shadow-sm"
-            accessible={true}
-            accessibilityLabel={`Earned ${entry.amount} points for ${entry.reason.replace('_', ' ')}`}
-            accessibilityRole="text"
-          >
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-green-100">
-              <FontAwesome5 name="star" size={18} color="#10B981" />
+        {pointsHistory.map((entry) => {
+          return (
+            <View
+              key={entry.id}
+              className="mb-3 flex-row items-center rounded-xl bg-white p-4 shadow-sm"
+              accessible={true}
+              accessibilityLabel={`Earned ${entry.amount} points for ${entry.reason.replace('_', ' ')}`}
+              accessibilityRole="text"
+            >
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                <FontAwesome5 name="star" size={18} color="#10B981" />
+              </View>
+              <View className="ml-4 flex-1">
+                <Text className="text-base font-semibold capitalize text-gray-800">
+                  {entry.reason.replace(/_/g, ' ')}
+                </Text>
+                <Text className="mt-1 text-lg font-bold text-green-600">+{entry.amount} XP</Text>
+                <Text className="mt-1 text-xs text-gray-500">
+                  {new Date(entry.createdAt as DateTime).toLocaleString()}
+                </Text>
+              </View>
             </View>
-            <View className="ml-4 flex-1">
-              <Text className="text-base font-semibold capitalize text-gray-800">
-                {entry.reason.replace(/_/g, ' ')}
-              </Text>
-              <Text className="mt-1 text-lg font-bold text-green-600">+{entry.amount} XP</Text>
-              <Text className="mt-1 text-xs text-gray-500">
-                {new Date(entry.createdAt).toLocaleString()}
-              </Text>
-            </View>
-          </View>
-        ))}
+          );
+        })}
         {/* Bottom padding for scroll */}
         <View className="h-6" />
       </ScrollView>

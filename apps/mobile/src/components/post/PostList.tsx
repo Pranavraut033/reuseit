@@ -18,7 +18,7 @@ const PostList: React.FC<PostListProps> = ({ posts, refreshControl }) => (
       data={posts}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
-        <View className="mb-4 mx-4">
+        <View className="mx-4 mb-4">
           <PostCard post={item} />
         </View>
       )}

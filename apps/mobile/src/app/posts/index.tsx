@@ -31,8 +31,7 @@ export default function MyPosts() {
           className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
           accessible={true}
           accessibilityLabel="Go back"
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </Pressable>
         <Text className="flex-1 text-2xl font-bold text-gray-800">My Posts</Text>
@@ -41,8 +40,7 @@ export default function MyPosts() {
           className="h-10 w-10 items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
           accessible={true}
           accessibilityLabel="Refresh posts"
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <Ionicons name="refresh" size={24} color="#374151" />
         </Pressable>
       </View>
@@ -90,8 +88,7 @@ export default function MyPosts() {
             className="mt-4 "
             accessible={true}
             accessibilityLabel="Retry loading posts"
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             <Text className="text-center text-white">Retry</Text>
           </Button>
         </View>

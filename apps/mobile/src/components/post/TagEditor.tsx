@@ -33,7 +33,7 @@ export const TagEditor: React.FC<TagEditorProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<TagSuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [, setShowSuggestions] = useState(false);
 
   // Load tag suggestions based on context
 

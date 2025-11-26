@@ -8,3 +8,5 @@ export type PostCreateFormData = Flatten<CreatePostInput> & {
   pickupDate: Date | null;
   location: LocationCreateFormData;
 };
+
+export type DateTime = string | number | Date;

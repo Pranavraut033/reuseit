@@ -51,7 +51,7 @@ export const LOCATION_FIELDS = gql(`
 `);
 
 let _p = getFragmentData(POST_FIELDS, {});
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
 let _l = getFragmentData(LOCATION_FIELDS, _p.location);
 
 export type Location = typeof _l;

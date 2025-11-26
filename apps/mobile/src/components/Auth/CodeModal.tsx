@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal,Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Button } from '../common/Button';
 import Field from '../common/Field';
@@ -17,11 +17,13 @@ const CodeModal: React.FC<{
       <TouchableOpacity
         className="flex-1 items-center justify-center bg-black/50"
         activeOpacity={1}
-        onPress={onClose}>
+        onPress={onClose}
+      >
         <View className="w-full flex-1 items-center justify-center">
           <View
             onStartShouldSetResponder={() => true}
-            className="w-11/12 items-center rounded-3xl border border-gray-100 bg-white p-8 shadow-2xl">
+            className="w-11/12 items-center rounded-3xl border border-gray-100 bg-white p-8 shadow-2xl"
+          >
             <View className="mb-4 w-full flex-row items-center justify-between">
               <Text className="text-lg font-semibold text-gray-900">Enter OTP</Text>
               <TouchableOpacity onPress={onClose} className="p-1">
@@ -37,7 +39,7 @@ const CodeModal: React.FC<{
                   className="mb-6 w-full rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-4 text-center text-2xl tracking-widest transition-colors focus:border-primary focus:bg-white"
                   keyboardType="number-pad"
                   maxLength={6}
-                  value={value}
+                  value={value as string}
                   onChangeText={onChange}
                   placeholder="------"
                   autoFocus

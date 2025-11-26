@@ -104,7 +104,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
   }, [onLocationChange, requestLocationPermission, getLocationFromCoords]);
 
   const handleMapPress = useCallback(
-    async (event: any) => {
+    async (event: { nativeEvent: { coordinate: { latitude: number; longitude: number } } }) => {
       const { latitude, longitude } = event.nativeEvent.coordinate;
 
       try {
@@ -138,7 +138,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
 
   return (
     <View className="mb-4">
-      <View className="flex-row justify-between items-center mb-3">
+      <View className="mb-3 flex-row items-center justify-between">
         <Text className="text-base font-semibold text-gray-800">
           {t('postCreate.locationOptional')}
         </Text>
@@ -151,10 +151,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
 
       {/* Current Location Display */}
       {location && (
-        <View className="flex-row items-center p-3 bg-blue-50 rounded-xl mb-3 gap-3">
+        <View className="mb-3 flex-row items-center gap-3 rounded-xl bg-blue-50 p-3">
           <Ionicons name="location" size={20} color="#3B82F6" />
           <View className="flex-1">
-            <Text className="text-[15px] font-semibold text-gray-800 mb-0.5">
+            <Text className="mb-0.5 text-[15px] font-semibold text-gray-800">
               {location.street || 'Location'}
             </Text>
             {location.street && (
@@ -176,9 +176,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
 
       {/* Action Buttons */}
       {!location && (
-        <View className="flex-row gap-2 mb-3">
+        <View className="mb-3 flex-row gap-2">
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center p-3 bg-blue-50 rounded-xl gap-2"
+            className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-blue-50 p-3"
             onPress={getCurrentLocation}
             disabled={isLoading}
             accessible={true}
@@ -198,7 +198,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center p-3 bg-blue-50 rounded-xl gap-2"
+            className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-blue-50 p-3"
             onPress={openMapPicker}
             accessible={true}
             accessibilityLabel="Select location on map"
@@ -215,7 +215,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
         <SafeAreaView className="flex-1 ">
           <View className="flex-1">
             <View
-              className={`flex-row absolute top-4 inset-x-4 z-10  justify-between items-center p-4 border border-black/10 bg-white/60 rounded-full`}
+              className={`absolute inset-x-4 top-4 z-10 flex-row  items-center justify-between rounded-full border border-black/10 bg-white/60 p-4`}
             >
               <TouchableOpacity onPress={() => setShowMap(false)}>
                 <Ionicons name="close" size={28} color="#1F2937" />
@@ -257,7 +257,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
             </MapView>
 
             {tempLocation && (
-              <View className="absolute bottom-5 left-5 right-5 p-4 bg-white rounded-xl shadow-lg">
+              <View className="absolute bottom-5 left-5 right-5 rounded-xl bg-white p-4 shadow-lg">
                 <Text className="text-sm text-gray-800">{getAddressString(tempLocation)}</Text>
               </View>
             )}

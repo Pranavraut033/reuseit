@@ -45,8 +45,7 @@ export default function Home() {
           onPress={() => router.push('/posts')}
           accessible={true}
           accessibilityLabel="View My Posts"
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-100">
             <Ionicons name="document-text-outline" size={20} color="#3B82F6" />
           </View>
@@ -61,8 +60,7 @@ export default function Home() {
           }}
           accessible={true}
           accessibilityLabel="Account Settings"
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-100">
             <Ionicons name="settings-outline" size={20} color="#7C3AED" />
           </View>
@@ -77,8 +75,7 @@ export default function Home() {
           }}
           accessible={true}
           accessibilityLabel="Notifications"
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-100">
             <Ionicons name="notifications-outline" size={20} color="#3B82F6" />
           </View>
@@ -93,8 +90,7 @@ export default function Home() {
           }}
           accessible={true}
           accessibilityLabel="Help & Support"
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-green-100">
             <Ionicons name="help-circle-outline" size={20} color="#10B981" />
           </View>

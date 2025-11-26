@@ -35,4 +35,3 @@ export const useStore = create<AppState>((set) => ({
     set({ token: token || null });
   },
 }));
-

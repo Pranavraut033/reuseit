@@ -14,6 +14,7 @@ module.exports = {
       'expo-router',
       'expo-web-browser',
       'expo-font',
+      'expo-asset',
       '@react-native-firebase/app',
       '@react-native-firebase/auth',
       [

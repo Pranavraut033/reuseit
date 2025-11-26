@@ -86,7 +86,7 @@ function SignInWithPhone() {
         >
           {({ onChange, onBlur, value }) => (
             <PhoneInput
-              value={value}
+              value={value as string}
               onChange={onChange}
               onBlur={onBlur}
               onCountrySelect={(c) => setValue('country', c)}

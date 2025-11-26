@@ -1,6 +1,6 @@
-import { gql } from "~/__generated__";
+import { gql } from '~/__generated__';
 
-export const GET_USER_POINTS = gql( `
+export const GET_USER_POINTS = gql(`
   query GetUserPoints($id: String!) {
     user(id: $id) {
       id

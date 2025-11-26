@@ -70,18 +70,18 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
           onClose={onClose}
         >
           <View className="flex-1 bg-white">
-            <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200">
+            <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-4">
               <Text className="text-lg font-semibold text-gray-900">Select Country</Text>
               <TouchableOpacity
-                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
                 onPress={onClose}
               >
-                <Text className="text-gray-600 text-lg">×</Text>
+                <Text className="text-lg text-gray-600">×</Text>
               </TouchableOpacity>
             </View>
             <View className="px-4 py-3">
-              <View className="flex-row items-center bg-gray-50 rounded-lg px-3 py-2">
-                <Text className="text-gray-400 mr-2">🔍</Text>
+              <View className="flex-row items-center rounded-lg bg-gray-50 px-3 py-2">
+                <Text className="mr-2 text-gray-400">🔍</Text>
                 <TextInput
                   className="flex-1 text-gray-900"
                   placeholder="Search country or code"
@@ -99,17 +99,17 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
               renderItem={({ item }: { item: Country }) => (
                 <TouchableOpacity
                   className={cn(
-                    'flex-row items-center px-4 py-3 border-b border-gray-100 active:bg-gray-50',
+                    'flex-row items-center border-b border-gray-100 px-4 py-3 active:bg-gray-50',
                     {
                       'bg-black/5': item.code === currentCountryCode,
                     },
                   )}
                   onPress={() => onSelect(item)}
                 >
-                  <Text className="text-2xl mr-3">{getFlagEmoji(item.code)}</Text>
+                  <Text className="mr-3 text-2xl">{getFlagEmoji(item.code)}</Text>
                   <View className="flex-1">
-                    <Text className="text-gray-900 font-medium">{item.name}</Text>
-                    <Text className="text-gray-500 text-sm">{item.dial_code}</Text>
+                    <Text className="font-medium text-gray-900">{item.name}</Text>
+                    <Text className="text-sm text-gray-500">{item.dial_code}</Text>
                   </View>
                   {item.code === currentCountryCode && (
                     <AntDesign name="check" size={16} color={primaryColor} />

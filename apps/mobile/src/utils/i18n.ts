@@ -265,11 +265,12 @@ export const translations: Record<string, TranslationObject> = {
 export const t = (key: TranslationKey, lang?: Language): string => {
   const language = lang || getCurrentLanguage();
   const keys = key.split('.');
-  let value: any = translations[language];
+  let value: Record<string, unknown> | string = translations[language];
 
   for (const k of keys) {
-    value = value?.[k];
+    if (typeof value === 'string') break;
+    value = (value as Record<string, unknown>)?.[k] as Record<string, unknown> | string;
   }
 
-  return value || key;
+  return typeof value === 'string' ? value : key;
 };

@@ -1,8 +1,5 @@
-import { Children,FC, ReactNode } from "react";
-import { View } from "react-native";
-
-
-
+import { Children, FC, ReactNode } from 'react';
+import { View } from 'react-native';
 
 // Small helper to implement spacing between children in a given direction
 const Row: FC<{
@@ -17,10 +14,7 @@ const Row: FC<{
   return (
     <View
       className={className}
-      style={[
-        { flexDirection: isRow ? 'row' : 'column', alignItems: 'center' },
-        style,
-      ]}
+      style={[{ flexDirection: isRow ? 'row' : 'column', alignItems: 'center' }, style]}
     >
       {arr.map((child, idx) => (
         <View

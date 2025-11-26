@@ -117,19 +117,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const signInResult = await GoogleSignin.signIn();
 
         let idToken: string | undefined =
-          signInResult.data?.idToken ?? (signInResult as any).idToken;
+          signInResult.data?.idToken ?? (signInResult as { idToken?: string }).idToken; // Fallback for older versions
 
         if (!idToken) {
           throw new Error('No ID token found');
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const googleCredential = GoogleAuthProvider.credential(idToken);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const response = await signInWithCredential(getAuth(), googleCredential);
         await handleUserSignIn(response.user);
         onSuccess?.();
-      } catch (error) {
-        setError(error);
+      } catch (_e) {
+        const error = _e as Error;
+        setError(error.message || 'Authentication failed');
+
         throw error;
       }
     },
@@ -168,6 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const authLink = setContext((_, { headers }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       headers: { ...headers, authorization: token ? `Bearer ${token}` : '' },
     }));
 

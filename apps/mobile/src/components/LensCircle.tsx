@@ -1,5 +1,5 @@
 import { MotiView } from 'moti';
-import { useCallback, useEffect,useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
 // Animated Google Lens-like circles overlay
@@ -27,7 +27,7 @@ const LensCircles: React.FC = () => {
       const duration = Math.random() * 900 + 1100; // Between 1100ms and 2000ms
       return { x, y, size, scaleFactor, scaleDirection, color, duration };
     },
-    [gridSize, cellWidth, cellHeight]
+    [gridSize, cellWidth, cellHeight],
   );
 
   // State for all circles
@@ -36,7 +36,7 @@ const LensCircles: React.FC = () => {
       ...randomCircle(idx),
       key: Math.random().toString(36).slice(2),
       delay: Math.random() * 800,
-    }))
+    })),
   );
 
   const onShrink = useCallback(
@@ -51,7 +51,7 @@ const LensCircles: React.FC = () => {
         return next;
       });
     },
-    [randomCircle]
+    [randomCircle],
   );
 
   // Full-screen overlay container
@@ -65,7 +65,8 @@ const LensCircles: React.FC = () => {
         width,
         height,
         zIndex: 99,
-      }}>
+      }}
+    >
       {circles.map((circle, idx) => (
         <LensCircle {...circle} key={circle.key} idx={idx} onShrink={onShrink} />
       ))}
@@ -114,7 +115,7 @@ const LensCircle: React.FC<LensCircleProps> = ({
   }, [duration, delay, onShrink, idx]);
 
   const [fromScale, toScale] = scaleDirection ? [1, 1 + scaleFactor] : [1 + scaleFactor, 1];
-  const [fromOpacity, toOpacity] = scaleDirection ? [0.7, 1] : [1, 0.7];
+  const [, toOpacity] = scaleDirection ? [0.7, 1] : [1, 0.7];
 
   return (
     <MotiView

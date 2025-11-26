@@ -1,5 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ImagePickerResult, launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
+import {
+  ImagePickerResult,
+  launchCameraAsync,
+  launchImageLibraryAsync,
+  requestCameraPermissionsAsync,
+  requestMediaLibraryPermissionsAsync,
+} from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -52,7 +58,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
       if (cameraPermission.status !== 'granted' || libraryPermission.status !== 'granted') {
         Alert.alert(
           'Permissions Required',
-          'We need camera and photo library permissions to add images.'
+          'We need camera and photo library permissions to add images.',
         );
         return false;
       }
@@ -99,7 +105,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
         if (imagesToProcess.length < result.assets.length) {
           Alert.alert(
             'Limit Reached',
-            `Maximum ${maxImages} images allowed. Only ${imagesToProcess.length} were added.`
+            `Maximum ${maxImages} images allowed. Only ${imagesToProcess.length} were added.`,
           );
         }
       } catch (error) {
@@ -157,7 +163,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
           text: t('postCreate.cancel'),
           style: 'cancel',
         },
-      ]
+      ],
     );
   };
 
@@ -166,7 +172,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
       const updatedImages = images.filter((img) => img.id !== id);
       onImagesChange(updatedImages);
     },
-    [images, onImagesChange]
+    [images, onImagesChange],
   );
 
   const renderImageItem = ({ item, drag, isActive }: RenderItemParams<MediaItem>) => {
@@ -175,10 +181,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
         <TouchableOpacity
           onLongPress={drag}
           disabled={isActive || images.length <= 1}
-          style={[
-            styles.imageContainer,
-            isActive && styles.imageContainerActive,
-          ]}
+          style={[styles.imageContainer, isActive && styles.imageContainerActive]}
           accessible={true}
           accessibilityLabel={t('accessibility.dragHandle')}
           accessibilityRole="button"

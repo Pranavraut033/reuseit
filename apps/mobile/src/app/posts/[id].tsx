@@ -19,6 +19,7 @@ import ScreenContainer from '~/components/common/ScreenContainer';
 import { PostCard } from '~/components/post';
 import { useAuth } from '~/context/AuthContext';
 import { LOCATION_FIELDS, POST_FIELDS } from '~/gql/fragments';
+import { DateTime } from '~/gql/helper.types';
 import { CREATE_COMMENT, GET_COMMENTS_BY_POST, GET_POST_BY_ID } from '~/gql/posts';
 
 export default function PostDetail() {
@@ -136,18 +137,18 @@ export default function PostDetail() {
             ) : (
               comments.map((comment) => (
                 <View key={comment.id} className="mb-3 rounded-xl bg-gray-50 p-3">
-                  <View className="flex-row items-center mb-2">
+                  <View className="mb-2 flex-row items-center">
                     {comment.author?.avatarUrl && (
                       <Image
                         source={{ uri: comment.author.avatarUrl }}
                         className="mr-2 h-8 w-8 rounded-full"
                       />
                     )}
-                    <Text className="font-medium text-gray-900 text-sm">
+                    <Text className="text-sm font-medium text-gray-900">
                       {comment.author?.name || 'Anonymous'}
                     </Text>
                     <Text className="ml-2 text-xs text-gray-500">
-                      {new Date(comment.createdAt).toLocaleDateString('en-US', {
+                      {new Date(comment.createdAt as DateTime).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',
@@ -155,7 +156,7 @@ export default function PostDetail() {
                       })}
                     </Text>
                   </View>
-                  <Text className="text-gray-700 text-sm leading-5">{comment.content}</Text>
+                  <Text className="text-sm leading-5 text-gray-700">{comment.content}</Text>
                 </View>
               ))
             )}
@@ -164,13 +165,13 @@ export default function PostDetail() {
 
         {/* Comment Input */}
         {user && (
-          <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+          <View className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4">
             <View className="flex-row items-center space-x-3">
               <TextInput
                 value={commentText}
                 onChangeText={setCommentText}
                 placeholder="Write a comment..."
-                className="flex-1 rounded-full border mr-3 border-gray-300 px-4 py-2 text-sm"
+                className="mr-3 flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm"
                 multiline
                 maxLength={500}
               />

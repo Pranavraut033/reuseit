@@ -120,8 +120,7 @@ export default function ExplorePage() {
     <ScreenContainer safeArea={false} statusBarStyle="light-content">
       <View
         className="left-4 right-4 top-4 z-10 rounded p-6"
-        style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}
-      >
+        style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}>
         <Text className="text-center text-xl font-semibold text-primary-dark">
           {t('explore.title')}
         </Text>
@@ -139,8 +138,7 @@ export default function ExplorePage() {
       {isLoadingPlaces && (
         <View
           className="absolute left-0 right-0 z-20 items-center"
-          style={{ bottom: insets.bottom + 16 + 78 }}
-        >
+          style={{ bottom: insets.bottom + 16 + 78 }}>
           <View className="rounded-full bg-white px-4 py-2 shadow-lg">
             <Text className="text-sm text-gray-700">{t('explore.loading')}</Text>
           </View>
@@ -162,8 +160,7 @@ export default function ExplorePage() {
           showsMyLocationButton={false}
           followsUserLocation
           showsUserLocation
-          style={styles.map}
-        >
+          style={styles.map}>
           {/* Render fetched places as markers */}
           {places?.map((p) => {
             const lat = p.geometry?.location?.lat;
@@ -184,7 +181,7 @@ export default function ExplorePage() {
         </MapView>
       </View>
       {/* Preview card for selected place */}
-      <View className="absolute bottom-[98px] left-4 right-4 items-end pointer-events-box-none">
+      <View className="pointer-events-box-none absolute bottom-[98px] left-4 right-4 items-end">
         {showCurrentLocation && (
           <TooltipWrapper content={t('explore.tooltipCurrentLocation')}>
             <FabButton
@@ -200,37 +197,35 @@ export default function ExplorePage() {
           </TooltipWrapper>
         )}
         {selectedPlace && (
-          <View className="w-full mt-4 rounded-2xl overflow-hidden">
+          <View className="mt-4 w-full overflow-hidden rounded-2xl">
             <LinearGradient
               colors={['#34A853', '#5cd67c']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              className="flex-row  p-4 w-full shadow-lg"
-            >
-              <View className="w-28 h-28 rounded-xl overflow-hidden mr-4 border-2 border-white shadow-md">
+              className="w-full  flex-row p-4 shadow-lg">
+              <View className="mr-4 h-28 w-28 overflow-hidden rounded-xl border-2 border-white shadow-md">
                 <PlacePhoto place={selectedPlace} />
               </View>
               <View className="flex-1 justify-center">
                 <Text numberOfLines={2} className="text-lg font-bold text-white">
                   {selectedPlace.name}
                 </Text>
-                <Text numberOfLines={3} className="text-white/80 mt-1 text-sm">
+                <Text numberOfLines={3} className="mt-1 text-sm text-white/80">
                   {selectedPlace.vicinity || selectedPlace.formatted_address}
                 </Text>
 
-                <View className="flex-row mt-4">
+                <View className="mt-4 flex-row">
                   <Button
                     type="neutral"
                     size="small"
-                    className="rounded-full bg-white mr-4"
+                    className="mr-4 rounded-full bg-white"
                     icon={({ size }) => (
                       <MaterialIcons name="directions" size={size} color="#34A853" />
                     )}
                     textClassName="text-primary"
                     onPress={() => {
                       openInMaps(selectedPlace);
-                    }}
-                  >
+                    }}>
                     {t('explore.directions')}
                   </Button>
 
@@ -238,8 +233,7 @@ export default function ExplorePage() {
                     size="small"
                     type="neutral"
                     className="rounded-full"
-                    onPress={() => setSelectedPlace(null)}
-                  >
+                    onPress={() => setSelectedPlace(null)}>
                     <Text className="text-sm font-semibold text-white">{t('explore.close')}</Text>
                   </Button>
                 </View>
@@ -258,13 +252,13 @@ const PlacePhoto: React.FC<{ place: Place }> = ({ place }) => {
 
   if (!url) {
     return (
-      <View className="w-full h-full bg-gray-400 justify-center items-center">
+      <View className="h-full w-full items-center justify-center bg-gray-400">
         <Text className="text-white">No Image</Text>
       </View>
     );
   }
   return (
-    <Image source={{ uri: url }} className="w-full h-full" resizeMode="cover" onError={() => {}} />
+    <Image source={{ uri: url }} className="h-full w-full" resizeMode="cover" onError={() => {}} />
   );
 };
 

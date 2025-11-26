@@ -20,7 +20,7 @@ const COMPRESSION_QUALITY = 0.8;
  */
 export const compressImage = async (
   imageUri: string,
-  quality: number = COMPRESSION_QUALITY
+  quality: number = COMPRESSION_QUALITY,
 ): Promise<CompressedImage> => {
   try {
     // First, get the image dimensions
@@ -37,7 +37,7 @@ export const compressImage = async (
       {
         compress: quality,
         format: ImageManipulator.SaveFormat.JPEG,
-      }
+      },
     );
 
     return {
@@ -59,7 +59,7 @@ export const compressImage = async (
  */
 export const compressImages = async (
   images: (string | ImagePickerAsset)[],
-  quality: number = COMPRESSION_QUALITY
+  quality: number = COMPRESSION_QUALITY,
 ): Promise<CompressedImage[]> => {
   const compressionPromises = images.map((image) => {
     const uri = typeof image === 'string' ? image : image.uri;
@@ -77,7 +77,7 @@ export const compressImages = async (
  */
 export const generateThumbnail = async (
   imageUri: string,
-  size: number = 200
+  size: number = 200,
 ): Promise<CompressedImage> => {
   try {
     const manipResult = await ImageManipulator.manipulateAsync(
@@ -93,7 +93,7 @@ export const generateThumbnail = async (
       {
         compress: 0.7,
         format: ImageManipulator.SaveFormat.JPEG,
-      }
+      },
     );
 
     return {
@@ -119,7 +119,7 @@ export const calculateOptimalDimensions = (
   width: number,
   height: number,
   maxWidth: number = MAX_IMAGE_WIDTH,
-  maxHeight: number = MAX_IMAGE_HEIGHT
+  maxHeight: number = MAX_IMAGE_HEIGHT,
 ): { width: number; height: number } => {
   if (width <= maxWidth && height <= maxHeight) {
     return { width, height };

@@ -145,8 +145,8 @@ export const FabButton = forwardRef<View, FabButtonProps>(
         activeOpacity={0.7}
         {...touchableProps}
         className={cn([
-          'justify-center items-center flex flex-row',
-          'shadow-lg z-[2] rounded-full',
+          'flex flex-row items-center justify-center',
+          'z-[2] rounded-full shadow-lg',
           typeClass[type],
           sizeConfig[size].fab,
           isDisabled ? 'opacity-60' : '',

@@ -14,7 +14,9 @@ export interface OfflinePost {
  * @param post - Post data to save
  * @returns Success status
  */
-export const saveOfflinePost = async (post: Omit<OfflinePost, 'id' | 'timestamp'>): Promise<string> => {
+export const saveOfflinePost = async (
+  post: Omit<OfflinePost, 'id' | 'timestamp'>,
+): Promise<string> => {
   try {
     const offlinePosts = await getOfflinePosts();
     const newPost: OfflinePost = {

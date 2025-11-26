@@ -19,6 +19,7 @@ import { PostCard } from '~/components/post/PostCard';
 import { TagEditor } from '~/components/post/TagEditor';
 import { useAuth } from '~/context/AuthContext';
 import { Post } from '~/gql/fragments';
+import { DateTime } from '~/gql/helper.types';
 import { CREATE_POST, GET_POSTS } from '~/gql/posts';
 import cn from '~/utils/cn';
 import { t } from '~/utils/i18n';
@@ -141,7 +142,7 @@ export const PostCreateScreen: React.FC = () => {
       // Prepare mutation input
       const createPostInput: PostCreateFormData = {
         ...data,
-        pickupDate: new Date(data.pickupDate),
+        pickupDate: new Date(data.pickupDate as DateTime),
         images: imageUrls,
       };
 
@@ -216,7 +217,7 @@ export const PostCreateScreen: React.FC = () => {
   return (
     <ScreenContainer keyboardAvoiding padding={0}>
       {/* Header */}
-      <View className={`flex-row items-center px-4 py-3 bg-white border-b border-gray-200`}>
+      <View className={`flex-row items-center border-b border-gray-200 bg-white px-4 py-3`}>
         <TouchableOpacity
           onPress={handleCancel}
           disabled={isLoading}
@@ -227,7 +228,7 @@ export const PostCreateScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={28} color="#1F2937" />
         </TouchableOpacity>
 
-        <Text className="text-xl mx-4 font-bold text-gray-800">{t('postCreate.title')}</Text>
+        <Text className="mx-4 text-xl font-bold text-gray-800">{t('postCreate.title')}</Text>
         <View className="flex-1" />
         <Button
           onPress={handleSubmit(onSubmit)}
@@ -252,7 +253,7 @@ export const PostCreateScreen: React.FC = () => {
       >
         <View className="p-4">
           <View className="mb-5">
-            <View className="flex-row justify-between items-center mb-3 border border-gray-200 p-2 bg-gray-50 rounded-xl">
+            <View className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-2">
               <Text>
                 Post as{' '}
                 <Text
@@ -278,7 +279,7 @@ export const PostCreateScreen: React.FC = () => {
                 )}
               />
             </View>
-            <Text className="text-[15px] font-semibold text-gray-800 mb-2">
+            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
               {t('postCreate.title')} <Text className="text-red-500">*</Text>
             </Text>
             <Controller
@@ -286,7 +287,7 @@ export const PostCreateScreen: React.FC = () => {
               name="title"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
-                  className={`p-3 bg-white rounded-xl border text-[15px] text-gray-800 ${errors.title ? 'border-red-500' : 'border-gray-200'}`}
+                  className={`rounded-xl border bg-white p-3 text-[15px] text-gray-800 ${errors.title ? 'border-red-500' : 'border-gray-200'}`}
                   placeholder={t('postCreate.titlePlaceholder')}
                   value={value}
                   onChangeText={onChange}
@@ -299,13 +300,13 @@ export const PostCreateScreen: React.FC = () => {
               )}
             />
             {errors.title && (
-              <Text className="text-[13px] text-red-500 mt-1">{errors.title.message}</Text>
+              <Text className="mt-1 text-[13px] text-red-500">{errors.title.message}</Text>
             )}
           </View>
 
           {/* Description */}
           <View className="mb-5">
-            <Text className="text-[15px] font-semibold text-gray-800 mb-2">
+            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
               {t('postCreate.description')}
             </Text>
             <Controller
@@ -313,7 +314,7 @@ export const PostCreateScreen: React.FC = () => {
               name="description"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
-                  className={`p-3 bg-white rounded-xl border text-[15px] text-gray-800 min-h-[100px] ${errors.description ? 'border-red-500' : 'border-gray-200'}`}
+                  className={`min-h-[100px] rounded-xl border bg-white p-3 text-[15px] text-gray-800 ${errors.description ? 'border-red-500' : 'border-gray-200'}`}
                   placeholder={t('postCreate.descriptionPlaceholder')}
                   value={value}
                   onChangeText={onChange}
@@ -332,7 +333,7 @@ export const PostCreateScreen: React.FC = () => {
 
           {/* Category */}
           <View className="mb-5">
-            <Text className="text-[15px] font-semibold text-gray-800 mb-2">
+            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
               {t('postCreate.category')} <Text className="text-red-500">*</Text>
             </Text>
             <Controller
@@ -343,7 +344,7 @@ export const PostCreateScreen: React.FC = () => {
                   {categories.map((cat) => (
                     <TouchableOpacity
                       key={cat.value}
-                      className={`px-4 py-2.5 rounded-full border ${value === cat.value ? 'bg-blue-100 border-blue-500' : 'bg-gray-100 border-gray-200'}`}
+                      className={`rounded-full border px-4 py-2.5 ${value === cat.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
                       onPress={() => onChange(cat.value)}
                       disabled={isLoading}
                       accessible={true}
@@ -351,7 +352,7 @@ export const PostCreateScreen: React.FC = () => {
                       accessibilityRole="button"
                     >
                       <Text
-                        className={`text-[14px] font-medium ${value === cat.value ? 'text-blue-800 font-semibold' : 'text-gray-600'}`}
+                        className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
                       >
                         {cat.label}
                       </Text>
@@ -361,13 +362,13 @@ export const PostCreateScreen: React.FC = () => {
               )}
             />
             {errors.category && (
-              <Text className="text-[13px] text-red-500 mt-1">{errors.category.message}</Text>
+              <Text className="mt-1 text-[13px] text-red-500">{errors.category.message}</Text>
             )}
           </View>
 
           {/* Condition */}
           <View className="mb-5">
-            <Text className="text-[15px] font-semibold text-gray-800 mb-2">
+            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
               {t('postCreate.condition')} <Text className="text-red-500">*</Text>
             </Text>
             <Controller
@@ -378,7 +379,7 @@ export const PostCreateScreen: React.FC = () => {
                   {conditions.map((cond) => (
                     <TouchableOpacity
                       key={cond.value}
-                      className={`flex-1 py-3 rounded-xl border items-center ${value === cond.value ? 'bg-blue-100 border-blue-500' : 'bg-gray-100 border-gray-200'}`}
+                      className={`flex-1 items-center rounded-xl border py-3 ${value === cond.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
                       onPress={() => onChange(cond.value)}
                       disabled={isLoading}
                       accessible={true}
@@ -386,7 +387,7 @@ export const PostCreateScreen: React.FC = () => {
                       accessibilityRole="button"
                     >
                       <Text
-                        className={`text-[14px] font-medium ${value === cond.value ? 'text-blue-800 font-semibold' : 'text-gray-600'}`}
+                        className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
                       >
                         {cond.label}
                       </Text>
@@ -396,7 +397,7 @@ export const PostCreateScreen: React.FC = () => {
               )}
             />
             {errors.condition && (
-              <Text className="text-[13px] text-red-500 mt-1">{errors.condition.message}</Text>
+              <Text className="mt-1 text-[13px] text-red-500">{errors.condition.message}</Text>
             )}
           </View>
 
@@ -440,7 +441,7 @@ export const PostCreateScreen: React.FC = () => {
 
           {/* Pickup Date */}
           <View className="mb-5">
-            <Text className="text-[15px] font-semibold text-gray-800 mb-2">
+            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
               {t('postCreate.pickupDateOptional')}
             </Text>
             <Controller
@@ -449,7 +450,7 @@ export const PostCreateScreen: React.FC = () => {
               render={({ field: { onChange, value } }) => (
                 <>
                   <TouchableOpacity
-                    className="flex-row items-center gap-3 p-3 bg-white rounded-xl border border-gray-200"
+                    className="flex-row items-center gap-3 rounded-xl border border-gray-200 bg-white p-3"
                     onPress={() => setShowDatePicker(true)}
                     accessible={true}
                     accessibilityLabel={t('accessibility.datePickerButton')}
@@ -463,7 +464,7 @@ export const PostCreateScreen: React.FC = () => {
 
                   {showDatePicker && (
                     <DateTimePicker
-                      value={value ? new Date(value) : new Date()}
+                      value={value ? new Date(value as DateTime) : new Date()}
                       mode="date"
                       minimumDate={new Date()}
                       onChange={(_event, selectedDate) => {
@@ -546,15 +547,15 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
           >
             <View className="flex-1 bg-white">
               {/* Header */}
-              <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+              <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3">
                 <View className="flex-row items-center">
                   <Ionicons name="eye" size={20} color="#6B7280" />
-                  <Text className="text-lg font-semibold text-gray-900 ml-2">
+                  <Text className="ml-2 text-lg font-semibold text-gray-900">
                     {t('postCreate.preview')}
                   </Text>
                 </View>
                 <TouchableOpacity
-                  className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                  className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
                   onPress={handleClose}
                 >
                   <Ionicons name="close" size={20} color="#374151" />

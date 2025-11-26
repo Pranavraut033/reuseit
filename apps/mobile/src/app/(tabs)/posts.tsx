@@ -24,13 +24,6 @@ const FeedsScreen = () => {
     };
   });
 
-  console.log({
-    error,
-    data,
-    posts,
-    loading,
-  });
-
   return (
     <ScreenContainer padding={0}>
       {/* Latest Posts */}

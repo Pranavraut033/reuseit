@@ -16,8 +16,8 @@ const SignInWithGoogle: React.FC = () => {
     signInWithGoogle(() => {
       Toast.success('Logged in successfully', 'bottom');
     })
-      .catch((error) => {
-        console.log('Google login error', { error });
+      .catch((error: Error) => {
+        console.error('Google login error', { error });
         Toast.error(error.message || 'Failed to sign in with Google', 'bottom');
       })
       .finally(hideLoading);
@@ -27,7 +27,8 @@ const SignInWithGoogle: React.FC = () => {
     <TouchableOpacity
       className="mb-6 w-full flex-row items-center justify-center rounded-lg border border-[#4285F4] bg-white py-3 shadow-sm"
       activeOpacity={0.85}
-      onPress={onGoogleButtonPress}>
+      onPress={onGoogleButtonPress}
+    >
       <View className="mr-3 items-center justify-center rounded bg-white px-1">
         <AntDesign name="google" size={20} color="#4285F4" />
       </View>

@@ -1,8 +1,9 @@
 import { FontAwesome6 as Icon } from '@expo/vector-icons';
-import clsx from 'clsx';
 import { Href, usePathname, useRouter } from 'expo-router';
 import { memo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import cn from '~/utils/cn';
 
 import { FabButton } from './common/FabButton';
 
@@ -38,7 +39,7 @@ const MainFabButton = memo(function MainFabButton() {
 
   return (
     <FabButton
-      className={clsx('absolute bottom-4 right-4 z-[30] shadow shadow-primary')}
+      className={cn('absolute bottom-4 right-4 z-[30] shadow shadow-primary')}
       size="large"
       style={{
         bottom: bottom + 17,
