@@ -12,62 +12,54 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 # Sonderabfall, Textilien. We keep finer-grain splits helpful for ML.
 # ---------------------------------------------------------------------------
 
-# Canonical class set (German-aligned)
+# Canonical class set (German-aligned, merged for cleaner categories)
 CANONICAL_CLASSES = [
-    "cardboard",
-    "paper",
+    "paper_cardboard",
     "glass",
-    "metal",
-    "plastic",
-    "biological",
-    "trash",
+    "recyclables",
+    "bio_waste",
+    "textile_reuse",
+    "electronics",
     "battery",
-    "e_waste",
-    "clothes",
-    "shoes",
+    "residual_waste",
 ]
 
 GERMAN_LABEL_INFO = {
-    "cardboard": {"de": "Papier/Pappe", "stream": "Papier"},
-    "paper": {"de": "Papier/Pappe", "stream": "Papier"},
+    "paper_cardboard": {"de": "Papier/Pappe", "stream": "Papier"},
     "glass": {"de": "Glas", "stream": "Glas"},
-    "metal": {"de": "Metall", "stream": "Metall"},
-    "plastic": {"de": "Kunststoff", "stream": "Kunststoff"},
-    "biological": {"de": "Bioabfall", "stream": "Bio"},
-    "trash": {"de": "Restmüll", "stream": "Restmüll"},
+    "recyclables": {"de": "Wertstoffe", "stream": "Wertstoffe"},
+    "bio_waste": {"de": "Bioabfall", "stream": "Bio"},
+    "textile_reuse": {"de": "Textilien", "stream": "Textilien"},
+    "electronics": {"de": "Elektroschrott", "stream": "Sonderabfall"},
     "battery": {"de": "Batterien", "stream": "Sonderabfall"},
-    "e_waste": {"de": "Elektroschrott", "stream": "Sonderabfall"},
-    "clothes": {"de": "Textilien", "stream": "Textilien"},
-    "shoes": {"de": "Schuhe", "stream": "Textilien"},
+    "residual_waste": {"de": "Restmüll", "stream": "Restmüll"},
 }
 
 # Raw label mapping across datasets -> canonical label (case-insensitive via lowercasing)
 RAW_CLASS_MAP: Dict[str, str] = {
-    # Direct matches
-    "cardboard": "cardboard",
-    "paper": "paper",
+    # Direct matches and merges
+    "cardboard": "paper_cardboard",
+    "paper": "paper_cardboard",
     "glass": "glass",
-    "metal": "metal",
-    "plastic": "plastic",
-    "trash": "trash",
-    "biological": "biological",
-    "organic": "biological",
-    "food organics": "biological",
-    "vegetation": "biological",
-    "battery": "battery",
-    "batteries": "battery",
-    "e-waste": "e_waste",
-    "ewaste": "e_waste",
-    "clothes": "clothes",
-    "textile": "clothes",
-    "textile trash": "clothes",
-    "shoes": "shoes",
-    # Split glass variants
     "brown-glass": "glass",
     "green-glass": "glass",
     "white-glass": "glass",
-    # Other multi-word labels
-    "miscellaneous trash": "trash",
+    "metal": "recyclables",
+    "plastic": "recyclables",
+    "biological": "bio_waste",
+    "organic": "bio_waste",
+    "food organics": "bio_waste",
+    "vegetation": "bio_waste",
+    "clothes": "textile_reuse",
+    "textile": "textile_reuse",
+    "textile trash": "textile_reuse",
+    "shoes": "textile_reuse",
+    "e-waste": "electronics",
+    "ewaste": "electronics",
+    "battery": "battery",
+    "batteries": "battery",
+    "trash": "residual_waste",
+    "miscellaneous trash": "residual_waste",
 }
 
 

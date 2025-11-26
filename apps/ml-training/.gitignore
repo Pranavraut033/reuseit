@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+.python-version
+
+# ML artifacts
+*.h5
+*.keras
+*.tflite
+*.zip
+
+# Kaggle credentials
+kaggle.json
+
+# Project data directories
+merged_data/
+merged_dataset/
+raw_datasets/
+repr_samples/
+results/
+models/
+
+# Object detection directories
+object_detection/models/
+object_detection/test_results/

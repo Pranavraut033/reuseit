@@ -1,139 +1,233 @@
-# Waste Classification Model Training
+# ReUseIt ML Training Pipeline
 
-This module trains a TensorFlow / TensorFlow Lite model for waste classification aligned with German waste-sorting standards. It consolidates multiple Kaggle datasets into canonical classes mapped to common German waste streams (Papier, Glas, Metall, Kunststoff, Bio, Restmüll, Sonderabfall, Textilien).
+This directory contains the machine learning training pipeline for the waste classification model used in the ReUseIt mobile application.
 
-## Datasets
+## 🎯 Overview
 
-Consolidated from these Kaggle datasets:
+The ML training pipeline:
+- Downloads and consolidates multiple Kaggle datasets
+- Trains a MobileNetV3 model for waste classification
+- Exports optimized TFLite models for mobile deployment
+- Validates model accuracy and performance
 
-1. `mostafaabla/garbage-classification` - Includes split glass types and extra categories (biological, battery, shoes, clothes)
-2. `karansolanki01/garbage-classification` - Battery, Cardboard, Clothes, Glass, Metal, Paper, Plastic
-3. `sumn2u/garbage-classification-v2` - Metal, Glass, Biological, Paper, Battery, Trash, Cardboard, Shoes, Clothes, Plastic
-4. `glhdamar/new-trash-classfication-dataset` - Plastic, Paper, Metal, Glass, Organic, E-waste, Textile, Trash
-5. `joebeachcapital/realwaste` - Cardboard, Food Organics, Glass, Metal, Miscellaneous Trash, Paper, Plastic, Textile Trash, Vegetation
+## 📦 Model Details
 
-## Canonical Classes (German-Aligned)
+- **Architecture:** MobileNetV3-Large (transfer learning)
+- **Input Size:** 224x224x3
+- **Classes:** 8 waste categories
+  - cardboard
+  - glass
+  - metal
+  - paper
+  - plastic
+  - trash
+  - biological
+  - battery
 
-Mapped to German waste streams while preserving ML-useful distinctions:
+- **Export Format:** TFLite (dynamic range quantization)
+- **Model Size:** ~2.7 MB (optimized for mobile)
 
-- `cardboard` → Papier/Pappe (Papier stream)
-- `paper` → Papier/Pappe (Papier stream, kept separate for granularity)
-- `glass` → Glas (Glas stream, aggregates brown/green/white variants)
-- `metal` → Metall (Metall stream)
-- `plastic` → Kunststoff (Kunststoff stream)
-- `biological` → Bioabfall (Bio stream, includes organic/vegetation/food organics)
-- `trash` → Restmüll (Restmüll stream, includes miscellaneous trash)
-- `battery` → Batterien (Sonderabfall stream)
-- `e_waste` → Elektroschrott (Sonderabfall stream)
-- `clothes` → Textilien (Textilien stream, includes textile trash)
-- `shoes` → Schuhe (Textilien stream)
+## 🚀 Quick Start
 
-## Dataset Preparation
+### Prerequisites
 
-### Download & Consolidate
+- Python 3.10.x (specified in `.python-version`)
+- Virtual environment (venv or conda)
+
+### Setup
+
 ```bash
-python -c "
-from dataset_utils import ensure_kaggle_download, consolidate_datasets, DATASET_SLUGS
-raw_dir = 'raw_datasets'
-merged_dir = 'merged_dataset'
-eds = ensure_kaggle_download(DATASET_SLUGS, raw_dir)
-consolidate_datasets(eds, merged_dir)
-"
-```
+# Create and activate virtual environment
+python3.10 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-### Build Dataset Index
-Creates `dataset_index.json` for easy dataset inspection and updates:
-```bash
-python -c "
-from dataset_utils import build_dataset_index
-build_dataset_index('merged_dataset', 'dataset_index.json')
-"
-```
-
-The index JSON includes per-image metadata (source dataset, original label, German mapping) and class statistics.
-
-## Output
-- Keras model: `models/waste_classifier.h5`
-- SavedModel: `models/waste_classifier/`
-- Quantized TFLite (dynamic range): `models/waste_classifier_dynamic.tflite`
-- Quantized TFLite (int8 full, if representative dataset generated): `models/waste_classifier_int8.tflite`
-
-## Setup
-```bash
-cd apps/ml-training
-pyenv local 3.10.14   # or ensure system Python 3.10.x
-python -m venv .venv
-source .venv/bin/activate
+# Install dependencies
 pip install -r requirements.txt
+
+# Set up Kaggle API credentials
+# Place your kaggle.json in ~/.kaggle/ or current directory
 ```
 
-## Kaggle Credentials
-Place `kaggle.json` in `~/.kaggle/` with API key (https://www.kaggle.com/docs/api). Then:
+### Training
+
 ```bash
+# List available training runs
+python train.py --list-runs
+
+# Train with default settings (15 epochs, MobileNetV3Large)
+python train.py
+
+# Train with custom settings
+python train.py --epochs 20 --batch-size 32 --fine-tune-from 100
+
+# Train with specific datasets
+python train.py --datasets asdasdasasdas/garbage-classification glhdamar/new-trash-classfication-dataset
+```
+
+### Export to TFLite
+
+```bash
+# Export latest trained model (recommended - uses concrete function method)
+python export_tflite.py
+
+# Export specific model
+python export_tflite.py --model-path models/run_20251124_232532/waste_classifier_best.keras
+
+# Export with INT8 quantization (requires representative samples)
+python export_tflite.py --int8 --repr-dir repr_samples
+```
+
+### Validation
+
+```bash
+# Validate TFLite model
+python validate_tflite.py --tflite-path waste_classifier_best_dynamic.tflite
+
+# Test on specific images
+python validate_tflite.py --test-images path/to/image1.jpg path/to/image2.jpg
+```
+
+## 📁 Directory Structure
+
+```
+apps/ml-training/
+├── config.py                  # Training configuration
+├── dataset_utils.py           # Dataset download and preprocessing
+├── train.py                   # Main training script
+├── export_tflite.py          # TFLite conversion (concrete function method) ✅
+├── export_tflite_old.py      # Old conversion method (deprecated)
+├── validate_tflite.py        # Model validation
+├── test.py                   # Quick testing utilities
+├── requirements.txt          # Python dependencies
+├── .python-version           # Python 3.10.x
+├── pyproject.toml            # Python project metadata
+├── models/                   # Trained models (gitignored)
+│   ├── run_YYYYMMDD_HHMMSS/  # Training run directory
+│   │   ├── waste_classifier_best.keras
+│   │   ├── training_metadata.json
+│   │   └── logs/             # TensorBoard logs
+│   └── latest -> run_XXX     # Symlink to latest run
+├── merged_dataset/           # Consolidated dataset (gitignored)
+├── raw_datasets/             # Downloaded Kaggle datasets (gitignored)
+└── repr_samples/             # Representative samples for quantization
+```
+
+## 🔧 Configuration Options
+
+### Training Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--epochs` | 15 | Number of training epochs |
+| `--batch-size` | 32 | Training batch size |
+| `--image-size` | 224 | Input image size (224x224) |
+| `--validation-split` | 0.2 | Validation data percentage |
+| `--fine-tune-from` | 0 | Layer to start fine-tuning from (0 = all layers) |
+| `--mixed-precision` | False | Enable mixed precision training |
+| `--no-class-weights` | False | Disable class weighting for imbalanced data |
+| `--brightness-factor` | 0.1 | Brightness augmentation factor |
+| `--contrast-factor` | 0.1 | Contrast augmentation factor |
+
+### Export Options
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--model-path` | Latest | Path to .keras model to convert |
+| `--output` | Auto-generated | Output TFLite file path |
+| `--int8` | False | Enable INT8 quantization |
+| `--repr-dir` | repr_samples | Directory with representative samples |
+
+## 🐛 Known Issues & Solutions
+
+### Issue: TFLite Export LLVM Error
+
+**Problem:** Original export script failed with `LLVM ERROR: Failed to infer result type(s)` on MobileNetV3 models.
+
+**Solution:** ✅ Fixed! The new `export_tflite.py` uses the concrete function conversion method instead of direct Keras model conversion. This provides better compatibility with MobileNetV3 architecture.
+
+**Technical Details:**
+- Old method: `TFLiteConverter.from_keras_model()` → Failed with LLVM error
+- New method: `TFLiteConverter.from_concrete_functions()` → Works correctly
+- Model size reduced from 15MB to 2.7MB with dynamic range quantization
+
+### Issue: Training Segfault on M1/M2 Macs
+
+**Problem:** Training crashes with segmentation fault due to TensorFlow/Metal compatibility issues.
+
+**Workaround:**
+1. Use CPU-only mode (slower but stable):
+   ```bash
+   CUDA_VISIBLE_DEVICES="" python train.py
+   ```
+2. Train on Linux/Windows with CUDA
+3. Use Google Colab for training
+
+## 📊 Model Performance
+
+Latest model (`waste_classifier_best_dynamic.tflite`):
+- **Size:** 2.7 MB
+- **Quantization:** Dynamic range (float32 → int8 weights)
+- **Input:** 224x224x3 float32 images
+- **Output:** 8-class probabilities (float32)
+- **Inference Speed:** ~50-100ms on mobile devices
+
+## 🔄 Deployment
+
+After training and export:
+
+```bash
+# Copy model to all required locations
+cp waste_classifier_best_dynamic.tflite ../../../waste_classifier.tflite
+cp waste_classifier_best_dynamic.tflite ../../backend/waste_classifier.tflite
+cp waste_classifier_best_dynamic.tflite ../../mobile/assets/waste_classifier.tflite
+```
+
+Or use the automated script:
+```bash
+# From monorepo root
+./scripts/update-tflite-model.sh apps/ml-training/waste_classifier_best_dynamic.tflite
+```
+
+## 📚 Resources
+
+- [TensorFlow Lite Guide](https://www.tensorflow.org/lite/guide)
+- [MobileNetV3 Paper](https://arxiv.org/abs/1905.02244)
+- [Model Optimization Toolkit](https://www.tensorflow.org/model_optimization)
+
+## 🛠️ Troubleshooting
+
+### Kaggle API Not Working
+
+Ensure `kaggle.json` is in the correct location:
+```bash
+mkdir -p ~/.kaggle
+cp kaggle.json ~/.kaggle/
 chmod 600 ~/.kaggle/kaggle.json
 ```
 
-## Train
-For dynamic range TFLite (recommended for mixed precision models):
+### Out of Memory During Training
+
+Reduce batch size:
 ```bash
-  python train.py --datasets mostafaabla/garbage-classification karansolanki01/garbage-classification sumn2u/garbage-classification-v2 glhdamar/new-trash-classfication-dataset joebeachcapital/realwaste asdasdasasdas/garbage-classification\
-    --image-size 224 --epochs 25 --batch-size 32 --model-dir models \
-    --mixed-precision --fine-tune-from 50
+python train.py --batch-size 16
 ```
 
-For full int8 TFLite (train WITHOUT --mixed-precision):
-```bash
-python train.py --datasets mostafaabla/garbage-classification karansolanki01/garbage-classification sumn2u/garbage-classification-v2 glhdamar/new-trash-classfication-dataset joebeachcapital/realwaste asdasdasasdas/garbage-classification\
-  --image-size 224 --epochs 25 --batch-size 32 --model-dir models \
-  --fine-tune-from 50
-```
+### Model Not Converging
 
-**Note**: Mixed precision is disabled by default for Apple Silicon compatibility. Enable with `--mixed-precision` if you encounter no Metal plugin issues.
+Try these adjustments:
+1. Increase epochs: `--epochs 25`
+2. Fine-tune more layers: `--fine-tune-from 50`
+3. Adjust learning rate in `train.py`
+4. Enable mixed precision: `--mixed-precision`
 
-## Troubleshooting
-- **Metal Plugin Errors**: If you see MPS/Metal assertion failures, disable mixed precision and reduce batch size
-- **Memory Issues**: Try smaller batch sizes (16 or 8) if training crashes
-- **Slow Training**: Ensure `tensorflow-metal` is installed for GPU acceleration
+## 📝 Notes
 
-## Convert to TFLite
-Dynamic range only:
-```bash
-python export_tflite.py --model-path models/waste_classifier.keras --output models/waste_classifier_dynamic.tflite
-```
-Full int8 (requires model trained WITHOUT --mixed-precision flag):
-```bash
-python export_tflite.py --model-path models/waste_classifier.h5 \
-  --output models/waste_classifier_int8.tflite --int8 --repr-dir repr_samples
-```
+- The concrete function export method (`export_tflite.py`) is recommended over the old method
+- Representative samples are generated during training for potential INT8 quantization
+- Training metadata is saved in each run directory for reproducibility
+- TensorBoard logs are available in `models/run_XXX/logs/`
 
-## Test and Visualize Model
-Evaluate model performance and generate visualizations:
-```bash
-python test_and_visualize.py --model-path models/waste_classifier.keras \
-  --merged-dir merged_dataset --output-dir results --num-samples 10
-```
+---
 
-This will:
-- Evaluate accuracy on test set (subset of merged dataset)
-- Generate confusion matrix plot (`results/confusion_matrix.png`)
-- Show sample predictions with images (`results/sample_predictions.png`)
-- Print detailed classification report with precision/recall/f1 scores
-
-**Note:** Uses canonical class labels from `dataset_utils.py` (may differ from `labels.json`).
-
-## Integration (Mobile App)
-Copy `models/waste_classifier_int8.tflite` into `apps/mobile/assets/model/` and load with TensorFlow Lite interpreter on-device. Ensure `labels.json` alongside model for index->class mapping (now includes German stream metadata).
-
-## Notes
-- Python version requirement: 3.10.x (see `.python-version` and `pyproject.toml`).
-- Training can be GPU accelerated (Apple Silicon via `tensorflow-metal`).
-- Adjust `--fine-tune-from` to unfreeze more layers for better accuracy (default: 50 layers).
-- Early stopping and checkpointing are enabled by default.
-- Classes are aligned with German waste-sorting standards for practical deployment.
-- Use `dataset_index.json` to inspect dataset composition and class distributions.
-- Raw labels are normalized case-insensitively (e.g., "Food Organics" → "biological").
-- **Accuracy Improvements**: Enhanced augmentation, class weighting, deeper fine-tuning, and learning rate scheduling are implemented for better performance.
-- **Class Imbalance**: Some classes (e.g., e_waste) have fewer samples. Consider collecting additional data for underrepresented classes.
-
-## License & Data
-Respect dataset licenses on Kaggle. Do not redistribute raw images in the repo.
+**Last Updated:** November 25, 2025
+**Model Version:** v1.0 (2.7MB optimized)

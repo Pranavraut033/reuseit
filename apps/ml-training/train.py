@@ -73,7 +73,12 @@ def parse_args():
     p.add_argument("--epochs", type=int, default=15)
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--validation-split", type=float, default=0.2)
-    p.add_argument("--fine-tune-from", type=int, default=None)
+    p.add_argument(
+        "--fine-tune-from",
+        type=int,
+        default=0,
+        help="Layer to start fine-tuning from (default: 0 - train all layers)",
+    )
     p.add_argument("--mixed-precision", action="store_true")
     p.add_argument("--model-dir", default="models")
     p.add_argument(
@@ -85,6 +90,27 @@ def parse_args():
         "--list-runs",
         action="store_true",
         help="List all training runs and their metadata",
+    )
+    p.add_argument(
+        "--repr-samples",
+        type=int,
+        default=100,
+        help="Number of representative samples for TFLite quantization",
+    )
+    p.add_argument(
+        "--brightness-factor",
+        type=float,
+        default=0.1,
+        help="Brightness jitter factor for augmentation",
+    )
+    p.add_argument(
+        "--contrast-factor", type=float, default=0.1, help="Contrast jitter factor for augmentation"
+    )
+    p.add_argument(
+        "--max-images-per-class",
+        type=int,
+        default=None,
+        help="Limit number of images loaded per class (None = no limit)",
     )
     return p.parse_args()
 
@@ -98,101 +124,79 @@ def build_datasets(merged_dir: str, cfg: TrainConfig):
     img_size = (image_size, image_size)
     class_names = get_canonical_classes()
 
-    # Group files by class and dataset
-    class_files = {}
-    for class_name in class_names:
+    # Collect all files and labels
+    all_files = []
+    all_labels = []
+
+    for class_idx, class_name in enumerate(class_names):
         class_dir = Path(merged_dir) / class_name
         if not class_dir.exists():
             continue
-        class_files[class_name] = {}
-        for file in class_dir.glob("*"):
-            if not file.is_file():
-                continue
-            # Filename format: dataset_slug_class_original.jpg
-            # e.g., mostafaabla_garbage-classification_cardboard_xxx.jpg
-            parts = file.name.split("_", 2)
-            if len(parts) < 3:
-                continue
-            dataset_slug = f"{parts[0]}/{parts[1]}"  # Reconstruct slug
-            if dataset_slug not in class_files[class_name]:
-                class_files[class_name][dataset_slug] = []
-            class_files[class_name][dataset_slug].append(str(file))
+        # Collect files, optionally limit
+        files = [f for f in class_dir.glob("*") if f.is_file()]
+        if cfg.max_images_per_class is not None:
+            files = files[: cfg.max_images_per_class]
+        for file in files:
+            all_files.append(str(file))
+            all_labels.append(class_idx)
 
-    # Split files into train/val/test per dataset
-    train_files = []
-    val_files = []
-    test_files = []
-    train_labels = []
-    val_labels = []
-    test_labels = []
+    # Global stratified split to ensure all classes are represented
+    from sklearn.model_selection import train_test_split
+    from collections import Counter
 
-    for class_idx, class_name in enumerate(class_names):
-        if class_name not in class_files:
-            continue
-        for dataset, files in class_files[class_name].items():
-            n = len(files)
-            train_end = int(0.7 * n)
-            val_end = train_end + int(0.15 * n)
-            train_files.extend(files[:train_end])
-            val_files.extend(files[train_end:val_end])
-            test_files.extend(files[val_end:])
-            train_labels.extend([class_idx] * len(files[:train_end]))
-            val_labels.extend([class_idx] * len(files[train_end:val_end]))
-            test_labels.extend([class_idx] * len(files[val_end:]))
+    label_counts = Counter(all_labels)
+    min_samples_per_class = 10  # Minimum samples needed for stratification
 
-    # Balance dataset by undersampling majority classes
-    max_samples_per_class = 3000  # Limit each class to 3000 samples
-    balanced_train_files = []
-    balanced_train_labels = []
-    balanced_val_files = []
-    balanced_val_labels = []
-    balanced_test_files = []
-    balanced_test_labels = []
+    # Check which classes have enough samples for stratification
+    stratify_labels = [
+        label if label_counts[label] >= min_samples_per_class else -1 for label in all_labels
+    ]
 
-    for class_idx, class_name in enumerate(class_names):
-        class_train_files = [f for f, l in zip(train_files, train_labels) if l == class_idx]
-        class_val_files = [f for f, l in zip(val_files, val_labels) if l == class_idx]
-        class_test_files = [f for f, l in zip(test_files, test_labels) if l == class_idx]
-
-        # Undersample to max_samples_per_class
-        import random
-
-        random.seed(cfg.seed)
-        class_train_files = random.sample(
-            class_train_files, min(len(class_train_files), max_samples_per_class)
+    # Use stratified split where possible, fallback to random for small classes
+    try:
+        train_files, temp_files, train_labels, temp_labels = train_test_split(
+            all_files, all_labels, test_size=0.3, stratify=stratify_labels, random_state=seed
         )
-        class_val_files = random.sample(
-            class_val_files, min(len(class_val_files), max_samples_per_class // 3)
+        val_files, test_files, val_labels, test_labels = train_test_split(
+            temp_files,
+            temp_labels,
+            test_size=0.5,
+            stratify=[
+                label if label_counts[label] >= min_samples_per_class else -1
+                for label in temp_labels
+            ],
+            random_state=seed,
         )
-        class_test_files = random.sample(
-            class_test_files, min(len(class_test_files), max_samples_per_class // 3)
-        )
-
-        balanced_train_files.extend(class_train_files)
-        balanced_train_labels.extend([class_idx] * len(class_train_files))
-        balanced_val_files.extend(class_val_files)
-        balanced_val_labels.extend([class_idx] * len(class_val_files))
-        balanced_test_files.extend(class_test_files)
-        balanced_test_labels.extend([class_idx] * len(class_test_files))
-
         print(
-            f"Class {class_name}: {len(class_train_files)} train, {len(class_val_files)} val, {len(class_test_files)} test"
+            f"Stratified split: {len(train_files)} train, {len(val_files)} val, {len(test_files)} test"
+        )
+    except ValueError:
+        # Fallback to random split if stratification fails
+        print("Stratification failed, using random split")
+        train_files, temp_files, train_labels, temp_labels = train_test_split(
+            all_files, all_labels, test_size=0.3, random_state=seed
+        )
+        val_files, test_files, val_labels, test_labels = train_test_split(
+            temp_files, temp_labels, test_size=0.5, random_state=seed
+        )
+        print(
+            f"Random split: {len(train_files)} train, {len(val_files)} val, {len(test_files)} test"
         )
 
-    # Update with balanced datasets
-    train_files, train_labels = balanced_train_files, balanced_train_labels
-    val_files, val_labels = balanced_val_files, balanced_val_labels
-    test_files, test_labels = balanced_test_files, balanced_test_labels
+    # Configurable augmentation parameters
+    brightness_factor = cfg.brightness_factor
+    contrast_factor = cfg.contrast_factor
 
-    # Enhanced Augmentation for waste classification (reduced intensity)
+    # Enhanced Augmentation for waste classification (configurable intensity)
     aug = keras.Sequential(
         [
-            keras.layers.RandomFlip("horizontal"),  # Only horizontal flip, not vertical
-            keras.layers.RandomRotation(0.1),  # Reduced from 0.2
-            keras.layers.RandomZoom(0.1),  # Reduced from 0.2
-            keras.layers.RandomContrast(0.2),  # Reduced from 0.3
-            keras.layers.RandomBrightness(0.2),  # Reduced from 0.3
-            keras.layers.RandomTranslation(0.05, 0.05),  # Reduced from 0.1
+            keras.layers.Resizing(image_size, image_size),  # Resize first
+            keras.layers.RandomFlip("horizontal"),
+            keras.layers.RandomRotation(0.1),
+            keras.layers.RandomZoom(0.1),
+            keras.layers.RandomContrast(contrast_factor),
+            keras.layers.RandomBrightness(brightness_factor),
+            keras.layers.RandomTranslation(0.05, 0.05),
         ]
     )
 
@@ -200,10 +204,9 @@ def build_datasets(merged_dir: str, cfg: TrainConfig):
     def load_train_image(file_path, label):
         img = tf.io.read_file(file_path)
         img = tf.image.decode_image(img, channels=3, expand_animations=False)
-        img = tf.image.resize(img, img_size)
         img = aug(img)
-        # Use MobileNetV2 preprocessing instead of simple /255
-        img = keras.applications.mobilenet_v2.preprocess_input(img)
+        # Apply MobileNetV3 preprocessing after augmentation
+        img = keras.applications.mobilenet_v3.preprocess_input(img)
         return img, tf.one_hot(label, len(class_names))
 
     @tf.autograph.experimental.do_not_convert
@@ -211,25 +214,27 @@ def build_datasets(merged_dir: str, cfg: TrainConfig):
         img = tf.io.read_file(file_path)
         img = tf.image.decode_image(img, channels=3, expand_animations=False)
         img = tf.image.resize(img, img_size)
-        # Use MobileNetV2 preprocessing for validation too
-        img = keras.applications.mobilenet_v2.preprocess_input(img)
+        img = tf.cast(img, tf.float32)  # Keep in [0,255]
+        img = keras.applications.mobilenet_v3.preprocess_input(img)
         return img, tf.one_hot(label, len(class_names))
 
-    # Create datasets
+    # Create datasets with balanced parallelism
     train_ds = tf.data.Dataset.from_tensor_slices((train_files, train_labels))
-    train_ds = train_ds.map(load_train_image, num_parallel_calls=None)
-    train_ds = train_ds.shuffle(buffer_size=1000, seed=seed)
-    train_ds = train_ds.batch(batch_size).prefetch(AUTOTUNE)
+    train_ds = train_ds.shuffle(
+        buffer_size=min(2000, len(train_files)), seed=seed
+    )  # Moderate shuffle buffer
+    train_ds = train_ds.map(load_train_image, num_parallel_calls=4)
+    train_ds = train_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
     val_ds = tf.data.Dataset.from_tensor_slices((val_files, val_labels))
-    val_ds = val_ds.map(load_val_image, num_parallel_calls=None)
-    val_ds = val_ds.batch(batch_size).prefetch(AUTOTUNE)
+    val_ds = val_ds.map(load_val_image, num_parallel_calls=4)
+    val_ds = val_ds.batch(batch_size).cache().prefetch(tf.data.AUTOTUNE)
 
     test_ds = tf.data.Dataset.from_tensor_slices((test_files, test_labels))
-    test_ds = test_ds.map(load_val_image, num_parallel_calls=None)
-    test_ds = test_ds.batch(batch_size).prefetch(AUTOTUNE)
+    test_ds = test_ds.map(load_val_image, num_parallel_calls=4)
+    test_ds = test_ds.batch(batch_size).cache().prefetch(tf.data.AUTOTUNE)
 
-    return train_ds, val_ds, test_ds, class_names, train_labels
+    return train_ds, val_ds, test_ds, class_names, train_labels, val_labels, test_labels
 
 
 def build_model(cfg: TrainConfig, class_names: list[str]):
@@ -238,7 +243,7 @@ def build_model(cfg: TrainConfig, class_names: list[str]):
 
         mixed_precision.set_global_policy("mixed_float16")
 
-    base = keras.applications.MobileNetV2(
+    base = keras.applications.MobileNetV3Large(
         input_shape=(cfg.image_size, cfg.image_size, 3), include_top=False, weights="imagenet"
     )
     # Fine-tune more layers for better performance
@@ -246,10 +251,10 @@ def build_model(cfg: TrainConfig, class_names: list[str]):
         base.trainable = True
         for layer in base.layers[: cfg.fine_tune_from]:
             layer.trainable = False
-        lr = 1e-4  # Increased from 5e-6 for better fine-tuning
+        lr = 1e-4  # Lower learning rate when fine-tuning more layers
     else:
         base.trainable = False
-        lr = 2e-4  # Slightly higher learning rate for better convergence
+        lr = 1e-3  # Increased for better convergence
 
     inputs = keras.Input(shape=(cfg.image_size, cfg.image_size, 3))
     # Remove preprocess_input since we do it in data loading
@@ -268,7 +273,11 @@ def build_model(cfg: TrainConfig, class_names: list[str]):
         opt = keras.optimizers.legacy.Adam(learning_rate=lr, clipnorm=1.0)
     except Exception:
         opt = keras.optimizers.Adam(learning_rate=lr, clipnorm=1.0)
-    model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
+
+    # Per-class metrics
+    metrics = ["accuracy"]
+
+    model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=metrics)
     return model
 
 
@@ -290,8 +299,59 @@ def create_repr_dataset(train_ds, sample_count: int, out_dir: str):
     print(f"Saved {taken} representative samples to {out_dir}")
 
 
+class ConfusionMatrixCallback(keras.callbacks.Callback):
+    def __init__(self, val_ds, class_names, log_dir):
+        super().__init__()
+        self.val_ds = val_ds
+        self.class_names = class_names
+        self.log_dir = log_dir
+        self.file_writer = tf.summary.create_file_writer(log_dir)
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Compute confusion matrix at end of training
+        if epoch == self.params["epochs"] - 1:  # Only at the end
+            y_true = []
+            y_pred = []
+            for x, y in self.val_ds:
+                pred = self.model.predict(x, verbose=0)
+                y_true.extend(tf.argmax(y, axis=1).numpy())
+                y_pred.extend(tf.argmax(pred, axis=1).numpy())
+
+            cm = tf.math.confusion_matrix(y_true, y_pred, num_classes=len(self.class_names))
+            cm = cm.numpy()
+
+            # Log to TensorBoard
+            with self.file_writer.as_default():
+                tf.summary.image(
+                    "confusion_matrix", cm.reshape(1, cm.shape[0], cm.shape[1], 1), step=epoch
+                )
+
+            # Print to console
+            print(f"\nConfusion Matrix (epoch {epoch}):")
+            print(cm)
+
+
 def main():
     args = parse_args()
+
+    # Force CPU-only execution to avoid Metal/GPU issues on Mac
+    import os
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+    # Disable GPU devices to prevent Metal backend errors
+    tf.config.set_visible_devices([], "GPU")
+
+    # Increase CPU threads for better performance (balance speed vs memory)
+    tf.config.threading.set_intra_op_parallelism_threads(4)
+    tf.config.threading.set_inter_op_parallelism_threads(4)
+
+    # Set seeds for reproducibility
+    tf.random.set_seed(42)
+    import numpy as np
+
+    np.random.seed(42)
 
     # Handle list-runs command
     if args.list_runs:
@@ -308,57 +368,72 @@ def main():
         model_dir=args.model_dir,
         datasets=args.datasets,
         no_class_weights=args.no_class_weights,
+        repr_samples=args.repr_samples,
+        brightness_factor=args.brightness_factor,
+        contrast_factor=args.contrast_factor,
+        max_images_per_class=args.max_images_per_class,
     )
-
     # Create versioned model directory
     base_model_dir = cfg.model_dir
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     versioned_model_dir = os.path.join(base_model_dir, f"run_{timestamp}")
     cfg.model_dir = versioned_model_dir
 
-    print(f"[bold green]Training Run:[/bold green] {timestamp}")
-    print(f"[bold green]Model Directory:[/bold green] {versioned_model_dir}")
+    print(f"[bold cyan]Config:[/bold cyan]")
+    for key, value in vars(cfg).items():
+        if key != "datasets":
+            print(f"  {key}: {value}")
+
+    print(f"  [bold green]Training Run:[/bold green] {timestamp}")
+    print(f"  [bold green]Model Directory:[/bold green] {versioned_model_dir}")
+    print(f"  [bold cyan]Datasets:[/bold cyan] {cfg.datasets}")
 
     raw_dir = "raw_datasets"
     merged_dir = "merged_dataset"
 
-    print(f"[bold cyan]Datasets:[/bold cyan] {cfg.datasets}")
     extracted = ensure_kaggle_download(cfg.datasets, raw_dir)
     merged = consolidate_datasets(extracted, merged_dir)
 
-    train_ds, val_ds, test_ds, class_names, train_labels = build_datasets(merged, cfg)
+    train_ds, val_ds, test_ds, class_names, train_labels, val_labels, test_labels = build_datasets(
+        merged, cfg
+    )
 
     # Print dataset statistics
     print(f"Dataset statistics:")
     print(f"  Classes: {class_names}")
     print(f"  Training samples: {len(train_labels)}")
-    val_cardinality = tf.data.experimental.cardinality(val_ds).numpy()
-    test_cardinality = tf.data.experimental.cardinality(test_ds).numpy()
+    val_cardinality = len(val_labels)
+    test_cardinality = len(test_labels)
     print(f"  Validation samples: {val_cardinality}")
     print(f"  Test samples: {test_cardinality}")
 
-    # Compute class weights for imbalanced data (dataset is now balanced, so use mild weights)
+    # Compute class weights for imbalanced data
     if cfg.no_class_weights:
         print("Skipping class weights (disabled by --no-class-weights)")
         class_weight = None
     else:
-        print("Computing mild class weights for balanced dataset...")
+        print("Computing class weights for imbalanced data...")
         from collections import Counter
 
         label_counts = Counter(train_labels)
         total = sum(label_counts.values())
         num_classes = len(class_names)
-        # Mild weighting since dataset is balanced
-        raw_weights = {i: (total / (num_classes * count)) for i, count in label_counts.items()}
-        # Light smoothing (clamp between 0.8 and 1.2)
-        class_weight = {i: max(0.8, min(w, 1.2)) for i, w in raw_weights.items()}
-        print(f"Balanced dataset weights: {class_weight}")
+        # Use inverse frequency weighting, include all classes even if count is 0
+        class_weight = {}
+        for i in range(num_classes):
+            count = label_counts.get(i, 0)
+            if count > 0:
+                class_weight[i] = total / (num_classes * count)
+            else:
+                # For classes with no training samples, set a high weight to discourage misclassification
+                class_weight[i] = 10.0  # High penalty for unseen classes
+        print(f"Class weights: {class_weight}")
 
     model = build_model(cfg, class_names)
     print(model.summary())
 
     callbacks = [
-        keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),  # Increased patience
+        keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
         keras.callbacks.ModelCheckpoint(
             os.path.join(cfg.model_dir, "waste_classifier_best.keras"), save_best_only=True
         ),
@@ -366,10 +441,12 @@ def main():
             monitor="val_accuracy",
             factor=0.5,
             patience=5,
-            min_lr=1e-7,
-            verbose=1,  # Increased patience from 3 to 5
+            min_lr=1e-6,
+            verbose=1,
         ),
         keras.callbacks.TensorBoard(log_dir=os.path.join(cfg.model_dir, "logs"), histogram_freq=1),
+        # Confusion matrix callback (logs at end of training)
+        ConfusionMatrixCallback(val_ds, class_names, log_dir=os.path.join(cfg.model_dir, "logs")),
     ]
     os.makedirs(cfg.model_dir, exist_ok=True)
     # Persist class weights mapping (class name -> weight) for reproducibility
@@ -392,6 +469,7 @@ def main():
         epochs=cfg.epochs,
         callbacks=callbacks,
         class_weight=class_weight,  # Will be None if disabled
+        verbose=1,
     )
 
     # Save final model
@@ -437,8 +515,10 @@ def main():
             "mixed_precision": cfg.mixed_precision,
             "datasets": cfg.datasets,
             "no_class_weights": cfg.no_class_weights,
-            "balanced_dataset": True,
-            "max_samples_per_class": 3000,
+            "repr_samples": args.repr_samples,
+            "brightness_factor": args.brightness_factor,
+            "contrast_factor": args.contrast_factor,
+            "merged_classes": True,
         },
         "final_accuracy": float(test_acc),
         "final_loss": float(test_loss),
