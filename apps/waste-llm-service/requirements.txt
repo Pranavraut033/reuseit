@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+httpx
+pillow
+python-multipart
+ollama
+tensorflow
+numpy
+opencv-python
