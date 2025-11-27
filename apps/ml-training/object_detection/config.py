@@ -11,10 +11,11 @@ class ObjectDetectionConfig:
     # Model architecture
     image_size: int = 224  # Use 224 for optimal MobileNetV2 pre-trained weights
     backbone: str = "MobileNetV2"  # Options: MobileNetV2, MobileNetV3, EfficientNet
+    backbone_trainable: bool = False  # Whether to train backbone initially
 
     # Training parameters
     batch_size: int = 16
-    epochs: int = 50
+    epochs: int = 100  # Increased for better convergence
     learning_rate: float = 1e-4
     validation_split: float = 0.2
     seed: int = 42
@@ -29,12 +30,18 @@ class ObjectDetectionConfig:
     iou_threshold: float = 0.5
     confidence_threshold: float = 0.5
 
-    # Data augmentation
-    augment_prob: float = 0.5
-    brightness_range: float = 0.2
-    contrast_range: tuple = (0.8, 1.2)
-    saturation_range: tuple = (0.8, 1.2)
-    hue_range: float = 0.1
+    # Enhanced data augmentation
+    augment_prob: float = 0.8  # Increased augmentation probability
+    brightness_range: float = 0.3
+    contrast_range: tuple = (0.7, 1.3)
+    saturation_range: tuple = (0.8, 1.2)  # Smaller saturation range
+    hue_range: float = 0.05  # Very small hue range
+    gaussian_noise_std: float = 0.02  # Lighter Gaussian noise
+
+    # Regularization
+    dropout_rate: float = 0.4  # Increased dropout
+    l2_regularization: float = 1e-4  # L2 regularization
+    label_smoothing: float = 0.1  # Label smoothing for classification
 
     # Edge detection
     edge_detection_method: str = "canny"  # Options: canny, sobel, learned
@@ -42,11 +49,36 @@ class ObjectDetectionConfig:
     canny_threshold2: int = 150
     canny_blur_kernel: int = 5
 
-    # Callbacks
-    early_stopping_patience: int = 10
-    reduce_lr_patience: int = 5
-    reduce_lr_factor: float = 0.5
+    # Advanced training techniques
+    use_mixed_precision: bool = True  # Enable mixed precision training
+    use_progressive_unfreezing: bool = True  # Gradually unfreeze layers
+    unfreeze_schedule: dict = field(
+        default_factory=lambda: {10: 10, 20: 20, 30: 30}
+    )  # Epoch -> layers to unfreeze
+    warmup_epochs: int = 5  # Warmup period for stable training
+
+    # Callbacks - enhanced for overfitting prevention
+    early_stopping_patience: int = 15  # More patient early stopping
+    reduce_lr_patience: int = 7
+    reduce_lr_factor: float = 0.3  # More aggressive LR reduction
+    lr_reduce_factor: float = 0.3  # Alias for backward compatibility
+    lr_reduce_patience: int = 7  # Alias for backward compatibility
     min_learning_rate: float = 1e-7
+
+    # Optimizer settings
+    optimizer: str = "adamw"  # Use AdamW for better generalization
+    weight_decay: float = 1e-4  # Weight decay for regularization
+    use_lookahead: bool = False  # Optional: Lookahead optimizer wrapper
+
+    # Learning rate schedule
+    lr_schedule: str = "cosine"  # Options: cosine, exponential, step
+    use_cosine_lr: bool = True  # Use cosine learning rate schedule
+    cosine_warmup_steps: int = 1000
+
+    # Monitoring and logging
+    log_tensorboard: bool = True
+    save_best_only: bool = True
+    monitor_metric: str = "val_loss"  # Primary metric for model selection
 
     # Paths
     dataset_dir: str = "merged_dataset"

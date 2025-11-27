@@ -14,7 +14,7 @@ from tensorflow import keras
 
 from rich import print
 from config import TrainConfig
-from dataset_utils import ensure_kaggle_download, consolidate_datasets, get_canonical_classes
+from dataset_utils import prepare_datasets, get_canonical_classes
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -391,8 +391,7 @@ def main():
     raw_dir = "raw_datasets"
     merged_dir = "merged_dataset"
 
-    extracted = ensure_kaggle_download(cfg.datasets, raw_dir)
-    merged = consolidate_datasets(extracted, merged_dir)
+    merged = prepare_datasets(raw_dir, merged_dir, cfg.datasets)
 
     train_ds, val_ds, test_ds, class_names, train_labels, val_labels, test_labels = build_datasets(
         merged, cfg

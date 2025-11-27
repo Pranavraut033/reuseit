@@ -25,27 +25,8 @@ from rich.progress import track
 import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
-from dataset_utils import get_canonical_classes
+from dataset_utils import get_canonical_classes, prepare_datasets
 from object_detection.config import ObjectDetectionConfig
-
-
-class ObjectDetectionConfig:
-    """Configuration for object detection model."""
-
-    image_size = 224  # Use 224 for optimal MobileNetV2 pre-trained weights
-    batch_size = 16
-    epochs = 50
-    learning_rate = 1e-4
-    max_boxes = 10  # Maximum number of objects per image
-    iou_threshold = 0.5
-    confidence_threshold = 0.5
-    edge_weight = 0.3  # Weight for edge detection loss
-    bbox_weight = 1.0  # Weight for bounding box loss
-    class_weight = 1.0  # Weight for classification loss
-    augment_prob = 0.5
-    validation_split = 0.2
-    seed = 42
-    max_images_per_class = None  # Limit images per class
 
 
 def create_synthetic_bboxes(image_shape: Tuple[int, int], num_boxes: int = 1) -> np.ndarray:
@@ -138,23 +119,29 @@ def create_edge_mask(image: np.ndarray, bbox: np.ndarray = None) -> np.ndarray:
 
 
 def augment_image(image: tf.Tensor, config: ObjectDetectionConfig) -> tf.Tensor:
-    """Apply data augmentation."""
-    # Random flip
-    image = tf.image.random_flip_left_right(image)
+    """Apply stable data augmentation for robust training."""
+    # Random horizontal flip
+    if tf.random.uniform([]) < 0.5:
+        image = tf.image.flip_left_right(image)
 
     # Random brightness
-    image = tf.image.random_brightness(image, 0.2)
+    image = tf.image.random_brightness(image, config.brightness_range)
 
     # Random contrast
-    image = tf.image.random_contrast(image, 0.8, 1.2)
+    image = tf.image.random_contrast(image, *config.contrast_range)
 
-    # Random saturation
-    image = tf.image.random_saturation(image, 0.8, 1.2)
+    # Random saturation (small range)
+    image = tf.image.random_saturation(image, *config.saturation_range)
 
-    # Random hue
-    image = tf.image.random_hue(image, 0.1)
+    # Random hue (very small range)
+    image = tf.image.random_hue(image, config.hue_range)
 
-    # Clip values
+    # Add light Gaussian noise
+    if config.gaussian_noise_std > 0:
+        noise = tf.random.normal(tf.shape(image), mean=0.0, stddev=config.gaussian_noise_std)
+        image = tf.clip_by_value(image + noise, 0.0, 1.0)
+
+    # Ensure values are in valid range
     image = tf.clip_by_value(image, 0.0, 1.0)
 
     return image
@@ -194,12 +181,13 @@ def load_and_preprocess_image(
 
 
 def build_detection_model(config: ObjectDetectionConfig, num_classes: int) -> keras.Model:
-    """Build object detection model with edge detection.
+    """Build object detection model with edge detection and regularization.
 
     Architecture:
     - MobileNetV2 backbone (feature extraction)
     - Detection head (bounding boxes + classification)
     - Edge detection head (edge masks)
+    - L2 regularization and dropout for overfitting prevention
     """
 
     # Input
@@ -216,45 +204,98 @@ def build_detection_model(config: ObjectDetectionConfig, num_classes: int) -> ke
         backbone_input = inputs
 
     backbone = keras.applications.MobileNetV2(include_top=False, weights="imagenet")
-    backbone.trainable = True
+    backbone.trainable = config.backbone_trainable
 
     # Extract features
-    x = backbone(backbone_input, training=True)
+    x = backbone(backbone_input, training=config.backbone_trainable)
 
     # Global features for classification and bbox
     global_pool = layers.GlobalAveragePooling2D()(x)
 
     # === Bounding Box Head ===
-    bbox_dense = layers.Dense(256, activation="relu", name="bbox_dense1")(global_pool)
-    bbox_dense = layers.Dropout(0.3)(bbox_dense)
-    bbox_dense = layers.Dense(128, activation="relu", name="bbox_dense2")(bbox_dense)
+    bbox_dense = layers.Dense(
+        256,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="bbox_dense1",
+    )(global_pool)
+    bbox_dense = layers.Dropout(config.dropout_rate)(bbox_dense)
+    bbox_dense = layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="bbox_dense2",
+    )(bbox_dense)
+    bbox_dense = layers.Dropout(config.dropout_rate)(bbox_dense)
     bbox_output = layers.Dense(4, activation="sigmoid", name="bbox")(bbox_dense)
 
     # === Classification Head ===
-    class_dense = layers.Dense(256, activation="relu", name="class_dense1")(global_pool)
-    class_dense = layers.Dropout(0.3)(class_dense)
-    class_dense = layers.Dense(128, activation="relu", name="class_dense2")(class_dense)
+    class_dense = layers.Dense(
+        256,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="class_dense1",
+    )(global_pool)
+    class_dense = layers.Dropout(config.dropout_rate)(class_dense)
+    class_dense = layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="class_dense2",
+    )(class_dense)
+    class_dense = layers.Dropout(config.dropout_rate)(class_dense)
     class_output = layers.Dense(num_classes, activation="softmax", name="class")(class_dense)
 
     # === Edge Detection Head ===
     # Upsample features for pixel-wise edge prediction
-    edge_features = layers.Conv2D(128, 1, activation="relu", name="edge_conv1")(x)
+    edge_features = layers.Conv2D(
+        128,
+        1,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="edge_conv1",
+    )(x)
+    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
     edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up1")(edge_features)
-    edge_features = layers.Conv2D(64, 3, padding="same", activation="relu", name="edge_conv2")(
-        edge_features
-    )
+    edge_features = layers.Conv2D(
+        64,
+        3,
+        padding="same",
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="edge_conv2",
+    )(edge_features)
+    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
     edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up2")(edge_features)
-    edge_features = layers.Conv2D(32, 3, padding="same", activation="relu", name="edge_conv3")(
-        edge_features
-    )
+    edge_features = layers.Conv2D(
+        32,
+        3,
+        padding="same",
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="edge_conv3",
+    )(edge_features)
+    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
     edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up3")(edge_features)
-    edge_features = layers.Conv2D(16, 3, padding="same", activation="relu", name="edge_conv4")(
-        edge_features
-    )
+    edge_features = layers.Conv2D(
+        16,
+        3,
+        padding="same",
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="edge_conv4",
+    )(edge_features)
+    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
     edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up4")(edge_features)
-    edge_features = layers.Conv2D(8, 3, padding="same", activation="relu", name="edge_conv5")(
-        edge_features
-    )
+    edge_features = layers.Conv2D(
+        8,
+        3,
+        padding="same",
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="edge_conv5",
+    )(edge_features)
+    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
     edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up5")(edge_features)
 
     # Final edge prediction at backbone-derived spatial resolution (BACKBONE_SIZE x BACKBONE_SIZE)
@@ -277,24 +318,22 @@ def build_detection_model(config: ObjectDetectionConfig, num_classes: int) -> ke
 
 
 class DetectionLoss(keras.losses.Loss):
-    """Custom loss combining bbox, classification, and edge losses."""
+    """Custom loss combining bbox, classification, and edge losses with label smoothing."""
 
     def __init__(self, config: ObjectDetectionConfig, **kwargs):
         super().__init__(**kwargs)
         self.config = config
         self.bbox_loss = keras.losses.MeanSquaredError()
-        self.class_loss = keras.losses.CategoricalCrossentropy()
+        self.class_loss = keras.losses.CategoricalCrossentropy(
+            label_smoothing=config.label_smoothing
+        )
         self.edge_loss = keras.losses.BinaryCrossentropy()
 
     def call(self, y_true, y_pred):
-        # Unpack predictions
-        bbox_true = y_true["bbox"]
-        class_true = y_true["class"]
-        edges_true = y_true["edges"]
-
-        bbox_pred = y_pred["bbox"]
-        class_pred = y_pred["class"]
-        edges_pred = y_pred["edges"]
+        # y_true and y_pred are tuples: (bbox_true, class_true, edges_true)
+        # and (bbox_pred, class_pred, edges_pred)
+        bbox_true, class_true, edges_true = y_true
+        bbox_pred, class_pred, edges_pred = y_pred
 
         # Calculate individual losses
         bbox_loss = self.bbox_loss(bbox_true, bbox_pred)
@@ -311,8 +350,58 @@ class DetectionLoss(keras.losses.Loss):
         return total_loss
 
 
+def cosine_learning_rate(epoch, initial_lr, total_epochs, min_lr):
+    """Cosine learning rate schedule with warmup."""
+    if epoch < 5:  # Warmup for first 5 epochs
+        return initial_lr * (epoch + 1) / 5
+    else:
+        progress = (epoch - 5) / (total_epochs - 5)
+        cosine_decay = 0.5 * (1 + np.cos(np.pi * progress))
+        return min_lr + (initial_lr - min_lr) * cosine_decay
+
+
+class ProgressiveUnfreezingCallback(keras.callbacks.Callback):
+    """Callback for progressive unfreezing of backbone layers."""
+
+    def __init__(self, backbone_model, backbone, unfreeze_schedule):
+        super().__init__()
+        self.backbone_model = backbone_model
+        self.backbone = backbone
+        self.unfreeze_schedule = unfreeze_schedule
+        self.unfrozen_layers = 0
+
+    def on_epoch_begin(self, epoch, logs=None):
+        """Unfreeze layers according to schedule."""
+        if epoch in self.unfreeze_schedule:
+            layers_to_unfreeze = self.unfreeze_schedule[epoch]
+
+            # Get backbone layers (excluding the first few which are input processing)
+            backbone_layers = [
+                layer for layer in self.backbone.layers if "conv" in layer.name.lower()
+            ]
+
+            # Unfreeze the specified number of layers from the end
+            for i in range(min(layers_to_unfreeze, len(backbone_layers))):
+                layer_idx = len(backbone_layers) - 1 - i
+                if layer_idx >= 0:
+                    backbone_layers[layer_idx].trainable = True
+
+            self.unfrozen_layers = min(
+                self.unfrozen_layers + layers_to_unfreeze, len(backbone_layers)
+            )
+            print(
+                f"[cyan]Epoch {epoch}: Unfroze {layers_to_unfreeze} layers. Total unfrozen: {self.unfrozen_layers}/{len(backbone_layers)}[/cyan]"
+            )
+
+
 def prepare_dataset(config: ObjectDetectionConfig, dataset_dir: str = "merged_dataset"):
     """Prepare training and validation datasets."""
+    # Check if dataset exists, if not prepare it
+    if not os.path.exists(dataset_dir) or not os.listdir(dataset_dir):
+        print(f"[yellow]Dataset not found at {dataset_dir}, preparing datasets...[/yellow]")
+        prepare_datasets("raw_datasets", dataset_dir)
+        print(f"[green]Dataset prepared at {dataset_dir}[/green]")
+
     # Get class names
     classes = get_canonical_classes()
     num_classes = len(classes)
@@ -405,13 +494,15 @@ def train_detector(
     model.summary()
 
     # Compile model
-    optimizer = keras.optimizers.Adam(learning_rate=config.learning_rate)
+    optimizer = keras.optimizers.AdamW(
+        learning_rate=config.learning_rate, weight_decay=config.weight_decay
+    )
 
     model.compile(
         optimizer=optimizer,
         loss={
             "bbox": keras.losses.MeanSquaredError(),
-            "class": keras.losses.CategoricalCrossentropy(),
+            "class": keras.losses.CategoricalCrossentropy(label_smoothing=config.label_smoothing),
             "edges": keras.losses.BinaryCrossentropy(),
         },
         loss_weights={
@@ -422,7 +513,7 @@ def train_detector(
         metrics={"class": ["accuracy"], "bbox": ["mae"], "edges": ["binary_accuracy"]},
     )
 
-    # Callbacks
+    # Enhanced callbacks
     callbacks = [
         keras.callbacks.ModelCheckpoint(
             os.path.join(run_dir, "best_model.keras"),
@@ -431,14 +522,43 @@ def train_detector(
             verbose=1,
         ),
         keras.callbacks.EarlyStopping(
-            monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
+            monitor="val_loss",
+            patience=config.early_stopping_patience,
+            restore_best_weights=True,
+            verbose=1,
         ),
         keras.callbacks.ReduceLROnPlateau(
-            monitor="val_loss", factor=0.5, patience=5, min_lr=1e-7, verbose=1
+            monitor="val_loss",
+            factor=config.lr_reduce_factor,
+            patience=config.lr_reduce_patience,
+            min_lr=config.min_learning_rate,
+            verbose=1,
         ),
         keras.callbacks.CSVLogger(os.path.join(run_dir, "training_log.csv")),
-        keras.callbacks.TensorBoard(log_dir=os.path.join(run_dir, "logs"), histogram_freq=1),
+        keras.callbacks.TensorBoard(
+            log_dir=os.path.join(run_dir, "logs"), histogram_freq=1, update_freq="epoch"
+        ),
     ]
+
+    # Add progressive unfreezing callback if enabled
+    if config.use_progressive_unfreezing:
+        callbacks.append(
+            ProgressiveUnfreezingCallback(
+                backbone_model=model,
+                backbone=model.get_layer("mobilenetv2_1.00_224"),
+                unfreeze_schedule=config.unfreeze_schedule,
+            )
+        )
+
+    # Add cosine learning rate scheduler if enabled
+    if config.use_cosine_lr:
+        callbacks.append(
+            keras.callbacks.LearningRateScheduler(
+                lambda epoch: cosine_learning_rate(
+                    epoch, config.learning_rate, config.epochs, config.min_learning_rate
+                )
+            )
+        )
 
     # Train
     print("[bold green]Training started...[/bold green]")
@@ -491,26 +611,49 @@ def main():
         default="object_detection/models",
         help="Output directory for trained models",
     )
-    parser.add_argument("--epochs", type=int, default=50, help="Number of training epochs")
-    parser.add_argument("--batch-size", type=int, default=16, help="Batch size")
-    parser.add_argument("--image-size", type=int, default=320, help="Input image size")
-    parser.add_argument("--learning-rate", type=float, default=1e-4, help="Learning rate")
+    parser.add_argument("--epochs", type=int, default=None, help="Number of training epochs")
+    parser.add_argument("--batch-size", type=int, default=None, help="Batch size")
+    parser.add_argument("--image-size", type=int, default=None, help="Input image size")
+    parser.add_argument("--learning-rate", type=float, default=None, help="Learning rate")
     parser.add_argument(
         "--max-images-per-class",
         type=int,
         default=None,
         help="Limit number of images loaded per class (None = no limit)",
     )
+    parser.add_argument(
+        "--backbone-trainable",
+        action="store_true",
+        default=None,
+        help="Make backbone trainable from start",
+    )
+    parser.add_argument(
+        "--progressive-unfreezing",
+        action="store_true",
+        default=None,
+        help="Use progressive unfreezing during training",
+    )
 
     args = parser.parse_args()
 
-    # Create config
+    # Create config with defaults from ObjectDetectionConfig
     config = ObjectDetectionConfig()
-    config.epochs = args.epochs
-    config.batch_size = args.batch_size
-    config.image_size = args.image_size
-    config.learning_rate = args.learning_rate
-    config.max_images_per_class = args.max_images_per_class
+
+    # Override with command line arguments if provided
+    if args.epochs is not None:
+        config.epochs = args.epochs
+    if args.batch_size is not None:
+        config.batch_size = args.batch_size
+    if args.image_size is not None:
+        config.image_size = args.image_size
+    if args.learning_rate is not None:
+        config.learning_rate = args.learning_rate
+    if args.max_images_per_class is not None:
+        config.max_images_per_class = args.max_images_per_class
+    if args.backbone_trainable is not None:
+        config.backbone_trainable = args.backbone_trainable
+    if args.progressive_unfreezing is not None:
+        config.use_progressive_unfreezing = args.progressive_unfreezing
 
     # Train model
     model, run_dir = train_detector(config=config, dataset_dir=args.dataset, output_dir=args.output)
