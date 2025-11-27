@@ -20,6 +20,7 @@ import { UserModule } from '~/user/user.module';
 
 import { FirebaseModule } from './firebase/firebase.module';
 import { GoogleMapsModule } from './google-maps/google-maps.module';
+import { HealthController } from './health/health.controller';
 import { LocationModule } from './location/location.module';
 import { RecyclingModule } from './recycling/recycling.module';
 
@@ -35,7 +36,7 @@ import { RecyclingModule } from './recycling/recycling.module';
         req,
         res,
       }),
-      autoSchemaFile: join(process.cwd(), 'schema.gql'),
+      autoSchemaFile: join(process.cwd(), 'prisma/schema.gql'),
     }),
     AuthModule,
     EventModule,
@@ -60,7 +61,7 @@ import { RecyclingModule } from './recycling/recycling.module';
       },
     }),
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,

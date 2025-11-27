@@ -1,15 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { AnalyzeWasteResult } from './dto/analyze-waste.dto';
+import { AnalyzeWasteInput } from './dto/analyze-waste.input';
 import { FinalizeRecyclingInput } from './dto/finalize-recycling.input';
 import { FinalRecyclingResult } from './dto/recycling.dto';
 import { LlmService } from './services/llm.service';
 import { getRecyclingInfo } from './services/recycling-rules.service';
+import { WasteLlmService } from './services/waste-llm.service';
 
 @Injectable()
 export class RecyclingService {
   private readonly logger = new Logger(RecyclingService.name);
 
-  constructor(private readonly llmService: LlmService) {}
+  constructor(
+    private readonly llmService: LlmService,
+    private readonly wasteLlmService: WasteLlmService,
+  ) {}
 
   /**
    * Finalize recycling analysis by combining:
@@ -52,6 +58,29 @@ export class RecyclingService {
       },
       instructions,
     };
+  }
+
+  /**
+   * Analyze waste using LLM-powered vision and reasoning pipeline
+   */
+  async analyzeWaste(input: AnalyzeWasteInput): Promise<AnalyzeWasteResult> {
+    const { imageBase64, userText } = input;
+
+    this.logger.log(
+      `Analyzing waste image with LLM pipeline${userText ? ` (user text: ${userText})` : ''}`,
+    );
+
+    // Convert base64 to buffer
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    // Call the waste LLM service
+    const result = await this.wasteLlmService.analyzeWaste(imageBuffer, userText);
+
+    this.logger.log(
+      `Waste analysis completed: ${result.detections.length} detections, ${result.recycling_plan.length} recycling items`,
+    );
+
+    return result;
   }
 
   /**
