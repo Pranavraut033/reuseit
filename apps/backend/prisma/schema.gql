@@ -211,6 +211,42 @@ type ReverseGeocodeResult {
   formattedAddress: String
 }
 
+type WasteDetection {
+  name: String!
+  confidence: Float!
+  bbox: [Float!]!
+  class_id: Float!
+}
+
+type RecyclingPlanItem {
+  item_name: String!
+  material_type: String!
+  category: String!
+  german_bin: String!
+  is_pfand: Boolean!
+  recycling_instructions: String!
+  reuse_ideas: String!
+  notes_germany: String!
+}
+
+type LatencyMetrics {
+  detector: Float!
+  reasoner: Float!
+  total: Float!
+}
+
+type ModelInfo {
+  vision: String!
+  llm: String!
+}
+
+type AnalyzeWasteResult {
+  detections: [WasteDetection!]!
+  recycling_plan: [RecyclingPlanItem!]!
+  latency_ms: LatencyMetrics!
+  models: ModelInfo!
+}
+
 type RecyclingInfo {
   objectName: String!
   materials: [String!]!
@@ -259,6 +295,7 @@ type Query {
   comment(id: String!): Comment!
   commentsByPost(postId: String!): [Comment!]!
   finalizeRecycling(input: FinalizeRecyclingInput!): FinalRecyclingResult!
+  analyzeWaste(input: AnalyzeWasteInput!): AnalyzeWasteResult!
   placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
   placeDetails(placeId: String!, sessionToken: String): PlaceDetails
   nearbyPlaces(latitude: Float!, longitude: Float!, radius: Float, keywords: [String!]!): [NearbyPlace!]!
@@ -271,6 +308,11 @@ input FinalizeRecyclingInput {
   materials: [String!]!
   city: String
   imageBase64: String
+}
+
+input AnalyzeWasteInput {
+  imageBase64: String!
+  userText: String
 }
 
 type Mutation {

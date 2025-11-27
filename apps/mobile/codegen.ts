@@ -3,7 +3,7 @@ import { join } from 'path';
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: join(process.cwd(), '../backend/schema.gql'),
+  schema: join(process.cwd(), '../backend/prisma/schema.gql'),
   documents: ['./src/gql/**/*.ts'],
   generates: {
     './src/__generated__/': {
