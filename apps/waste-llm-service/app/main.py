@@ -8,12 +8,17 @@ import os
 import json
 import numpy as np
 import tensorflow as tf
+import redis
 from typing import Optional, List, Dict
 
 app = FastAPI(title="Waste Detection with Local ML Model", version="1.0.0")
 
 # Ollama endpoint for text processing
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+# Redis configuration
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_client = None
 
 # Waste detection classes
 WASTE_CLASSES = [
@@ -143,7 +148,18 @@ detection_model = None
 @app.on_event("startup")
 async def load_model():
     """Load the TensorFlow object detection model on startup."""
-    global detection_model
+    global detection_model, redis_client
+
+    # Initialize Redis client
+    try:
+        redis_client = redis.from_url(REDIS_URL)
+        redis_client.ping()  # Test connection
+        print(f"DEBUG: Redis connected successfully at {REDIS_URL}")
+    except Exception as e:
+        print(f"WARNING: Failed to connect to Redis at {REDIS_URL}: {e}")
+        print("WARNING: Caching will be disabled")
+        redis_client = None
+
     model_path = "/app/models/object_detection_model.keras"
     try:
         detection_model = tf.keras.models.load_model(model_path)
@@ -160,6 +176,16 @@ def format_knowledge_for_llm() -> str:
     """Format the JSON knowledge base into readable text for the LLM."""
     if not KNOWLEDGE_BASE:
         return "German recycling knowledge not available."
+
+    # Check cache first
+    if redis_client:
+        try:
+            cached_kb = redis_client.get("knowledge_base_formatted")
+            if cached_kb:
+                print(f"DEBUG: Cache hit for formatted knowledge base")
+                return cached_kb.decode("utf-8")
+        except Exception as e:
+            print(f"DEBUG: Knowledge base cache read error: {e}")
 
     kb = KNOWLEDGE_BASE
     formatted = []
@@ -198,7 +224,6 @@ def format_knowledge_for_llm() -> str:
         formatted.append("HOW TO RETURN:")
         for step in pfand["howToReturn"]:
             formatted.append(f"  - {step}")
-        formatted.append("")
 
     # Add contamination rules
     if kb.get("contaminationRules"):
@@ -222,13 +247,42 @@ def format_knowledge_for_llm() -> str:
             formatted.append(f"• {variation}")
         formatted.append("")
 
-    return "\n".join(formatted)
+    formatted_text = "\n".join(formatted)
+
+    # Cache the formatted knowledge base
+    if redis_client:
+        try:
+            redis_client.setex(
+                "knowledge_base_formatted", 86400, formatted_text
+            )  # Cache for 24 hours
+            print(f"DEBUG: Cached formatted knowledge base")
+        except Exception as e:
+            print(f"DEBUG: Knowledge base cache write error: {e}")
+
+    return formatted_text
 
 
 async def generate_recycling_plan(
     detections: List[Dict], user_text: Optional[str] = None
 ) -> List[Dict]:
     """Generate recycling plan using Ollama LLM with German recycling knowledge."""
+    # Create cache key from detections and user text
+    cache_key = None
+    if redis_client:
+        # Create a deterministic cache key based on detections and user_text
+        detection_str = json.dumps(detections, sort_keys=True)
+        user_text_str = user_text or ""
+        cache_key = f"recycling_plan:{hash(detection_str + user_text_str)}"
+
+        # Check cache first
+        try:
+            cached_result = redis_client.get(cache_key)
+            if cached_result:
+                print(f"DEBUG: Cache hit for recycling plan")
+                return json.loads(cached_result)
+        except Exception as e:
+            print(f"DEBUG: Cache read error: {e}")
+
     try:
         # Load prompts
         with open("app/prompts/recycle_prompt.txt", "r") as f:
@@ -280,6 +334,17 @@ German recycling knowledge:
                 parsed_response = json.loads(llm_response)
                 # Validate and sanitize the LLM response
                 validated_response = validate_llm_response(parsed_response, detections)
+
+                # Cache the successful response
+                if redis_client and cache_key:
+                    try:
+                        redis_client.setex(
+                            cache_key, 3600, json.dumps(validated_response)
+                        )  # Cache for 1 hour
+                        print(f"DEBUG: Cached recycling plan response")
+                    except Exception as e:
+                        print(f"DEBUG: Cache write error: {e}")
+
                 return validated_response
             except json.JSONDecodeError as e:
                 print(f"DEBUG: JSON parse error: {e}, using fallback")
@@ -353,7 +418,19 @@ def validate_llm_response(llm_response: any, detections: List[Dict]) -> List[Dic
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "ok", "model_loaded": detection_model is not None}
+    redis_status = False
+    if redis_client:
+        try:
+            redis_client.ping()
+            redis_status = True
+        except:
+            redis_status = False
+
+    return {
+        "status": "ok",
+        "model_loaded": detection_model is not None,
+        "redis_connected": redis_status,
+    }
 
 
 def detect_waste_objects(image: Image.Image) -> List[Dict]:

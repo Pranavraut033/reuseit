@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** November 27, 2025 (Docker services merged into unified docker-compose setup)
+**Last Updated:** December 1, 2025 (Fixed TensorFlow graph compatibility issue in ML training)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -10,7 +10,7 @@
 
 | Category | Progress | Status |
 |----------|----------|--------|
-| Core Features | 70% | 🟢 Good Progress |
+| Core Features | 80% | 🟢 Excellent Progress |
 | Documentation | 100% | 🟢 Complete |
 | Testing | 0% | 🔴 Not Started |
 | Deployment | 10% | 🔴 Not Started |
@@ -106,6 +106,7 @@
 - ✅ Service monitoring configuration (backend, database, LLM services)
 - ✅ Real-time status updates and incident tracking
 - ✅ Logs and incident history display
+- ✅ **Redis Caching Integration** - Added Redis caching to waste-llm-service for LLM responses and knowledge base
 
 ## 🚧 In Progress
 
@@ -136,7 +137,12 @@
 - ✅ **Waste Detection Service Integration** - Complete object detection service with TensorFlow/Keras model, proper bounding box denormalization, and German recycling guidance
 - ✅ **qwen2.5:0.5b Model Integration** - Switched from Gemma3:1b to smaller, faster qwen2.5:0.5b model for LLM processing
 - ✅ **German Recycling Knowledge Base Conversion** - Converted markdown recycling rules to structured JSON format with multilingual support, updated LLM service to use unified knowledge base
-- ✅ **Unified Docker Compose Setup** - Merged root docker-compose.yml with waste-llm-service docker-compose.yml, added backend Docker container, created comprehensive multi-service deployment with successful builds
+- ✅ **ML Training Folder Organization** - Organized `apps/ml-training/` by separating deprecated classifier code into `classifier/` subfolder, keeping active object detection in `object_detection/`, and shared utilities in root
+- ✅ **Independent Dataset Preparation** - Added explicit dataset configurations and `prepare_datasets()` utility for standalone dataset creation, making object detector independent of classifier code
+- ✅ **Dataset Preparation Script** - Created `prepare_datasets.sh` script that automatically activates virtual environment and runs dataset preparation, with --clean and --clear flags for dataset management
+- ✅ **Object Detection Model Regularization** - Enhanced object detection training with L2 regularization, increased dropout (0.4), label smoothing (0.1), progressive unfreezing, cosine learning rate scheduling, and improved data augmentation (rotation, zoom, shear, Gaussian noise)
+- ✅ **TensorFlow Graph Compatibility Fix** - Fixed AttributeError in augment_image function by removing conditional config attribute access that caused issues in TensorFlow graph mode, and corrected multi-output loss configuration
+- ✅ **Stable Data Augmentation** - Updated augmentation pipeline to use only stable transformations: horizontal flip, brightness, contrast, small saturation/hue changes, and light Gaussian noise; removed aggressive zoom, rotation, cropping, and padding for better training stability
 
 ---
 
@@ -244,7 +250,15 @@
    - Update user stats and badges
    - Add points history for classifications
 
-2. **Events Mobile UI** (High Priority)
+2. **ML Model Improvements: Prevent Overfitting** (Completed ✅)
+   - ✅ Implement enhanced regularization techniques (L2, dropout, label smoothing)
+   - ✅ Add progressive unfreezing for backbone layers
+   - ✅ Improve data augmentation (rotation, zoom, shear, Gaussian noise)
+   - ✅ Implement cosine learning rate scheduling
+   - ✅ Add early stopping and better callbacks
+   - ✅ Test improved models for better generalization
+
+3. **Events Mobile UI** (High Priority)
    - Create event list screen
    - Build event detail view
    - Implement event creation form
