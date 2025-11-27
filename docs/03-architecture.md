@@ -1,51 +1,29 @@
-# 3. System Architecture
+# 3. Architecture
 
-## 3.1 High-Level Architecture
+## System Overview
+
+ReUseIt follows a modern microservices architecture deployed via Docker Compose.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENT LAYER                             │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              React Native (Expo) Application              │  │
-│  │  • iOS & Android Support                                  │  │
-│  │  • Apollo Client (GraphQL Cache + State)                  │  │
-│  │  • TensorFlow Lite (On-Device ML)                         │  │
-│  │  • Expo Camera, Location, Notifications                   │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               │ HTTPS/GraphQL
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       API GATEWAY LAYER                         │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    NestJS Backend                         │  │
-│  │  • Apollo Server (GraphQL)                                │  │
-│  │  • JWT Authentication Guard                               │  │
-│  │  • Request Validation & Rate Limiting                     │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              ▼                ▼                ▼
-┌──────────────────┐  ┌──────────────┐  ┌─────────────────┐
-│  SERVICE LAYER   │  │  EXTERNAL    │  │  DATA LAYER     │
-│                  │  │  SERVICES    │  │                 │
-│  • AuthService   │  │              │  │  MongoDB Atlas  │
-│  • UserService   │  │  • Firebase  │  │  ┌───────────┐ │
-│  • PostService   │  │    (Auth)    │  │  │  Users    │ │
-│  • EventService  │  │  • Google    │  │  │  Posts    │ │
-│  • PointService  │  │    Maps API  │  │  │  Events   │ │
-│  • DataLoaders   │  │  • FCM       │  │  │  Articles │ │
-└──────────────────┘  │    (Push)    │  │  │  Badges   │ │
-                      └──────────────┘  └──┴───────────┴─┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Native  │────│    NestJS API   │────│   MongoDB       │
+│   (Expo)        │    │  (GraphQL)      │    │   Redis         │
+│                 │    │                 │    │                 │
+│ • Mobile UI     │    │ • Auth Service  │    │ • User Data     │
+│ • Camera/ML     │    │ • Business Logic│    │ • Cache         │
+│ • Offline Cache │    │ • DataLoader    │    │ • Sessions      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 ▼
+                    ┌─────────────────┐    ┌─────────────────┐
+                    │   Ollama LLM    │    │  Waste LLM API  │
+                    │   (qwen2.5:0.5b)│    │  (FastAPI)      │
+                    │                 │    │                 │
+                    │ • AI Analysis   │    │ • Recycling     │
+                    │ • Model Runtime │    │ • Instructions  │
+                    └─────────────────┘    └─────────────────┘
 ```
-
-**Notation Legend:**
-
-- **Solid Lines (│)**: Synchronous request/response flow
-- **Arrows (→)**: Data flow direction
-- **Boxes**: Architectural components/services
 
 ---
 
@@ -316,3 +294,44 @@ backend/src/
 ---
 
 **Previous:** [← Requirements](02-requirements.md) | **Next:** [Implementation →](04-implementation.md)
+
+
+## Services
+
+### Mobile Client (React Native + Expo)
+- **UI Framework:** React Native with NativeWind (Tailwind CSS)
+- **State:** Apollo Client (server) + Zustand (global UI)
+- **Navigation:** Expo Router
+- **ML:** TensorFlow Lite for on-device inference
+
+### Backend API (NestJS + GraphQL)
+- **Framework:** NestJS with Apollo Server
+- **Database:** Prisma ORM with MongoDB
+- **Auth:** JWT with Passport
+- **Caching:** DataLoader for N+1 prevention
+
+### AI Services
+- **Ollama:** Local LLM runtime for waste analysis
+- **Waste LLM API:** FastAPI wrapper for structured recycling guidance
+
+### Infrastructure
+- **Database:** MongoDB with replica set
+- **Cache:** Redis for performance
+- **Monitoring:** Statping dashboard
+- **Deployment:** Docker Compose
+
+## Data Flow
+
+1. **Mobile** captures image → **TensorFlow Lite** classifies waste
+2. **Mobile** sends result → **Backend** processes via GraphQL
+3. **Backend** calls **Waste LLM Service** → **Ollama** provides guidance
+4. **Backend** awards points → **MongoDB** updates user profile
+5. **Redis** caches frequent queries
+
+## Key Technologies
+
+- **Frontend:** React Native, Expo, Apollo Client
+- **Backend:** NestJS, GraphQL, Prisma, MongoDB
+- **AI/ML:** TensorFlow Lite, Ollama, Python FastAPI
+- **Infrastructure:** Docker, Redis, Firebase, Google Maps
+- **DevOps:** pnpm monorepo, ESLint, Prettier

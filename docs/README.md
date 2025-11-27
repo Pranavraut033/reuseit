@@ -23,21 +23,22 @@ Follow the documentation in order for a complete understanding:
 
 ## 🚀 Quick Start
 
-**For Evaluators:**
+**For Evaluators (Docker Setup):**
 ```bash
 # 1. Clone repository
 git clone https://github.com/Pranavraut033/reuseit.git
-cd reuseit
+cd reuseit-mono
 
-# 2. Install dependencies
-pnpm install
+# 2. Configure environment
+cp .env.example .env
 
-# 3. Configure environment
-cp apps/backend/.env.example apps/backend/.env
-cp apps/mobile/.env.example apps/mobile/.env
+# 3. Start all services
+docker-compose up -d
 
-# 4. Start backend
-pnpm --filter backend run start:dev
+# 4. Run database migrations
+cd apps/backend
+pnpm prisma:generate
+pnpm prisma:migrate:dev
 
 # 5. Start mobile app
 pnpm --filter mobile run start
