@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** November 25, 2025 (UI completely refactored to modern, production-ready design with glassmorphism and user-friendly interactions)
+**Last Updated:** November 27, 2025 (Docker services merged into unified docker-compose setup)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -73,7 +73,7 @@
 - ✅ Article-to-user relationship
 - ✅ Image support for articles
 
-### Sprint 8: ML & Recycling Analysis (In Progress)
+### Sprint 8: ML & Recycling Analysis (Completed)
 - ✅ TensorFlow.js React Native integration
 - ✅ Waste classifier prototype (heuristic-based)
 - ✅ Camera integration with classification
@@ -85,19 +85,27 @@
 - ✅ **TensorFlow.js native inference (Option C: TFLite→TFJS conversion)**
 - 🔄 Real model loading (needs proper bundling)
 - 🔄 Points awarding for classifications pending
- - ✅ ML training pipeline (Python TensorFlow + TFLite conversion scripts) added (`apps/ml-training`)
- - ✅ Expanded dataset support (added sumn2u/garbage-classification-v2, unified class mapping)
- - ✅ Python version pinned for ML training (3.10.x via `.python-version` & `pyproject.toml`)
- - ✅ **TFLite export fixed** - Using concrete function conversion method, model size reduced to 2.7MB (was 15MB)
- - ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated into mobile app
- - ✅ **Detection Mode Toggle** - Added toggle in identify screen to switch between classification and object detection modes
- - ✅ **Visual Object Detection Mapping** - Bounding box overlay, class probabilities, and edge detection info displayed on captured images
- - ✅ **Detection Label Display** - Shows actual detected waste category instead of generic "Detected Object"
- - ✅ **Edge Detection Statistics** - Detailed mask analysis with range, average, and edge count
- - ✅ **1:1 Aspect Ratio Overlay** - Image display maintains proper aspect ratio for accurate overlays
- - 🔄 **ML Model Accuracy Improvement** - Current val accuracy ~29%, implementing dataset balancing and hyperparameter tuning
+- ✅ ML training pipeline (Python TensorFlow + TFLite conversion scripts) added (`apps/ml-training`)
+- ✅ Expanded dataset support (added sumn2u/garbage-classification-v2, unified class mapping)
+- ✅ Python version pinned for ML training (3.10.x via `.python-version` & `pyproject.toml`)
+- ✅ **TFLite export fixed** - Using concrete function conversion method, model size reduced to 2.7MB (was 15MB)
+- ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated into mobile app
+- ✅ **Detection Mode Toggle** - Added toggle in identify screen to switch between classification and object detection modes
+- ✅ **Visual Object Detection Mapping** - Bounding box overlay, class probabilities, and edge detection info displayed on captured images
+- ✅ **Detection Label Display** - Shows actual detected waste category instead of generic "Detected Object"
+- ✅ **Edge Detection Statistics** - Detailed mask analysis with range, average, and edge count
+- ✅ **1:1 Aspect Ratio Overlay** - Image display maintains proper aspect ratio for accurate overlays
+- 🔄 **ML Model Accuracy Improvement** - Current val accuracy ~29%, implementing dataset balancing and hyperparameter tuning
+- ✅ **Waste Detection Service Integration** - Complete object detection service with TensorFlow/Keras model, proper bounding box denormalization, and German recycling guidance
+- ✅ **qwen2.5:0.5b Model Integration** - Switched from Gemma3:1b to smaller, faster qwen2.5:0.5b model for LLM processing---
 
----
+### Sprint 9: Status Page & Monitoring (Completed)
+- ✅ Statping Status Page integration
+- ✅ SQLite database for lightweight data storage
+- ✅ Docker-based deployment with unified docker-compose setup
+- ✅ Service monitoring configuration (backend, database, LLM services)
+- ✅ Real-time status updates and incident tracking
+- ✅ Logs and incident history display
 
 ## 🚧 In Progress
 
@@ -108,8 +116,10 @@
 - ✅ Real TFLite model integration (native inference implemented)
 - ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated
 - 🔄 Points awarding for waste classifications
+- 🔄 **LLM Integration Optimization** - qwen2.5:0.5b model available but needs timeout handling for production use
 
 **Recently Completed:**
+- ✅ **Waste Analysis Screen Logic/View Separation** - Extracted all business logic into useWasteAnalysis custom hook, improved code maintainability and testability
 - ✅ TensorFlow.js React Native scaffolding
 - ✅ Backend recycling analysis system with LLM
 - ✅ GraphQL mutation for finalized recycling
@@ -117,19 +127,16 @@
 - ✅ **TensorFlow.js native inference (Option C: TFLite→TFJS conversion)**
 - ✅ Real TFLite model integration with native inference
 - ✅ **ML Training Pipeline Improvements (8-class system, stratified splitting, class weights)**
-- ✅ **Object Detection Model Integration** - New TFLite model copied to mobile assets and detector module created
+- ✅ **Object Detection Model Integration** - New TFLite model copied to mobile assets and detector module created, **multiple detections parsing implemented**
 - ✅ **Detection Mode Toggle** - UI toggle added to switch between classification and object detection modes
 - ✅ **Visual Object Detection Mapping** - Bounding box overlay and detailed results display implemented
-- ✅ **Detection Label Display** - Shows actual detected waste category with edge detection statistics
-- ✅ **UI Refactoring Complete** - Modern, production-ready design with:
-  - Full-screen image preview with bottom panel layout
-  - Glassmorphism effects with backdrop blur and gradients
-  - User-friendly detection results (grouped by type with counts)
-  - Improved camera UI with enhanced buttons and controls
-  - Live mode overlay with animated indicators
-  - Consistent emerald/blue color scheme throughout
-  - Eliminated overlapping UI elements
-  - Replaced technical jargon with intuitive language
+- ✅ **Local TensorFlow Model Integration** - Replaced external Moondream vision API with local waste classification model, using TensorFlow/Keras for on-device inference with Ollama Gemma3:1b for structured text formatting
+- ✅ **Hybrid Vision + LLM Pipeline** - End-to-end waste detection working: image preprocessing → TensorFlow classification → Gemma3 JSON formatting → German recycling guidance
+- ✅ **Fallback Detection Logic** - Robust error handling with fallback responses when ML model unavailable, ensuring service reliability
+- ✅ **Waste Detection Service Integration** - Complete object detection service with TensorFlow/Keras model, proper bounding box denormalization, and German recycling guidance
+- ✅ **qwen2.5:0.5b Model Integration** - Switched from Gemma3:1b to smaller, faster qwen2.5:0.5b model for LLM processing
+- ✅ **German Recycling Knowledge Base Conversion** - Converted markdown recycling rules to structured JSON format with multilingual support, updated LLM service to use unified knowledge base
+- ✅ **Unified Docker Compose Setup** - Merged root docker-compose.yml with waste-llm-service docker-compose.yml, added backend Docker container, created comprehensive multi-service deployment with successful builds
 
 ---
 
@@ -312,6 +319,13 @@
 - **iOS:** 🟡 In Development
   - **Version:** 0.1.0
   - **Status:** Running on Expo Go
+
+### Status Page (Statping)
+- **Environment:** Local Development
+- **Status:** 🟢 Deployed via Docker
+- **URL:** `http://localhost:8080`
+- **Admin:** admin / admin123
+- **Database:** SQLite (Embedded)
 
 ### Database (MongoDB Atlas)
 - **Cluster:** M0 (Free tier)

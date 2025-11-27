@@ -8,7 +8,7 @@
     "bootstrap": "pnpm install",
     "apk": "pnpm --filter mobile run build:dev --platform android --local",
     "dev": "pnpm -w --parallel dev",
-    "generate": "pnpm -r postinstall",
+    "generate": "pnpm -F backend run prisma:generate && pnpm -F mobile run codegen",
     "prebuild": "pnpm -w -F mobile exec expo prebuild",
     "dev:mobile": "pnpm --filter mobile start",
     "dev:backend": "pnpm --filter backend start:dev",

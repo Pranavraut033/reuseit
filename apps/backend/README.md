@@ -27,6 +27,7 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
 - Prisma schema auto-generation
 - E2E and unit testing
 - Google Maps integration (Places, Autocomplete, Reverse Geocoding) via backend GraphQL
+- AI-powered waste analysis integration (connects to waste-llm-service microservice)
 
 ---
 
