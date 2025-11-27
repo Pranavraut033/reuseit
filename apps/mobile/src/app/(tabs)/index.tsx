@@ -26,7 +26,7 @@ const FeedsScreen = () => {
       subtitle: 'Identify recyclables',
       icon: 'camera',
       colors: ['#60A5FA', '#2563EB'] as const,
-      onPress: () => router.push('/identify'),
+      onPress: () => router.push('/waste-analysis'),
       accessibilityLabel: 'Scan item to identify recyclable materials',
     },
     {

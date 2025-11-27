@@ -18,7 +18,7 @@ const CameraOptions: FabOptionType = {
   title: 'Scan Item',
   accessibilityLabel: 'Scan item to identify recyclable materials',
   iconName: 'camera',
-  route: '/identify',
+  route: '/waste-analysis',
 };
 
 const CreatePostOptions: FabOptionType = {

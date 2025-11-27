@@ -16,9 +16,9 @@ import { CameraHUD } from '~/components/identify/CameraHUD';
 import { ImagePreview } from '~/components/identify/ImagePreview';
 import { LiveModeOverlay } from '~/components/identify/LiveModeOverlay';
 import { Viewfinder } from '~/components/identify/Viewfinder';
-import { useObjectDetector } from '~/ml/useObjectDetector';
+import { useWasteClassifier } from '~/ml/useWasteClassifier';
 
-export default function IdentifyScreen() {
+export default function ClassifyScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('back');
@@ -26,19 +26,19 @@ export default function IdentifyScreen() {
   const [pickedImage, setPickedImage] = useState<string | null>(null);
   const [liveMode, setLiveMode] = useState(false);
   const {
-    ready: detectorReady,
-    loading: detectorLoading,
-    error: detectorError,
-    results: detectorResults,
-    detect,
-  } = useObjectDetector();
+    ready: classifierReady,
+    loading: classifierLoading,
+    error: classifierError,
+    results: classifierResults,
+    classify,
+  } = useWasteClassifier();
 
-  // Computed values for object detection
-  const ready = detectorReady;
-  const loading = detectorLoading;
-  const error = detectorError;
-  const results = detectorResults;
-  const runInference = detect;
+  // Computed values for waste classification
+  const ready = classifierReady;
+  const loading = classifierLoading;
+  const error = classifierError;
+  const results = classifierResults;
+  const runInference = classify;
 
   const toggleLiveMode = useCallback(() => {
     setLiveMode((prev) => !prev);
@@ -56,7 +56,7 @@ export default function IdentifyScreen() {
             skipProcessing: true,
           });
           if (photo) {
-            detect(photo.uri);
+            classify(photo.uri);
           }
         }
       } catch (err) {
@@ -65,7 +65,7 @@ export default function IdentifyScreen() {
     }, 300); // Capture every 300ms for smoother live mode
 
     return () => clearInterval(interval);
-  }, [liveMode, ready, loading, detect]);
+  }, [liveMode, ready, loading, classify]);
 
   const openAppSettings = useCallback(async () => {
     if (Platform.OS === 'ios') {
@@ -104,7 +104,7 @@ export default function IdentifyScreen() {
             Camera Permission Required
           </Text>
           <Text className="mb-6 text-center text-white/80">
-            We need camera access to identify waste materials
+            We need camera access to classify waste materials
           </Text>
           <TouchableOpacity
             className="rounded-lg bg-blue-600 px-6 py-3 shadow-md"
@@ -127,7 +127,7 @@ export default function IdentifyScreen() {
         loading={loading}
         error={error}
         results={results}
-        detectionMode="detection"
+        detectionMode="classification"
         runInference={runInference}
       />
     );
@@ -161,7 +161,7 @@ export default function IdentifyScreen() {
 
         {/* Live Mode Results Overlay */}
         {liveMode && results && (
-          <LiveModeOverlay results={results} detectionMode="detection" loading={loading} />
+          <LiveModeOverlay results={results} detectionMode="classification" loading={loading} />
         )}
       </View>
     </>
