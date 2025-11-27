@@ -29,8 +29,7 @@ export const CategoryFilterBar: React.FC<CategoryFilterBarProps> = ({ selected, 
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ alignItems: 'center' }}
-      className="px-4"
-    >
+      className="px-4">
       {ORDER.map((id) => (
         <CategoryCard
           key={id}

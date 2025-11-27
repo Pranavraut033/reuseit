@@ -63,8 +63,7 @@ export default function ScreenContainer({
       contentContainerStyle={scroll ? [{ padding }, style] : undefined}
       style={!scroll ? [{ padding }, style] : undefined}
       keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+      showsVerticalScrollIndicator={false}>
       {children}
     </ContentWrapper>
   );
@@ -72,8 +71,7 @@ export default function ScreenContainer({
   const WrappedWithKeyboard = keyboardAvoiding ? (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {Base}
     </KeyboardAvoidingView>
   ) : (

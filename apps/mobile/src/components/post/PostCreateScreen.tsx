@@ -223,8 +223,7 @@ export const PostCreateScreen: React.FC = () => {
           disabled={isLoading}
           accessible={true}
           accessibilityLabel={t('accessibility.cancelButton')}
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <Ionicons name="arrow-back" size={28} color="#1F2937" />
         </TouchableOpacity>
 
@@ -237,8 +236,7 @@ export const PostCreateScreen: React.FC = () => {
           accessible={true}
           accessibilityLabel={t('accessibility.publishButton')}
           accessibilityRole="button"
-          loading={isLoading}
-        >
+          loading={isLoading}>
           {t('postCreate.publish')}
         </Button>
       </View>
@@ -249,8 +247,7 @@ export const PostCreateScreen: React.FC = () => {
         scrollEventThrottle={16}
         onScroll={(e) => {
           scrollHandler?.(e);
-        }}
-      >
+        }}>
         <View className="p-4">
           <View className="mb-5">
             <View className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-2">
@@ -258,8 +255,7 @@ export const PostCreateScreen: React.FC = () => {
                 Post as{' '}
                 <Text
                   className={cn({ strikethrough: formValues.anonymous })}
-                  style={formValues.anonymous ? { textDecorationLine: 'line-through' } : undefined}
-                >
+                  style={formValues.anonymous ? { textDecorationLine: 'line-through' } : undefined}>
                   {user?.name}
                 </Text>
                 {formValues.anonymous ? ` (${t('postCreate.anonymous')})` : ''}
@@ -272,8 +268,7 @@ export const PostCreateScreen: React.FC = () => {
                     className="flex-row items-center"
                     onPress={() => onChange(!value)}
                     accessible={true}
-                    accessibilityLabel={t('accessibility.anonymousToggle')}
-                  >
+                    accessibilityLabel={t('accessibility.anonymousToggle')}>
                     <Ionicons name={value ? 'eye-off' : 'eye'} size={24} color="#1F2937" />
                   </TouchableOpacity>
                 )}
@@ -349,11 +344,9 @@ export const PostCreateScreen: React.FC = () => {
                       disabled={isLoading}
                       accessible={true}
                       accessibilityLabel={`${cat.label} category`}
-                      accessibilityRole="button"
-                    >
+                      accessibilityRole="button">
                       <Text
-                        className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
-                      >
+                        className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
                         {cat.label}
                       </Text>
                     </TouchableOpacity>
@@ -384,11 +377,9 @@ export const PostCreateScreen: React.FC = () => {
                       disabled={isLoading}
                       accessible={true}
                       accessibilityLabel={`${cond.label} condition`}
-                      accessibilityRole="button"
-                    >
+                      accessibilityRole="button">
                       <Text
-                        className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
-                      >
+                        className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
                         {cond.label}
                       </Text>
                     </TouchableOpacity>
@@ -454,8 +445,7 @@ export const PostCreateScreen: React.FC = () => {
                     onPress={() => setShowDatePicker(true)}
                     accessible={true}
                     accessibilityLabel={t('accessibility.datePickerButton')}
-                    accessibilityRole="button"
-                  >
+                    accessibilityRole="button">
                     <Ionicons name="calendar-outline" size={20} color="#6B7280" />
                     <Text className="text-[15px] text-gray-800">
                       {value ? format(new Date(value), 'MMM dd, yyyy') : 'Select pickup date'}
@@ -518,8 +508,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
         hideOnScrollDown
         className="absolute bottom-4 right-4"
         icon={() => <Ionicons name="eye" size={24} color="#FFFFFF" />}
-        onPress={handleOpen}
-      >
+        onPress={handleOpen}>
         {t('postCreate.preview')}
       </FabButton>
       <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={handleClose}>
@@ -543,8 +532,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
               />
             )}
             enablePanDownToClose
-            onClose={handleClose}
-          >
+            onClose={handleClose}>
             <View className="flex-1 bg-white">
               {/* Header */}
               <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3">
@@ -556,8 +544,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
                 </View>
                 <TouchableOpacity
                   className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
-                  onPress={handleClose}
-                >
+                  onPress={handleClose}>
                   <Ionicons name="close" size={20} color="#374151" />
                 </TouchableOpacity>
               </View>
@@ -565,8 +552,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
               {/* Preview Card */}
               <BottomSheetScrollView
                 contentContainerStyle={{ paddingBottom: 20, padding: 16 }}
-                showsVerticalScrollIndicator={false}
-              >
+                showsVerticalScrollIndicator={false}>
                 <PostCard
                   isPreview
                   formData={formValues}

@@ -184,8 +184,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
           style={[styles.imageContainer, isActive && styles.imageContainerActive]}
           accessible={true}
           accessibilityLabel={t('accessibility.dragHandle')}
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           <Image source={{ uri: item.uri }} style={styles.image} resizeMode="cover" />
 
           {/* Delete button */}
@@ -194,8 +193,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
             onPress={() => removeImage(item.id)}
             accessible={true}
             accessibilityLabel={t('accessibility.removePhotoButton')}
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             <Ionicons name="close-circle" size={24} color="#EF4444" />
           </TouchableOpacity>
 
@@ -246,8 +244,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
           disabled={isProcessing}
           accessible={true}
           accessibilityLabel={t('accessibility.addPhotoButton')}
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           {isProcessing ? (
             <ActivityIndicator color="#3B82F6" size="small" />
           ) : (

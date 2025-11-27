@@ -1,5 +1,5 @@
 import React from 'react';
-import { Path,Svg } from 'react-native-svg';
+import { Path, Svg } from 'react-native-svg';
 
 const Camera = () => (
   <Svg width="24" height="24" fill="none" viewBox="0 0 1066 900">

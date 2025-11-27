@@ -60,8 +60,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         <View className="flex flex-row items-center rounded-lg border border-gray-300 focus-within:border-primary">
           <TouchableOpacity
             className="border-r border-gray-300 px-4 py-2"
-            onPress={() => setShowSelector(true)}
-          >
+            onPress={() => setShowSelector(true)}>
             <Text className="text-gray-700">{selectedCountry.dial_code}</Text>
           </TouchableOpacity>
           <TextInput

@@ -96,8 +96,7 @@ const IconButton = forwardRef<View, IconButtonProps>(
           pressed && {
             opacity: 0.7,
           },
-        ]}
-      >
+        ]}>
         <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
           {renderIcon()}
         </View>

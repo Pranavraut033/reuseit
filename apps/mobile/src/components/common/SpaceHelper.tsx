@@ -14,8 +14,7 @@ const Row: FC<{
   return (
     <View
       className={className}
-      style={[{ flexDirection: isRow ? 'row' : 'column', alignItems: 'center' }, style]}
-    >
+      style={[{ flexDirection: isRow ? 'row' : 'column', alignItems: 'center' }, style]}>
       {arr.map((child, idx) => (
         <View
           key={idx}
@@ -25,8 +24,7 @@ const Row: FC<{
               : isRow
                 ? { marginRight: space }
                 : { marginBottom: space }
-          }
-        >
+          }>
           {child}
         </View>
       ))}

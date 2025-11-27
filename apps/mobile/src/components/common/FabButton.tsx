@@ -156,8 +156,7 @@ export const FabButton = forwardRef<View, FabButtonProps>(
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled, busy: loading }}
         testID={testID}
-        style={[{ elevation: 8 }, style]}
-      >
+        style={[{ elevation: 8 }, style]}>
         <View>{loading ? renderLoading() : renderIcon()}</View>
         {typeof children == 'string' || typeof children == 'number' ? (
           <Text className={cn(sizeConfig[size].text)} style={{ color: resolvedIconColor }}>

@@ -142,16 +142,14 @@ const ButtonComponent = forwardRef<View, ButtonProps>(
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled, busy: loading }}
         testID={testID}
-        style={style}
-      >
+        style={style}>
         {iconPosition === 'left' && (loading ? renderLoading() : renderIcon())}
         {title || typeof children == 'string' || typeof children == 'number' ? (
           <Text
             className={computedTextClassName}
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={typeof textStyle !== 'string' ? textStyle : undefined}
-          >
+            style={typeof textStyle !== 'string' ? textStyle : undefined}>
             {title || children}
           </Text>
         ) : (

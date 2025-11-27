@@ -183,8 +183,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
             disabled={isLoading}
             accessible={true}
             accessibilityLabel={t('accessibility.locationButton')}
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             {isLoading ? (
               <ActivityIndicator size="small" color="#3B82F6" />
             ) : (
@@ -202,8 +201,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
             onPress={openMapPicker}
             accessible={true}
             accessibilityLabel="Select location on map"
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             <Ionicons name="map" size={20} color="#3B82F6" />
             <Text className="text-sm font-medium text-blue-500">{t('postCreate.selectOnMap')}</Text>
           </TouchableOpacity>
@@ -215,8 +213,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
         <SafeAreaView className="flex-1 ">
           <View className="flex-1">
             <View
-              className={`absolute inset-x-4 top-4 z-10 flex-row  items-center justify-between rounded-full border border-black/10 bg-white/60 p-4`}
-            >
+              className={`absolute inset-x-4 top-4 z-10 flex-row  items-center justify-between rounded-full border border-black/10 bg-white/60 p-4`}>
               <TouchableOpacity onPress={() => setShowMap(false)}>
                 <Ionicons name="close" size={28} color="#1F2937" />
               </TouchableOpacity>
@@ -242,8 +239,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
               showsMyLocationButton={false}
               followsUserLocation
               showsUserLocation
-              onPress={handleMapPress}
-            >
+              onPress={handleMapPress}>
               {tempLocation && (
                 <Marker
                   coordinate={{

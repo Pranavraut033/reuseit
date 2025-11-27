@@ -65,8 +65,7 @@ const LensCircles: React.FC = () => {
         width,
         height,
         zIndex: 99,
-      }}
-    >
+      }}>
       {circles.map((circle, idx) => (
         <LensCircle {...circle} key={circle.key} idx={idx} onShrink={onShrink} />
       ))}

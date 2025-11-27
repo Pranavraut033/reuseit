@@ -128,8 +128,7 @@ export const TagEditor: React.FC<TagEditorProps> = ({
         style={styles.tagRemove}
         accessible={true}
         accessibilityLabel={`Remove ${tag} tag`}
-        accessibilityRole="button"
-      >
+        accessibilityRole="button">
         <Ionicons name="close-circle" size={16} color="#6B7280" />
       </TouchableOpacity>
     </View>
@@ -142,8 +141,7 @@ export const TagEditor: React.FC<TagEditorProps> = ({
       onPress={() => addTag(suggestion.tag)}
       accessible={true}
       accessibilityLabel={`Add ${suggestion.tag} tag`}
-      accessibilityRole="button"
-    >
+      accessibilityRole="button">
       <Ionicons name="add-circle-outline" size={16} color="#3B82F6" />
       <Text style={styles.suggestionText}>{suggestion.tag}</Text>
       {suggestion.confidence > 0.7 && (
@@ -169,8 +167,7 @@ export const TagEditor: React.FC<TagEditorProps> = ({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tagsScrollContent}
-          >
+            contentContainerStyle={styles.tagsScrollContent}>
             {tags.map(renderTag)}
           </ScrollView>
         </View>
@@ -196,8 +193,7 @@ export const TagEditor: React.FC<TagEditorProps> = ({
             style={styles.addButton}
             accessible={true}
             accessibilityLabel="Add tag"
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             <Ionicons name="add-circle" size={24} color="#3B82F6" />
           </TouchableOpacity>
         )}
@@ -220,8 +216,7 @@ export const TagEditor: React.FC<TagEditorProps> = ({
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.suggestionsScrollContent}
-              >
+                contentContainerStyle={styles.suggestionsScrollContent}>
                 {getFilteredSuggestions().slice(0, 8).map(renderSuggestion)}
               </ScrollView>
             </View>

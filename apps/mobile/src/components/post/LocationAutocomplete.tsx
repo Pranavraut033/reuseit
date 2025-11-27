@@ -103,8 +103,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       className="flex-row items-start gap-2 px-3 py-2"
       onPress={() => handleSelect(item.place_id)}
       accessibilityRole="button"
-      accessibilityLabel={item.description}
-    >
+      accessibilityLabel={item.description}>
       <Ionicons name="location-outline" size={18} color="#3B82F6" style={{ marginTop: 2 }} />
       <View className="flex-1">
         <Text className="text-sm text-gray-800" numberOfLines={2}>

@@ -67,15 +67,13 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
               onPress={onClose}
             />
           )}
-          onClose={onClose}
-        >
+          onClose={onClose}>
           <View className="flex-1 bg-white">
             <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-4">
               <Text className="text-lg font-semibold text-gray-900">Select Country</Text>
               <TouchableOpacity
                 className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
-                onPress={onClose}
-              >
+                onPress={onClose}>
                 <Text className="text-lg text-gray-600">×</Text>
               </TouchableOpacity>
             </View>
@@ -104,8 +102,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
                       'bg-black/5': item.code === currentCountryCode,
                     },
                   )}
-                  onPress={() => onSelect(item)}
-                >
+                  onPress={() => onSelect(item)}>
                   <Text className="mr-3 text-2xl">{getFlagEmoji(item.code)}</Text>
                   <View className="flex-1">
                     <Text className="font-medium text-gray-900">{item.name}</Text>

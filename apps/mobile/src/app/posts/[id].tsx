@@ -99,14 +99,12 @@ export default function PostDetail() {
     <ScreenContainer padding={0}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
-      >
+        className="flex-1">
         {/* Header */}
         <View className="mb-4 flex-row items-center justify-between border-b border-gray-200 pb-4">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="h-10 w-10 items-center justify-center rounded-full bg-gray-100"
-          >
+            className="h-10 w-10 items-center justify-center rounded-full bg-gray-100">
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <Text className="flex-1 text-center text-xl font-bold text-gray-800">Post</Text>
@@ -178,8 +176,7 @@ export default function PostDetail() {
               <TouchableOpacity
                 onPress={handleCreateComment}
                 disabled={!commentText.trim() || creatingComment}
-                className={`rounded-full p-2 ${commentText.trim() && !creatingComment ? 'bg-blue-500' : 'bg-gray-300'}`}
-              >
+                className={`rounded-full p-2 ${commentText.trim() && !creatingComment ? 'bg-blue-500' : 'bg-gray-300'}`}>
                 {creatingComment ? (
                   <ActivityIndicator size="small" color="white" />
                 ) : (

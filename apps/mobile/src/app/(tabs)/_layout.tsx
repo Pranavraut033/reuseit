@@ -96,8 +96,7 @@ export default function TabLayout() {
             marginRight: 48 + 16 * 2,
           },
           tabBarBackground: () => <TabBarBackground />,
-        }}
-      >
+        }}>
         <Tabs.Screen name="index" options={homeOptions} />
         <Tabs.Screen name="posts" options={postsOptions} />
         <Tabs.Screen name="explore" options={exploreOptions} />

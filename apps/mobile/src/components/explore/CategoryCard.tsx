@@ -25,8 +25,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         className={cn(
           { 'border-primary': selected },
           ' border-black/24  flex w-24 flex-col  items-center overflow-hidden rounded-3xl border bg-gray-200/80 shadow-md shadow-primary ',
-        )}
-      >
+        )}>
         <View>
           <Image source={image} className="h-24 w-24" resizeMode="cover" />
         </View>
@@ -35,8 +34,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
           numberOfLines={1}
           className={cn('px-2 text-center text-sm text-black', {
             'font-bold text-primary': selected,
-          })}
-        >
+          })}>
           {label}
         </Text>
       </View>
