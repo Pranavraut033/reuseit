@@ -50,12 +50,47 @@ export const LOCATION_FIELDS = gql(`
   }
 `);
 
-let _p = getFragmentData(POST_FIELDS, {});
+export const EVENT_FIELDS = gql(`
+  fragment EventFields on Event {
+    id
+    title
+    description
+    startTime
+    endTime
+    imageUrl
+    creator {
+      id
+      name
+      avatarUrl
+    }
+    location {
+      ...LocationFields
+    }
+    participants {
+      id
+      user {
+        id
+        name
+        avatarUrl
+      }
+    }
+    posts {
+      id
+      title
+    }
+  }
+`);
 
+let _p = getFragmentData(POST_FIELDS, {});
 let _l = getFragmentData(LOCATION_FIELDS, _p.location);
+let _e = getFragmentData(EVENT_FIELDS, {});
 
 export type Location = typeof _l;
 
-export type Post = typeof _p & {
+export type Post = Omit<typeof _p, 'location'> & {
+  location: Location;
+};
+
+export type Event = Omit<typeof _e, 'location'> & {
   location: Location;
 };

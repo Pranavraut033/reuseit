@@ -4,15 +4,14 @@ import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnalyzeWasteResult } from '~/__generated__/graphql';
+import { useWasteAnalysis } from '~/context/WasteAnalysisProvider';
+import { AnalyzeWasteResult } from '~/types/wasteAnalysis';
 
-type WasteAnalysisResultsProps = {
+type ResultContentProps = {
   result: AnalyzeWasteResult;
   pickedImage: string;
   onClose: () => void;
 };
-
-const formatTime = (msValue: number) => ms(Math.round(msValue * 1000) / 1000, { long: false });
 
 const categoryMap: Record<string, string> = {
   paper_cardboard: 'Paper & Cardboard',
@@ -36,11 +35,8 @@ const categoryIcons: Record<string, string> = {
   residual_waste: '🗑️',
 };
 
-export const WasteAnalysisResults: React.FC<WasteAnalysisResultsProps> = ({
-  result,
-  pickedImage,
-  onClose,
-}) => {
+export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImage, onClose }) => {
+  const { aiInsightsLoading } = useWasteAnalysis();
   return (
     <SafeAreaView className="flex-1">
       <LinearGradient colors={['#0f0f23', '#1a1a2e', '#16213e']} className="flex-1">
@@ -52,10 +48,10 @@ export const WasteAnalysisResults: React.FC<WasteAnalysisResultsProps> = ({
               <Text className="mt-1 text-sm text-gray-300">Your eco-journey continues</Text>
             </View>
             <TouchableOpacity
-              className="rounded-full size-12 bg-gray-700 p-3 shadow-lg"
+              className="size-12 rounded-full bg-gray-700 p-3 shadow-lg"
               onPress={onClose}
             >
-              <Text className="text-sm m-auto text-white">✕</Text>
+              <Text className="m-auto text-sm text-white">✕</Text>
             </TouchableOpacity>
           </View>
 
@@ -152,19 +148,73 @@ export const WasteAnalysisResults: React.FC<WasteAnalysisResultsProps> = ({
                   )}
                 </LinearGradient>
 
+                <Text className="mb-3 text-sm font-medium text-gray-200">
+                  📋 Recycling Instructions:
+                </Text>
                 <Text className="mb-3 text-sm text-gray-200">{item.recycling_instructions}</Text>
+
+                {item.preparation_steps && item.preparation_steps.length > 0 && (
+                  <View className="mb-3">
+                    <Text className="mb-2 text-sm font-medium text-gray-200">
+                      🔧 Preparation Steps:
+                    </Text>
+                    {item.preparation_steps.map((step, stepIndex) => (
+                      <Text key={stepIndex} className="mb-1 text-sm text-gray-300">
+                        • {step}
+                      </Text>
+                    ))}
+                  </View>
+                )}
 
                 <Text className="mb-3 text-sm italic text-green-300">
                   ♻️ Reuse ideas: {item.reuse_ideas}
                 </Text>
 
-                {item.notes_germany && (
+                {item.environmental_benefits && (
                   <LinearGradient
-                    colors={['rgba(59, 130, 246, 0.2)', 'rgba(59, 130, 246, 0.1)']}
-                    className="rounded-xl border border-blue-500/20 p-3"
+                    colors={['rgba(34, 197, 94, 0.2)', 'rgba(34, 197, 94, 0.1)']}
+                    className="mb-3 rounded-xl border border-green-500/20 p-3"
                   >
-                    <Text className="text-sm text-blue-300">ℹ️ {item.notes_germany}</Text>
+                    <Text className="text-sm text-green-300">🌱 {item.environmental_benefits}</Text>
                   </LinearGradient>
+                )}
+                {aiInsightsLoading && (
+                  <Text className="text-sm italic text-gray-400">Loading AI insights...</Text>
+                )}
+                {item.ai_insights && (
+                  <View className="mt-4">
+                    <LinearGradient
+                      colors={['rgba(147, 51, 234, 0.15)', 'rgba(147, 51, 234, 0.08)']}
+                      className="rounded-2xl border border-purple-500/30 p-4 backdrop-blur-lg"
+                    >
+                      <View className="mb-3 flex-row items-center">
+                        <Text className="mr-2 text-lg">🤖</Text>
+                        <Text className="text-sm font-semibold text-purple-300">AI Insights</Text>
+                      </View>
+
+                      {item.ai_insights.simplified_summary && (
+                        <Text className="mb-3 text-sm leading-relaxed text-purple-100">
+                          {item.ai_insights.simplified_summary}
+                        </Text>
+                      )}
+
+                      {item.ai_insights.extra_facts && item.ai_insights.extra_facts.length > 0 && (
+                        <View className="space-y-2">
+                          <Text className="text-xs font-medium uppercase tracking-wide text-purple-300">
+                            Did You Know?
+                          </Text>
+                          {item.ai_insights.extra_facts.map((fact, factIndex) => (
+                            <View key={factIndex} className="flex-row items-start">
+                              <Text className="mr-2 mt-0.5 text-xs text-purple-400">💡</Text>
+                              <Text className="flex-1 text-xs leading-relaxed text-purple-200">
+                                {fact}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </LinearGradient>
+                  </View>
                 )}
               </LinearGradient>
             ))}
@@ -182,34 +232,14 @@ export const WasteAnalysisResults: React.FC<WasteAnalysisResultsProps> = ({
               <View className="mb-4 flex-row justify-between">
                 <View className="items-center">
                   <Text className="text-sm text-gray-300">Vision Model</Text>
-                  <Text className="text-sm font-semibold text-cyan-400">
-                    {result.models.vision}
-                  </Text>
+                  <Text className="text-sm font-semibold text-cyan-400">TF Lite</Text>
                 </View>
-                <View className="items-center">
-                  <Text className="text-sm text-gray-300">LLM Model</Text>
-                  <Text className="text-sm font-semibold text-purple-400">{result.models.llm}</Text>
-                </View>
-              </View>
-              <View className="flex-row justify-between">
-                <View className="items-center">
-                  <Text className="text-2xl font-bold text-cyan-400">
-                    {formatTime(result.latency_ms.detector)}
-                  </Text>
-                  <Text className="text-sm text-gray-300">Detection</Text>
-                </View>
-                <View className="items-center">
-                  <Text className="text-2xl font-bold text-purple-400">
-                    {formatTime(result.latency_ms.reasoner)}
-                  </Text>
-                  <Text className="text-sm text-gray-300">Reasoning</Text>
-                </View>
-                <View className="items-center">
-                  <Text className="text-2xl font-bold text-green-400">
-                    {formatTime(result.latency_ms.total)}
-                  </Text>
-                  <Text className="text-sm text-gray-300">Total</Text>
-                </View>
+                {result?.recycling_plan[0].ai_insights && (
+                  <View className="items-center">
+                    <Text className="text-sm text-gray-300">LLM Model</Text>
+                    <Text className="text-sm font-semibold text-purple-400">qwen2.5:0.5b</Text>
+                  </View>
+                )}
               </View>
             </LinearGradient>
           </View>

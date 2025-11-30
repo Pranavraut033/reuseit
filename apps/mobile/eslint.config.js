@@ -21,6 +21,13 @@ module.exports = defineConfig([
   shared.base,
   // typescript-specific shared config (scoped to TS files)
   shared.typescript,
+  // add simple-import-sort plugin for TS files
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
+    plugins: {
+      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
+    },
+  },
   // enable type-aware rules for this package by pointing parserOptions.project to the package tsconfig
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],

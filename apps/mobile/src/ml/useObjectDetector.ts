@@ -8,6 +8,12 @@ export function useObjectDetector() {
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<ObjectDetectionResult | null>(null);
 
+  const reset = useCallback(() => {
+    setResults(null);
+    setError(null);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     warmup()
       .then(() => setReady(true))
@@ -17,15 +23,17 @@ export function useObjectDetector() {
   const detect = useCallback(async (uri: string) => {
     setLoading(true);
     setError(null);
+    let r: ObjectDetectionResult | null = null;
     try {
-      const r = await detectObjects(uri);
+      r = await detectObjects(uri);
       setResults(r);
     } catch (e) {
       setError((e as Error).message || 'Object detection failed');
     } finally {
       setLoading(false);
     }
+    return r;
   }, []);
 
-  return { ready, loading, error, results, detect };
+  return { ready, loading, error, results, detect, reset };
 }

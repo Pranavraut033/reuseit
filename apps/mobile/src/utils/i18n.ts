@@ -17,6 +17,7 @@ const translations_en = {
     close: 'Close',
     filterAll: 'All',
     tooltipCurrentLocation: 'Go to Current Location',
+    tooltipLoadArea: 'Load places for this area',
     categories: {
       general: 'General',
       glass: 'Glass',
@@ -150,6 +151,7 @@ export const translations: Record<string, TranslationObject> = {
       close: 'Schließen',
       filterAll: 'Alle',
       tooltipCurrentLocation: 'Zum aktuellen Standort gehen',
+      tooltipLoadArea: 'Orte für diesen Bereich laden',
       categories: {
         general: 'Allgemein',
         glass: 'Glas',

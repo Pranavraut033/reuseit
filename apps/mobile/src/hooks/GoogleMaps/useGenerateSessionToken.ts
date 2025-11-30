@@ -11,6 +11,10 @@ export function useGenerateSessionToken() {
       const result = await fetchToken();
       return result.data?.generatePlacesSessionToken || Math.random().toString(36).slice(2);
     } catch (err) {
+      // Handle AbortError gracefully (e.g., component unmounted)
+      if (err instanceof Error && err.name === 'AbortError') {
+        return Math.random().toString(36).slice(2);
+      }
       console.error('Error generating session token:', err);
       return Math.random().toString(36).slice(2);
     }

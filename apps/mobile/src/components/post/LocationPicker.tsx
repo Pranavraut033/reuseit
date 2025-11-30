@@ -17,6 +17,7 @@ import { Toast } from 'toastify-react-native';
 import { LocationType } from '~/__generated__/graphql';
 import { LocationCreateFormData } from '~/gql/helper.types';
 import { PlaceDetailsResult, useReverseGeocode } from '~/hooks/GoogleMaps';
+import { useUserLocation } from '~/hooks/useUserLocation';
 import { t } from '~/utils/i18n';
 
 import { LocationAutocomplete } from './LocationAutocomplete';
@@ -31,6 +32,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
   const [showMap, setShowMap] = useState(false);
   const [tempLocation, setTempLocation] = useState<LocationCreateFormData | null>(location);
   const { reverseGeocode } = useReverseGeocode();
+  const { fetchUserLocation, loading: _locationLoading, error: _locationError } = useUserLocation();
 
   // Selected place (if any) is represented by `location` prop via parent state
 
@@ -57,31 +59,26 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
     [reverseGeocode],
   );
 
-  const requestLocationPermission = useCallback(async (): Promise<boolean> => {
+  const getCurrentLocation = useCallback(async () => {
+    setIsLoading(true);
+
+    // Use the hook to fetch location
+    await fetchUserLocation();
+
+    // The hook will set location, but we need to convert it to LocationCreateFormData
+    // Since the hook doesn't directly give us coords, we need to handle this differently
+
+    // For now, let's implement it directly here
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== 'granted') {
         Alert.alert(
           'Permission Required',
           'We need location permission to detect your current location.',
         );
-        return false;
+        return;
       }
 
-      return true;
-    } catch (_error) {
-      console.error('Error requesting location permission:', _error);
-      return false;
-    }
-  }, []);
-
-  const getCurrentLocation = useCallback(async () => {
-    setIsLoading(true);
-    const hasPermission = await requestLocationPermission();
-    if (!hasPermission) return;
-
-    try {
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
@@ -101,7 +98,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
     } finally {
       setIsLoading(false);
     }
-  }, [onLocationChange, requestLocationPermission, getLocationFromCoords]);
+  }, [onLocationChange, getLocationFromCoords]);
 
   const handleMapPress = useCallback(
     async (event: { nativeEvent: { coordinate: { latitude: number; longitude: number } } }) => {
@@ -129,12 +126,20 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ location, onLoca
   }, [onLocationChange]);
 
   const openMapPicker = useCallback(async () => {
-    const hasPermission = await requestLocationPermission();
-    if (!hasPermission) return;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'We need location permission to show the map.');
+        return;
+      }
+    } catch (error) {
+      console.error('Error requesting location permission:', error);
+      return;
+    }
 
     setTempLocation(location);
     setShowMap(true);
-  }, [location, requestLocationPermission]);
+  }, [location]);
 
   return (
     <View className="mb-4">

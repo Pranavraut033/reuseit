@@ -15,24 +15,18 @@ const FLASH_OPTION_ICONS: Record<FlashMode, ComponentProps<typeof MaterialIcons>
 
 type CameraHUDProps = {
   cameraRef: React.RefObject<CameraView | null>;
-  setPickedImage: React.Dispatch<React.SetStateAction<string | null>>;
-  runInference: (uri: string) => void;
-  ready: boolean;
-  liveMode?: boolean;
-  toggleLiveMode?: () => void;
+  setPickedImage: (value: string | null) => void;
   onFlashChange: (flash: FlashMode) => void;
   onFacingChange: (facing: CameraType) => void;
+  moreOptions?: React.ReactNode;
 };
 
 export const CameraHUD: React.FC<CameraHUDProps> = ({
   setPickedImage,
   cameraRef,
-  runInference,
-  ready,
-  // liveMode,
-  // toggleLiveMode,
   onFlashChange,
   onFacingChange,
+  moreOptions,
 }) => {
   const [flashOptionIdx, setFlashOptionsIdx] = useState(0);
   const [facing, setFacing] = useState<CameraType>('back');
@@ -64,18 +58,12 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
     });
 
     if (photo && photo.uri) {
-      console.warn(`[${Date.now()}] Photo captured:`, photo.uri, 'ready:', ready);
-      setPickedImage?.(photo.uri);
-      if (ready) {
-        console.warn(`[${Date.now()}] Calling runInference with:`, photo.uri);
-        runInference(photo.uri);
-      } else {
-        console.warn(`[${Date.now()}] Not calling runInference because ready is false`);
-      }
+      console.warn(`[${Date.now()}] Photo captured:`, photo.uri);
+      setPickedImage(photo.uri);
     } else {
       console.warn(`[${Date.now()}] Photo capture failed or no URI:`, photo);
     }
-  }, [cameraRef, setPickedImage, runInference, ready]);
+  }, [cameraRef, setPickedImage]);
 
   const handlePickImage = useCallback(async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -85,26 +73,17 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
 
     if (!result.canceled && result.assets && result.assets[0] && result.assets[0].uri) {
       console.warn(`[${Date.now()}] Gallery image selected:`, result.assets[0].uri);
-      setPickedImage?.(result.assets[0].uri);
-      if (ready) {
-        console.warn(
-          `[${Date.now()}] Calling runInference with gallery image:`,
-          result.assets[0].uri,
-        );
-        runInference(result.assets[0].uri);
-      } else {
-        console.warn(`[${Date.now()}] Not calling runInference because ready is false`);
-      }
+      setPickedImage(result.assets[0].uri);
     } else {
       console.warn(`[${Date.now()}] Gallery pick failed or no URI:`, result);
     }
-  }, [setPickedImage, ready, runInference]);
+  }, [setPickedImage]);
 
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1">
         {/* Flash & Flip Buttons */}
-        <View className="absolute right-6 top-8 z-20 flex-col space-y-4">
+        <View className="absolute right-6 top-8 z-20 flex-col ">
           <TouchableOpacity
             onPress={toggleFlash}
             className="rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-4 shadow-xl"
@@ -113,45 +92,13 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={toggleCameraFacing}
-            className="rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-4 shadow-xl"
+            className="mt-4 rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-4 shadow-xl"
             style={{ backdropFilter: 'blur(20px)' }}>
             <Ionicons name="camera-reverse" size={24} color="white" />
           </TouchableOpacity>
-          {/* Live Mode Toggle */}
-          {/* <TouchableOpacity
-            onPress={toggleLiveMode}
-            disabled={!ready}
-            className={`rounded-2xl border p-4 shadow-xl ${
-              liveMode
-                ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/40 to-emerald-600/30'
-                : 'border-white/20 bg-gradient-to-br from-white/20 to-white/10 disabled:opacity-50'
-            }`}
-            style={{ backdropFilter: 'blur(20px)' }}>
-            <MaterialIcons
-              name={liveMode ? 'visibility' : 'visibility-off'}
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity> */}
-          {/* Detection Mode Toggle - Removed for object detection only */}
-          {/* <TouchableOpacity
-            onPress={() =>
-              setDetectionMode(detectionMode === 'classification' ? 'detection' : 'classification')
-            }
-            disabled={!ready}
-            className={`rounded-2xl border p-4 shadow-xl ${
-              detectionMode === 'detection'
-                ? 'border-blue-400/60 bg-gradient-to-br from-blue-500/40 to-blue-600/30'
-                : 'border-white/20 bg-gradient-to-br from-white/20 to-white/10 disabled:opacity-50'
-            }`}
-            style={{ backdropFilter: 'blur(20px)' }}>
-            <MaterialIcons
-              name={detectionMode === 'detection' ? 'search' : 'category'}
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity> */}
+          {moreOptions}
         </View>
+
         {/* Bottom Controls */}
         <View className="absolute bottom-0 z-20 w-full flex-row items-center justify-center pb-12">
           {/* Gallery Button */}

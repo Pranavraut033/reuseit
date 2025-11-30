@@ -4,3 +4,4 @@ node_modules
 # Docker
 mongo-keyfile
 .env
+model.old/

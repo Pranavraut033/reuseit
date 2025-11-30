@@ -1,6 +1,6 @@
+import { useQuery } from '@apollo/client/react';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Location from 'expo-location';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
@@ -12,62 +12,45 @@ import { FabButton } from '~/components/common/FabButton';
 import ScreenContainer from '~/components/common/ScreenContainer';
 import { TooltipWrapper } from '~/components/common/TooltipWrapper';
 import { CategoryFilterBar, CategoryKey, RECYCLING_KEYWORDS } from '~/components/explore';
-import { Place } from '~/hooks/GoogleMaps';
-import { useFetchNearbyPlacesByKeywords } from '~/hooks/GoogleMaps/useFetchNearbyPlacesByKeywords';
+import { NEARBY_PLACES_QUERY } from '~/gql/google-maps';
 import useStatusBarHeight from '~/hooks/useStatusBarHeight';
+import { useUserLocation } from '~/hooks/useUserLocation';
 import { t } from '~/utils/i18n';
 
+// GraphQL type for nearby places
+type NearbyPlace = {
+  __typename?: 'NearbyPlace';
+  placeId: string;
+  name?: string | null;
+  vicinity?: string | null;
+  types?: string[] | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  photoUrl?: string | null;
+};
+const INITIAL_REGION: Region = {
+  // Berlin as default center
+  latitude: 52.52,
+  longitude: 13.405,
+  latitudeDelta: 0.2,
+  longitudeDelta: 0.5,
+};
 export default function ExplorePage() {
-  const [region, setRegion] = useState<Region>();
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const mapRef = useRef<MapView | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const [showCurrentLocation, setShowCurrentLocation] = useState(false);
-  const regionChangedRef = useRef(false); // Add this ref
+  const [selectedPlace, setSelectedPlace] = useState<NearbyPlace | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey | 'all'>('general');
 
-  const getCurrentLocation = useCallback(async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setErrorMsg('Permission to access location was denied');
-      return;
-    }
+  const {
+    location: userRegion,
+    loading: isLoadingLocation,
+    error: locationError,
+    fetchUserLocation,
+  } = useUserLocation();
 
-    let location = await Location.getCurrentPositionAsync({});
-    setRegion({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      latitudeDelta: 0.2,
-      longitudeDelta: 0.5,
-    });
-  }, []);
-  useEffect(() => {
-    if (errorMsg) {
-      Toast.show({
-        type: 'error',
-        text1: 'Location Error',
-        text2: errorMsg,
-      });
-    }
-  }, [errorMsg]);
-
-  useEffect(() => {
-    getCurrentLocation();
-  }, [getCurrentLocation]);
-
-  const animateToCurrentLocation = useCallback(() => {
-    if (region && mapRef.current) {
-      mapRef.current.animateToRegion(region, 1000);
-      setShowCurrentLocation(false);
-      setTimeout(() => {
-        regionChangedRef.current = false; // Reset the ref after animation
-      }, 1500); // Reset after the animation duration
-    }
-  }, [region]);
-
-  useEffect(() => {
-    animateToCurrentLocation();
-  }, [animateToCurrentLocation]);
+  // Current visible region on the map
+  const [currentVisibleRegion, setCurrentVisibleRegion] = useState<Region>(INITIAL_REGION);
+  // Update last fetched region when region to fetch changes
+  const [regionToFetch, setRegionToFetch] = useState<Region>(INITIAL_REGION);
 
   const keywords = useMemo(() => {
     if (selectedCategory === 'all') {
@@ -76,16 +59,47 @@ export default function ExplorePage() {
     return RECYCLING_KEYWORDS[selectedCategory];
   }, [selectedCategory]);
 
-  const { data: places, isLoading: isLoadingPlaces } = useFetchNearbyPlacesByKeywords({
-    region,
-    radius: 500,
-    keywords,
+  const {
+    data,
+    loading: isLoadingPlaces,
+    error,
+  } = useQuery(NEARBY_PLACES_QUERY, {
+    variables: {
+      latitude: regionToFetch.latitude,
+      longitude: regionToFetch.longitude,
+      radius: 1000,
+      keywords,
+    },
   });
+
+  useEffect(() => {
+    if (locationError || error) {
+      Toast.show({
+        type: 'error',
+        text1: ' Error',
+        text2: locationError || error?.message,
+      });
+    }
+  }, [locationError, error]);
+
+  const animateToCurrentLocation = useCallback(() => {
+    if (!userRegion) return;
+
+    if (userRegion && mapRef.current) {
+      mapRef.current.animateToRegion(userRegion, 1000);
+    }
+  }, [userRegion]);
+
+  useEffect(() => {
+    animateToCurrentLocation();
+  }, [animateToCurrentLocation]);
+
+  const places = data?.nearbyPlaces || [];
 
   const insets = useSafeAreaInsets();
 
-  const openInMaps = useCallback((selectedPlace: Place) => {
-    if (!selectedPlace?.geometry?.location) {
+  const openInMaps = useCallback((selectedPlace: NearbyPlace) => {
+    if (!selectedPlace?.latitude || !selectedPlace?.longitude) {
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -94,7 +108,8 @@ export default function ExplorePage() {
       return;
     }
 
-    const { lat, lng } = selectedPlace.geometry.location;
+    const lat = selectedPlace.latitude;
+    const lng = selectedPlace.longitude;
     const name = selectedPlace.name || 'Destination';
 
     // Encode name so spaces/special chars work in URL
@@ -115,6 +130,26 @@ export default function ExplorePage() {
       })
       .catch((err) => console.error('An error occurred', err));
   }, []);
+  useEffect(() => {
+    setSelectedPlace(null);
+  }, [places]);
+  const showCurrentLocation = useMemo(() => {
+    if (!userRegion) return true;
+
+    const latDiff = Math.abs(currentVisibleRegion.latitude - userRegion.latitude);
+    const lngDiff = Math.abs(currentVisibleRegion.longitude - userRegion.longitude);
+
+    // Show button if user is more than ~0.01 degrees (~1km) away from center
+    return latDiff > 0.01 || lngDiff > 0.01;
+  }, [userRegion, currentVisibleRegion]);
+
+  const showRefetchFab = useMemo(() => {
+    const latDiff = Math.abs(currentVisibleRegion.latitude - regionToFetch.latitude);
+    const lngDiff = Math.abs(currentVisibleRegion.longitude - regionToFetch.longitude);
+
+    // Show refresh if user has moved more than ~0.005 degrees (~500m) from last fetched region
+    return latDiff > 0.005 || lngDiff > 0.005;
+  }, [currentVisibleRegion, regionToFetch]);
 
   return (
     <ScreenContainer safeArea={false} statusBarStyle="light-content">
@@ -130,8 +165,9 @@ export default function ExplorePage() {
         <CategoryFilterBar
           selected={selectedCategory}
           onSelect={(c) => {
+            if (showRefetchFab) setRegionToFetch(currentVisibleRegion);
+
             setSelectedCategory(c as CategoryKey | 'all');
-            setSelectedPlace(null); // clear selection when category changes
           }}
         />
       </View>
@@ -149,29 +185,24 @@ export default function ExplorePage() {
         <MapView
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
-          initialRegion={region}
+          initialRegion={INITIAL_REGION}
           zoomEnabled
-          onRegionChange={() => {
-            if (!regionChangedRef.current) {
-              setShowCurrentLocation(true);
-              regionChangedRef.current = true;
-            }
-          }}
+          onRegionChangeComplete={setCurrentVisibleRegion}
           showsMyLocationButton={false}
           followsUserLocation
           showsUserLocation
           style={styles.map}>
           {/* Render fetched places as markers */}
           {places?.map((p) => {
-            const lat = p.geometry?.location?.lat;
-            const lng = p.geometry?.location?.lng;
+            const lat = p.latitude;
+            const lng = p.longitude;
             if (typeof lat !== 'number' || typeof lng !== 'number') return null;
             return (
               <Marker
-                key={p.place_id}
+                key={p.placeId}
                 coordinate={{ latitude: lat, longitude: lng }}
-                title={p.name}
-                description={p.vicinity || p.formatted_address}
+                title={p.name || undefined}
+                description={p.vicinity || undefined}
                 onPress={() => {
                   setSelectedPlace(p);
                 }}
@@ -188,11 +219,28 @@ export default function ExplorePage() {
               icon={({ color, size }) => (
                 <FontAwesome name="location-arrow" size={size} color={color} />
               )}
+              loading={isLoadingLocation}
               className="bg-blue-500"
               iconColor="white"
-              onPress={animateToCurrentLocation}
+              onPress={() => {
+                if (userRegion) animateToCurrentLocation();
+                else fetchUserLocation();
+              }}
               size="small"
               type="neutral"
+            />
+          </TooltipWrapper>
+        )}
+        {showRefetchFab && (
+          <TooltipWrapper content={t('explore.tooltipLoadArea')}>
+            <FabButton
+              icon={({ color, size }) => <MaterialIcons name="refresh" size={size} color={color} />}
+              className="mt-2 bg-green-500"
+              iconColor="white"
+              onPress={() => setRegionToFetch(currentVisibleRegion)}
+              size="small"
+              type="neutral"
+              disabled={isLoadingPlaces}
             />
           </TooltipWrapper>
         )}
@@ -211,7 +259,7 @@ export default function ExplorePage() {
                   {selectedPlace.name}
                 </Text>
                 <Text numberOfLines={3} className="mt-1 text-sm text-white/80">
-                  {selectedPlace.vicinity || selectedPlace.formatted_address}
+                  {selectedPlace.vicinity}
                 </Text>
 
                 <View className="mt-4 flex-row">
@@ -246,7 +294,7 @@ export default function ExplorePage() {
   );
 }
 
-const PlacePhoto: React.FC<{ place: Place }> = ({ place }) => {
+const PlacePhoto: React.FC<{ place: NearbyPlace }> = ({ place }) => {
   // Use photoUrl from backend nearbyPlaces query
   const url = place.photoUrl;
 

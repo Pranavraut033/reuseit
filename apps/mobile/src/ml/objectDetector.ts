@@ -30,11 +30,11 @@ const _labels = [
 ];
 
 // Image preprocessing constants for object detection model
-const IMAGE_SIZE = 320; // Model expects 320x320 input
+export const IMAGE_SIZE = 224; // Model expects 224x224 input (matches training config)
 const MAX_BOXES = 10; // Maximum number of detections per image
 const NUM_CLASSES = 8; // Number of waste categories
-const EDGE_SIZE = IMAGE_SIZE * IMAGE_SIZE; // 102400
-const CONFIDENCE_THRESHOLD = 0.5; // Minimum confidence to include detection
+const EDGE_SIZE = IMAGE_SIZE * IMAGE_SIZE; // 50176
+const CONFIDENCE_THRESHOLD = 0.3; // Minimum confidence to include detection
 
 let model: TensorflowModel | null = null;
 
@@ -62,19 +62,24 @@ async function loadModel() {
 async function preprocessImage(imageUri: string): Promise<Float32Array> {
   try {
     // Resize image to 320x320 using expo-image-manipulator
-    const manipulatedImage = await manipulateAsync(
+    const result = await manipulateAsync(
       imageUri,
       [{ resize: { width: IMAGE_SIZE, height: IMAGE_SIZE } }],
-      { format: SaveFormat.JPEG, compress: 1.0 }, // No compression to preserve image quality
+      { format: SaveFormat.JPEG, compress: 1.0 },
     );
 
     // Read the resized image as base64
-    const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
+    const base64 = await FileSystem.readAsStringAsync(result.uri, {
       encoding: 'base64',
     });
 
+    console.warn('Preprocessed image base64 length:', base64?.length);
+    if (!base64) {
+      throw new Error('Failed to convert image to base64');
+    }
+
     // Decode JPEG
-    const rawData = Buffer.from(base64 as string, 'base64');
+    const rawData = Buffer.from(base64, 'base64');
     const jpegData = jpeg.decode(rawData, { useTArray: true });
 
     console.warn('JPEG decoded - width:', jpegData.width, 'height:', jpegData.height);
@@ -124,11 +129,16 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     const inputData = await preprocessImage(uri);
 
     console.warn('Input data shape:', inputData.length, 'Expected:', IMAGE_SIZE * IMAGE_SIZE * 3);
+    console.warn('Input data first 10:', Array.from(inputData.slice(0, 10)));
+
+    // Check if image is almost all black (or white) to avoid meaningless detections
+    const mean = inputData.reduce((sum, val) => sum + val, 0) / inputData.length;
+    if (mean < 0.01 || mean > 0.99) {
+      return { detections: [], confidence: 0 };
+    }
 
     // Run inference
     const outputs = await loadedModel.run([inputData]);
-
-    console.warn('Number of outputs:', outputs.length);
 
     // The model outputs multiple tensors: bbox, class, edges
     // Based on the training log, we expect 3 outputs

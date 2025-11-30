@@ -5,24 +5,7 @@ import { useCallback } from 'react';
 import { Region } from 'react-native-maps';
 import { Toast } from 'toastify-react-native';
 
-import { NEARBY_PLACES_QUERY } from '~/gql/google-maps';
-export type Place = {
-  place_id: string;
-  name?: string;
-  vicinity?: string;
-  formatted_address?: string;
-  types?: string[];
-  geometry?: {
-    location?: {
-      lat: number;
-      lng: number;
-    };
-  };
-  photos?: {
-    photo_reference?: string;
-  }[];
-  photoUrl?: string; // Added by backend
-};
+import { NEARBY_PLACES_QUERY, Place } from '~/gql/google-maps';
 
 type Options = {
   region?: Region;
@@ -31,7 +14,7 @@ type Options = {
 };
 
 export function useNearbyPlaces() {
-  const [fetchNearby, { data, loading, error }] = useLazyQuery(NEARBY_PLACES_QUERY);
+  const [fetchNearby, props] = useLazyQuery(NEARBY_PLACES_QUERY);
 
   const fetchNearbyPlacesByKeywords = useCallback(
     async ({ region, radius = 500, keywords }: Options): Promise<Place[]> => {
@@ -52,20 +35,7 @@ export function useNearbyPlaces() {
         if (!result.data?.nearbyPlaces) return [];
 
         // Convert backend format to legacy Place format for compatibility
-        return result.data.nearbyPlaces.map((p) => ({
-          place_id: p.placeId,
-          name: p.name ?? undefined,
-          vicinity: p.vicinity ?? undefined,
-          types: p.types ?? undefined,
-          geometry: {
-            location: {
-              lat: p.latitude ?? 0,
-              lng: p.longitude ?? 0,
-            },
-          },
-          photos: p.photoUrl ? [{ photo_reference: p.photoUrl }] : [],
-          photoUrl: p.photoUrl ?? undefined,
-        }));
+        return result.data.nearbyPlaces;
       } catch (err: any) {
         if (err?.message?.includes('The operation was aborted.')) {
           return [];
@@ -82,5 +52,5 @@ export function useNearbyPlaces() {
     [fetchNearby],
   );
 
-  return { fetchNearbyPlacesByKeywords, data, loading, error };
+  return { fetchNearbyPlacesByKeywords, ...props };
 }

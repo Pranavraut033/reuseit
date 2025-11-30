@@ -45,7 +45,11 @@ const AnimatedTabIcon = memo(function AnimatedTabIcon({
 }) {
   const animate = focused ? { translateY: -6 } : { translateY: 0 };
   return (
-    <MotiView animate={animate} style={{ alignItems: 'center', justifyContent: 'center' }}>
+    <MotiView
+      animate={animate}
+      transition={{ type: 'timing', duration: 200 }}
+      style={{ alignItems: 'center', justifyContent: 'center' }}
+    >
       <Icon name={iconName} solid color={color} size={18} />
     </MotiView>
   );
@@ -86,6 +90,7 @@ export default function TabLayout() {
             left: 16,
             right: 16,
             height: 58,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
             bottom: bottom + 16,
             borderRadius: 9999,
             paddingBottom: 12,
@@ -95,8 +100,9 @@ export default function TabLayout() {
             marginHorizontal: 16,
             marginRight: 48 + 16 * 2,
           },
-          tabBarBackground: () => <TabBarBackground />,
-        }}>
+          // tabBarBackground: () => <TabBarBackground />,
+        }}
+      >
         <Tabs.Screen name="index" options={homeOptions} />
         <Tabs.Screen name="posts" options={postsOptions} />
         <Tabs.Screen name="explore" options={exploreOptions} />
@@ -112,7 +118,7 @@ function TabBarBackground() {
 
   return (
     <BlurView
-      intensity={12}
+      intensity={100}
       tint="extraLight"
       className="absolute inset-0 z-[11]"
       experimentalBlurMethod={isExplore ? 'none' : 'dimezisBlurView'}

@@ -457,10 +457,15 @@ export const PostCreateScreen: React.FC = () => {
                       value={value ? new Date(value as DateTime) : new Date()}
                       mode="date"
                       minimumDate={new Date()}
-                      onChange={(_event, selectedDate) => {
-                        setShowDatePicker(Platform.OS === 'ios');
-                        if (selectedDate) {
+                      onChange={(event, selectedDate) => {
+                        if (Platform.OS === 'android') {
+                          setShowDatePicker(false);
+                        }
+                        if (event.type === 'set' && selectedDate) {
                           onChange(selectedDate);
+                        }
+                        if (Platform.OS === 'ios' && event.type === 'dismissed') {
+                          setShowDatePicker(false);
                         }
                       }}
                     />

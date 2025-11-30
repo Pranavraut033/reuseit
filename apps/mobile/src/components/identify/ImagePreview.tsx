@@ -132,7 +132,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
               const top = results[0];
 
               router.push({
-                pathname: '/identify/detail',
+                pathname: '/waste-analysis',
                 params: { photo: pickedImage!, label: top.label },
               });
             }}

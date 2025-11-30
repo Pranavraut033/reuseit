@@ -51,7 +51,7 @@ function App() {
     <Stack screenOptions={{ statusBarStyle: 'dark', headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{}} />
       <Stack.Screen name="login" options={{}} />
-      <Stack.Screen name="identify/index" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="waste-analysis/index" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="posts/index" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="posts/create" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="posts/[id]" options={{ animation: 'slide_from_right' }} />

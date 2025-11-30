@@ -34,7 +34,7 @@ const FeedsScreen = () => {
       subtitle: 'Local activities',
       icon: 'calendar',
       colors: ['#A855F7', '#7C3AED'] as const,
-      onPress: () => router.push('/(tabs)/explore'),
+      onPress: () => (router.push as any)('/events'),
       accessibilityLabel: 'View upcoming recycling events',
     },
     {

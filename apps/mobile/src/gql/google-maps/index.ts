@@ -1,4 +1,5 @@
 import { gql } from '~/__generated__';
+import { NearbyPlace } from '~/__generated__/types';
 
 export const PLACES_AUTOCOMPLETE_QUERY = gql(`
   query placesAutocomplete(
@@ -21,6 +22,7 @@ export const PLACES_AUTOCOMPLETE_QUERY = gql(`
     }
   }
 `);
+export type Place = NearbyPlace;
 
 export const PLACE_DETAILS_QUERY = gql(`
   query placeDetails($placeId: String!, $sessionToken: String) {

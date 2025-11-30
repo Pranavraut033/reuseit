@@ -4,8 +4,6 @@
  * for on-device ML inference
  */
 
-import { t } from './i18n';
-
 export interface TagSuggestion {
   tag: string;
   confidence: number;
@@ -78,7 +76,7 @@ export const suggestTags = async (
 
   // Add Berlin-relevant tags based on keywords
   BERLIN_TAGS.forEach((tag) => {
-    if (lowerText.includes(tag) || lowerText.includes(t(`berlinTags.${tag}`))) {
+    if (lowerText.includes(tag)) {
       suggestions.push({ tag, confidence: 0.9 });
     }
   });

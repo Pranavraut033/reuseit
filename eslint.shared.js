@@ -22,13 +22,6 @@ module.exports = {
   typescript: {
     // scope these rules to TS files only
     files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
-    plugins: {
-      '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
-      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
-    },
-    languageOptions: {
-      parser: require('@typescript-eslint/parser'),
-    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       // '@typescript-eslint/no-floating-promises': 'warn',

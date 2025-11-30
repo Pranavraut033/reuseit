@@ -12,7 +12,7 @@
 |----------|----------|--------|
 | Core Features | 85% | 🟢 Excellent Progress |
 | Documentation | 100% | 🟢 Complete |
-| Testing | 0% | 🔴 Not Started |
+| Testing | 15% | 🟡 Partial |
 | Deployment | 10% | 🔴 Not Started |
 | Technical Debt | - | 🟡 Moderate |
 
@@ -191,7 +191,7 @@
 | NFR5 | Usability | Intuitive UI | Basic UI working | 🟡 In progress |
 | NFR6 | Compatibility | iOS 13+, Android 8+ | Not tested | 🔴 Not validated |
 | NFR7 | Accessibility | WCAG 2.1 AA | Not implemented | 🔴 Not started |
-| NFR8 | Test Coverage | >80% | 0% | 🔴 Not started |
+| NFR8 | Test Coverage | >80% | 15% | 🟡 Partial |
 
 ---
 
@@ -335,7 +335,8 @@
 | Article | 0% | 🔴 Not Started |
 | Points | 0% | 🔴 Not Started |
 | Location | 0% | 🔴 Not Started |
-| **Overall** | **0%** | 🔴 **Not Started** |
+| LLM Service | 100% | 🟢 Unit Tests Complete |
+| **Overall** | **10%** | 🟡 **Partial** |
 
 ---
 
