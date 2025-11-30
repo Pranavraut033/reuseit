@@ -22,7 +22,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { GoogleMapsModule } from './google-maps/google-maps.module';
 import { HealthController } from './health/health.controller';
 import { LocationModule } from './location/location.module';
-import { RecyclingModule } from './recycling/recycling.module';
+import { LlmModule } from './llm/llm.module';
 
 @Module({
   imports: [
@@ -45,7 +45,7 @@ import { RecyclingModule } from './recycling/recycling.module';
     PointsModule,
     PostModule,
     PrismaModule,
-    RecyclingModule,
+    LlmModule,
     UserModule,
     GoogleMapsModule,
     CacheModule.registerAsync({

@@ -11,15 +11,3 @@ export class AIInsights {
   @Field()
   motivation_text: string;
 }
-
-@ObjectType()
-export class GetAIInsightsResult {
-  @Field(() => [String])
-  extra_facts: string[];
-
-  @Field()
-  simplified_summary: string;
-
-  @Field()
-  motivation_text: string;
-}

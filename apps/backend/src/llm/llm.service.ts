@@ -1,10 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-
-export interface AIInsightsResult {
-  extra_facts: string[];
-  simplified_summary: string;
-  motivation_text: string;
-}
+import { AIInsights } from './dto/ai-insights.dto';
 
 @Injectable()
 export class LlmService {
@@ -15,7 +10,7 @@ export class LlmService {
     this.apiUrl = process.env.LLM_SERVICE_URL || 'http://localhost:8000';
   }
 
-  async getAIInsights(category: string, recyclingInfo: string): Promise<AIInsightsResult> {
+  async getAIInsights(category: string, result_hash: string): Promise<AIInsights> {
     try {
       this.logger.log(`Getting AI insights for category: ${category}`);
 
@@ -24,17 +19,14 @@ export class LlmService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          category,
-          recycling_info: recyclingInfo,
-        }),
+        body: JSON.stringify({ category, result_hash }),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as AIInsightsResult;
+      const data = (await response.json()) as AIInsights;
 
       this.logger.log(`AI insights retrieved for ${category}`);
 

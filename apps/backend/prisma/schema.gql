@@ -227,7 +227,7 @@ type ReverseGeocodeResult {
   formattedAddress: String
 }
 
-type GetAIInsightsResult {
+type AIInsights {
   extra_facts: [String!]!
   simplified_summary: String!
   motivation_text: String!
@@ -253,7 +253,7 @@ type Query {
   comments: [Comment!]!
   comment(id: String!): Comment!
   commentsByPost(postId: String!): [Comment!]!
-  getAIInsights(input: GetAIInsightsInput!): GetAIInsightsResult!
+  AIInsights(input: AIInsightsInput!): AIInsights!
   placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
   placeDetails(placeId: String!, sessionToken: String): PlaceDetails
   nearbyPlaces(latitude: Float!, longitude: Float!, radius: Float, keywords: [String!]!): [NearbyPlace!]!
@@ -261,9 +261,10 @@ type Query {
   generatePlacesSessionToken: String!
 }
 
-input GetAIInsightsInput {
+input AIInsightsInput {
   category: String!
-  recyclingInfo: String!
+  recyclingInfo: String
+  resultHash: String
 }
 
 type Mutation {
