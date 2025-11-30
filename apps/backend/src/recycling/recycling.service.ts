@@ -1,105 +1,65 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { AnalyzeWasteResult } from './dto/analyze-waste.dto';
-import { AnalyzeWasteInput } from './dto/analyze-waste.input';
-import { FinalizeRecyclingInput } from './dto/finalize-recycling.input';
-import { FinalRecyclingResult } from './dto/recycling.dto';
-import { LlmService } from './services/llm.service';
+import { GetAIInsightsResult } from './dto/analyze-waste.dto';
+import { GetAIInsightsInput } from './dto/analyze-waste.input';
 import { getRecyclingInfo } from './services/recycling-rules.service';
-import { WasteLlmService } from './services/waste-llm.service';
+import { LlmService } from './services/llm.service';
 
 @Injectable()
 export class RecyclingService {
   private readonly logger = new Logger(RecyclingService.name);
 
-  constructor(
-    private readonly llmService: LlmService,
-    private readonly wasteLlmService: WasteLlmService,
-  ) {}
+  constructor(private readonly llmService: LlmService) {}
 
   /**
-   * Finalize recycling analysis by combining:
-   * 1. Classification results from mobile TensorFlow
-   * 2. Structured recycling rules
-   * 3. LLM-generated instructions
+   * Get AI insights for waste recycling information
    */
-  async finalizeRecycling(input: FinalizeRecyclingInput): Promise<FinalRecyclingResult> {
-    const { objectName, materials, city, imageBase64 } = input;
+  async getAIInsights(input: GetAIInsightsInput): Promise<GetAIInsightsResult> {
+    const { category, recyclingInfo } = input;
 
-    this.logger.log(
-      `Finalizing recycling for: ${objectName} (materials: ${materials.join(', ')}, city: ${city || 'N/A'})`,
-    );
+    this.logger.log(`Getting AI insights for category: ${category}`);
 
-    // Validate and normalize inputs
-    const normalizedObjectName = this.normalizeObjectName(objectName);
-    const normalizedMaterials = this.normalizeMaterials(materials);
+    // Call the LLM service for AI insights
+    const insights = await this.llmService.getAIInsights(category, recyclingInfo);
 
-    // Get structured recycling info from rules
-    const recyclingInfo = getRecyclingInfo(normalizedObjectName, normalizedMaterials, city);
+    this.logger.log(`AI insights retrieved for ${category}`);
 
-    // Generate natural language instructions via LLM
-    const instructions = await this.llmService.generateInstructions(recyclingInfo);
+    return insights;
+  }
 
-    // Optional: Store image for future reference or analysis
-    if (imageBase64) {
-      this.logger.debug(`Image provided (${imageBase64.length} chars), could store for audit`);
-      // TODO: Store in cloud storage if needed
+  /**
+   * Generate natural language instructions based on structured recycling info
+   */
+  private generateInstructions(recyclingInfo: any): string {
+    const { objectName, materials, bin, rules, cityOverride } = recyclingInfo;
+
+    let instructions = `**Recycling Instructions for ${objectName}**\n\n`;
+
+    // Bin assignment
+    instructions += `**Disposal Bin:** ${bin}\n\n`;
+
+    // Materials
+    if (materials.length > 0) {
+      instructions += `**Materials:** ${materials.join(', ')}\n\n`;
     }
 
-    return {
-      objectName: normalizedObjectName,
-      materials: normalizedMaterials,
-      recycling: {
-        objectName: recyclingInfo.objectName,
-        materials: recyclingInfo.materials,
-        bin: recyclingInfo.bin,
-        rules: recyclingInfo.rules,
-        cityOverride: recyclingInfo.cityOverride,
-      },
-      instructions,
-    };
-  }
+    // City-specific notes
+    if (cityOverride) {
+      instructions += `**Note for ${cityOverride}:** City-specific rules apply.\n\n`;
+    }
 
-  /**
-   * Analyze waste using LLM-powered vision and reasoning pipeline
-   */
-  async analyzeWaste(input: AnalyzeWasteInput): Promise<AnalyzeWasteResult> {
-    const { imageBase64, userText } = input;
+    // Rules
+    instructions += `**How to Prepare:**\n`;
+    rules.forEach((rule: string, idx: number) => {
+      instructions += `${idx + 1}. ${rule}\n`;
+    });
 
-    this.logger.log(
-      `Analyzing waste image with LLM pipeline${userText ? ` (user text: ${userText})` : ''}`,
-    );
+    // General tips
+    instructions += `\n**General Tips:**\n`;
+    instructions += `- Always check local regulations as rules may vary by district.\n`;
+    instructions += `- When in doubt, avoid contamination—use Restmüll as last resort.\n`;
+    instructions += `- Clean recyclables reduce processing costs and environmental impact.\n`;
 
-    // Convert base64 to buffer
-    const imageBuffer = Buffer.from(imageBase64, 'base64');
-
-    // Call the waste LLM service
-    const result = await this.wasteLlmService.analyzeWaste(imageBuffer, userText);
-
-    this.logger.log(
-      `Waste analysis completed: ${result.detections.length} detections, ${result.recycling_plan.length} recycling items`,
-    );
-
-    return result;
-  }
-
-  /**
-   * Normalize object name (trim, lowercase, remove special chars)
-   */
-  private normalizeObjectName(name: string): string {
-    return name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/gi, '');
-  }
-
-  /**
-   * Normalize materials array (trim, lowercase, deduplicate)
-   */
-  private normalizeMaterials(materials: string[]): string[] {
-    const normalized = materials.map((m) => m.trim().toLowerCase()).filter((m) => m.length > 0);
-
-    // Deduplicate
-    return [...new Set(normalized)];
+    return instructions;
   }
 }

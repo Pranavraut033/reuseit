@@ -1,79 +1,25 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class WasteDetection {
-  @Field()
-  name: string;
+export class AIInsights {
+  @Field(() => [String])
+  extra_facts: string[];
 
   @Field()
-  confidence: number;
-
-  @Field(() => [Number])
-  bbox: number[];
+  simplified_summary: string;
 
   @Field()
-  class_id: number;
+  motivation_text: string;
 }
 
 @ObjectType()
-export class RecyclingPlanItem {
-  @Field()
-  item_name: string;
+export class GetAIInsightsResult {
+  @Field(() => [String])
+  extra_facts: string[];
 
   @Field()
-  material_type: string;
+  simplified_summary: string;
 
   @Field()
-  category: string;
-
-  @Field()
-  german_bin: string;
-
-  @Field()
-  is_pfand: boolean;
-
-  @Field()
-  recycling_instructions: string;
-
-  @Field()
-  reuse_ideas: string;
-
-  @Field()
-  notes_germany: string;
-}
-
-@ObjectType()
-export class LatencyMetrics {
-  @Field()
-  detector: number;
-
-  @Field()
-  reasoner: number;
-
-  @Field()
-  total: number;
-}
-
-@ObjectType()
-export class ModelInfo {
-  @Field()
-  vision: string;
-
-  @Field()
-  llm: string;
-}
-
-@ObjectType()
-export class AnalyzeWasteResult {
-  @Field(() => [WasteDetection])
-  detections: WasteDetection[];
-
-  @Field(() => [RecyclingPlanItem])
-  recycling_plan: RecyclingPlanItem[];
-
-  @Field(() => LatencyMetrics)
-  latency_ms: LatencyMetrics;
-
-  @Field(() => ModelInfo)
-  models: ModelInfo;
+  motivation_text: string;
 }

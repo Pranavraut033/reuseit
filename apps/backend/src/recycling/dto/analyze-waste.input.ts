@@ -1,10 +1,10 @@
 import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
-export class AnalyzeWasteInput {
+export class GetAIInsightsInput {
   @Field()
-  imageBase64: string;
+  category: string;
 
-  @Field({ nullable: true })
-  userText?: string;
+  @Field()
+  recyclingInfo: string;
 }

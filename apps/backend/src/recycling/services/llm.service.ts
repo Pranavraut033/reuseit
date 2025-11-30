@@ -1,122 +1,48 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { RecyclingInfo } from '../dto/recycling.dto';
+export interface AIInsightsResult {
+  extra_facts: string[];
+  simplified_summary: string;
+  motivation_text: string;
+}
 
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
+  private readonly apiUrl: string;
 
-  /**
-   * Generate natural language instructions based on structured recycling info
-   * Uses LLM to enrich structured rules with clear guidance aligned with German standards
-   */
-  async generateInstructions(recyclingInfo: RecyclingInfo): Promise<string> {
-    const { objectName, materials, bin, rules, cityOverride } = recyclingInfo;
+  constructor() {
+    this.apiUrl = process.env.LLM_SERVICE_URL || 'http://localhost:8000';
+  }
 
+  async getAIInsights(category: string, recyclingInfo: string): Promise<AIInsightsResult> {
     try {
-      // For now, use template-based generation
-      // TODO: Replace with actual LLM API call (OpenAI, Anthropic, etc.)
-      const instructions = this.buildInstructionsTemplate(recyclingInfo);
+      this.logger.log(`Getting AI insights for category: ${category}`);
 
-      this.logger.log(
-        `Generated instructions for ${objectName} (${materials.join(', ')}) -> ${bin}`,
-      );
+      const response = await fetch(`${this.apiUrl}/enhance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          category,
+          recycling_info: recyclingInfo,
+        }),
+      });
 
-      return instructions;
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = (await response.json()) as AIInsightsResult;
+
+      this.logger.log(`AI insights retrieved for ${category}`);
+
+      return data;
     } catch (error) {
-      this.logger.error(`Failed to generate LLM instructions: ${error.message}`, error.stack);
-      // Fallback to basic instructions
-      return this.buildFallbackInstructions(recyclingInfo);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('Failed to get AI insights', error);
+      throw new Error(`AI insights failed: ${errorMessage}`);
     }
-  }
-
-  /**
-   * Template-based instruction generation (fallback or placeholder)
-   */
-  private buildInstructionsTemplate(info: RecyclingInfo): string {
-    const { objectName, materials, bin, rules, cityOverride } = info;
-
-    let instructions = `**Recycling Instructions for ${objectName}**\n\n`;
-
-    // Bin assignment
-    instructions += `**Disposal Bin:** ${bin}\n\n`;
-
-    // Materials
-    if (materials.length > 0) {
-      instructions += `**Materials:** ${materials.join(', ')}\n\n`;
-    }
-
-    // City-specific notes
-    if (cityOverride) {
-      instructions += `**Note for ${cityOverride}:** City-specific rules apply.\n\n`;
-    }
-
-    // Rules
-    instructions += `**How to Prepare:**\n`;
-    rules.forEach((rule, idx) => {
-      instructions += `${idx + 1}. ${rule}\n`;
-    });
-
-    // General tips
-    instructions += `\n**General Tips:**\n`;
-    instructions += `- Always check local regulations as rules may vary by district.\n`;
-    instructions += `- When in doubt, avoid contamination—use Restmüll as last resort.\n`;
-    instructions += `- Clean recyclables reduce processing costs and environmental impact.\n`;
-
-    return instructions;
-  }
-
-  /**
-   * Fallback instructions if LLM or template fails
-   */
-  private buildFallbackInstructions(info: RecyclingInfo): string {
-    return `Dispose of ${info.objectName} in ${info.bin}. Follow local recycling guidelines.`;
-  }
-
-  /**
-   * Placeholder for future LLM API integration
-   * Uncomment and configure when adding OpenAI/Anthropic
-   */
-  // private async callLlmApi(prompt: string): Promise<string> {
-  //   const response = await fetch('https://api.openai.com/v1/chat/completions', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-  //     },
-  //     body: JSON.stringify({
-  //       model: 'gpt-4',
-  //       messages: [
-  //         {
-  //           role: 'system',
-  //           content:
-  //             'You are an expert in German recycling regulations. Provide clear, actionable instructions.',
-  //         },
-  //         { role: 'user', content: prompt },
-  //       ],
-  //       max_tokens: 300,
-  //       temperature: 0.7,
-  //     }),
-  //   });
-  //
-  //   const data = await response.json();
-  //   return data.choices[0].message.content;
-  // }
-
-  /**
-   * Build LLM prompt from structured data
-   */
-  private buildPrompt(info: RecyclingInfo): string {
-    return `
-Object: ${info.objectName}
-Materials: ${info.materials.join(', ')}
-Assigned Bin: ${info.bin}
-Rules: ${info.rules.join('; ')}
-${info.cityOverride ? `City: ${info.cityOverride}` : ''}
-
-Generate clear, step-by-step recycling instructions for this object in Germany.
-Include preparation steps, disposal method, and any important warnings.
-Keep instructions concise (3-5 sentences).
-    `.trim();
   }
 }

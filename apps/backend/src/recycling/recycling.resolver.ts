@@ -1,22 +1,24 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
+import type { Cache } from 'cache-manager';
 
-import { AnalyzeWasteResult } from './dto/analyze-waste.dto';
-import { AnalyzeWasteInput } from './dto/analyze-waste.input';
-import { FinalizeRecyclingInput } from './dto/finalize-recycling.input';
-import { FinalRecyclingResult } from './dto/recycling.dto';
+import { CacheQuery } from '~/decorators/cache.decorator';
+
+import { GetAIInsightsResult } from './dto/analyze-waste.dto';
+import { GetAIInsightsInput } from './dto/analyze-waste.input';
 import { RecyclingService } from './recycling.service';
 
 @Resolver()
 export class RecyclingResolver {
-  constructor(private readonly recyclingService: RecyclingService) {}
+  constructor(
+    private readonly recyclingService: RecyclingService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
-  @Query(() => FinalRecyclingResult)
-  finalizeRecycling(@Args('input') input: FinalizeRecyclingInput): Promise<FinalRecyclingResult> {
-    return this.recyclingService.finalizeRecycling(input);
-  }
-
-  @Query(() => AnalyzeWasteResult)
-  analyzeWaste(@Args('input') input: AnalyzeWasteInput): Promise<AnalyzeWasteResult> {
-    return this.recyclingService.analyzeWaste(input);
+  @Query(() => GetAIInsightsResult)
+  @CacheQuery((input: GetAIInsightsInput) => `getAIInsights:${JSON.stringify(input)}`, 600)
+  getAIInsights(@Args('input') input: GetAIInsightsInput): Promise<GetAIInsightsResult> {
+    return this.recyclingService.getAIInsights(input);
   }
 }
