@@ -17,7 +17,7 @@ ReUseIt follows a modern microservices architecture deployed via Docker Compose.
          └───────────────────────┼───────────────────────┘
                                  ▼
                     ┌─────────────────┐    ┌─────────────────┐
-                    │   Ollama LLM    │    │  Waste LLM API  │
+                    │   Ollama LLM    │    │   LLM API       │
                     │   (qwen2.5:0.5b)│    │  (FastAPI)      │
                     │                 │    │                 │
                     │ • AI Analysis   │    │ • Recycling     │
@@ -312,7 +312,7 @@ backend/src/
 
 ### AI Services
 - **Ollama:** Local LLM runtime for waste analysis
-- **Waste LLM API:** FastAPI wrapper for structured recycling guidance
+- **LLM API:** FastAPI wrapper for structured recycling guidance
 
 ### Infrastructure
 - **Database:** MongoDB with replica set
@@ -324,7 +324,7 @@ backend/src/
 
 1. **Mobile** captures image → **TensorFlow Lite** classifies waste
 2. **Mobile** sends result → **Backend** processes via GraphQL
-3. **Backend** calls **Waste LLM Service** → **Ollama** provides guidance
+3. **Backend** calls **LLM Service** → **Ollama** provides guidance
 4. **Backend** awards points → **MongoDB** updates user profile
 5. **Redis** caches frequent queries
 

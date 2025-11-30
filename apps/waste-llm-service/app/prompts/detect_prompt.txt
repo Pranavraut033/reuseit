@@ -1,5 +1,0 @@
-Identify all visible waste items in the image.
-Return a JSON list of objects with fields:
-  - name
-  - rough_location
-Do not describe the scene. Only list items.

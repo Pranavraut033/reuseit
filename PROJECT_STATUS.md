@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** December 1, 2025 (Fixed TensorFlow graph compatibility issue in ML training)
+**Last Updated:** November 29, 2025 (AnalyzeWasteResult moved to local types - completed mobile codebase cleanup)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -10,7 +10,7 @@
 
 | Category | Progress | Status |
 |----------|----------|--------|
-| Core Features | 80% | 🟢 Excellent Progress |
+| Core Features | 85% | 🟢 Excellent Progress |
 | Documentation | 100% | 🟢 Complete |
 | Testing | 0% | 🔴 Not Started |
 | Deployment | 10% | 🔴 Not Started |
@@ -36,7 +36,7 @@
 - ✅ GraphQL queries and mutations setup
 
 ### Sprint 3: Community & Location (Completed)
-- ✅ Explore page implementation
+- ✅ Explore page implementation (with location-based place discovery, category filtering, and manual area loading)
 - ✅ Recycling places display on map
 - ✅ Google Maps integration
 - ✅ Post creation functionality (basic)
@@ -50,7 +50,7 @@
 - ✅ Post filtering by author
 - ✅ "Liked by current user" status
 
-### Sprint 5: Events System (Completed - Backend)
+### Sprint 5: Events System (Completed - Full Stack)
 - ✅ Event creation with location
 - ✅ Event CRUD operations (create, read, update, delete)
 - ✅ Event participant registration
@@ -58,6 +58,10 @@
 - ✅ Upcoming events query
 - ✅ Events by creator query
 - ✅ Event-related posts linkage
+- ✅ Event RSVP functionality (join/leave events)
+- ✅ Mobile event screens (list, detail, create, edit with calendar/date picker)
+- ✅ Event form validation
+- ✅ GraphQL fragments for DRY event fields
 
 ### Sprint 6: Gamification (Completed - Backend)
 - ✅ Points system implementation
@@ -97,7 +101,19 @@
 - ✅ **1:1 Aspect Ratio Overlay** - Image display maintains proper aspect ratio for accurate overlays
 - 🔄 **ML Model Accuracy Improvement** - Current val accuracy ~29%, implementing dataset balancing and hyperparameter tuning
 - ✅ **Waste Detection Service Integration** - Complete object detection service with TensorFlow/Keras model, proper bounding box denormalization, and German recycling guidance
-- ✅ **qwen2.5:0.5b Model Integration** - Switched from Gemma3:1b to smaller, faster qwen2.5:0.5b model for LLM processing---
+- ✅ **qwen2.5:0.5b Model Integration** - Switched from Gemma3:1b to smaller, faster qwen2.5:0.5b model for LLM processing
+- ✅ **German Recycling Knowledge Base Conversion** - Converted markdown recycling rules to structured JSON format with multilingual support, updated LLM service to use unified knowledge base
+- ✅ **ML Training Folder Organization** - Organized `apps/ml-training/` by separating deprecated classifier code into `classifier/` subfolder, keeping active object detection in `object_detection/`, and shared utilities in root
+- ✅ **Independent Dataset Preparation** - Added explicit dataset configurations and `prepare_datasets()` utility for standalone dataset creation, making object detector independent of classifier code
+- ✅ **Dataset Preparation Script** - Created `prepare_datasets.sh` script that automatically activates virtual environment and runs dataset preparation, with --clean and --clear flags for dataset management
+- ✅ **Object Detection Model Regularization** - Enhanced object detection training with L2 regularization, increased dropout (0.4), label smoothing (0.1), progressive unfreezing, cosine learning rate scheduling, and improved data augmentation (rotation, zoom, shear, Gaussian noise)
+- ✅ **TensorFlow Graph Compatibility Fix** - Fixed AttributeError in augment_image function by removing conditional config attribute access that caused issues in TensorFlow graph mode, and corrected multi-output loss configuration
+- ✅ **Stable Data Augmentation** - Updated augmentation pipeline to use only stable transformations: horizontal flip, brightness, contrast, small saturation/hue changes, and light Gaussian noise; removed aggressive zoom, rotation, cropping, and padding for better training stability
+- ✅ **Explore Page Type Safety** - Removed legacy Place type mapping and updated explore page to use GraphQL types directly for better type safety and maintainability
+- ✅ **Comprehensive Recycling Information Enhancement** - Expanded recycling knowledge base with detailed preparation steps, environmental benefits, reuse ideas, and common mistakes for all German waste categories; enhanced LLM service for structured responses; improved UI display with organized sections for recycling guidance
+- ✅ **AI-Enhanced Waste Processing Pipeline** - Restructured waste analysis to use on-device object detection first, then send only normalized categories to LLM for educational content generation; separated core recycling rules from AI-generated enhancements; created visually distinct UI section for AI insights with soft gradient background, friendly AI icon, and card-like layout
+- ✅ **LLM Integration Optimization** - qwen2.5:0.5b model available with timeout handling for production use; removed LLM access to recycling knowledge base; simplified prompt for edge compatibility; category facts moved to JSON structure
+- ✅ **Waste LLM Service Main.py Cleanup** - Completely simplified main.py to focus only on AI enhancements (facts, summary, motivation text); removed all unused functions including TensorFlow model loading, knowledge base functions, detection logic, and recycling plan generation; new API takes category + recycling info and returns only AI-generated content
 
 ### Sprint 9: Status Page & Monitoring (Completed)
 - ✅ Statping Status Page integration
@@ -106,18 +122,21 @@
 - ✅ Service monitoring configuration (backend, database, LLM services)
 - ✅ Real-time status updates and incident tracking
 - ✅ Logs and incident history display
-- ✅ **Redis Caching Integration** - Added Redis caching to waste-llm-service for LLM responses and knowledge base
+- ✅ **Redis Caching Integration** - Added Redis caching to llm-service for LLM responses and knowledge base
+- ✅ **Backend Docker Production-Only** - Modified docker-compose.yml to exclude backend from development builds, preventing unnecessary rebuilds during feature development
+- ✅ **Mobile TypeScript Errors Resolved** - Fixed all TypeScript compilation errors after GraphQL schema updates: corrected event ID parameter handling, updated router paths for waste analysis, removed invalid translation keys, and added typecheck script to mobile package.json
+- ✅ **Backend Codebase Cleanup** - Removed all deprecated and unused functions: eliminated analyzeWaste methods from llm.service.ts and recycling.service.ts, removed unused LlmService dependency, cleaned up GraphQL resolvers and DTOs, removed unused finalizeRecycling functionality, and updated mobile app imports
+- ✅ **Mobile Type System Cleanup** - Moved AnalyzeWasteResult and related types from generated GraphQL types to local type definitions in `~/types/wasteAnalysis.ts`, ensuring mobile app types are independent of deprecated GraphQL schema
 
 ## 🚧 In Progress
 
 ### Current Sprint: ML Integration & Mobile UI Completion
 
 **Active Tasks:**
-- 🔄 Events mobile UI (backend complete, UI needed)
+- ✅ Events mobile UI (backend complete, UI implemented with creator dashboard, location picker, and toast notifications)
 - ✅ Real TFLite model integration (native inference implemented)
 - ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated
 - 🔄 Points awarding for waste classifications
-- 🔄 **LLM Integration Optimization** - qwen2.5:0.5b model available but needs timeout handling for production use
 
 **Recently Completed:**
 - ✅ **Waste Analysis Screen Logic/View Separation** - Extracted all business logic into useWasteAnalysis custom hook, improved code maintainability and testability
@@ -143,6 +162,7 @@
 - ✅ **Object Detection Model Regularization** - Enhanced object detection training with L2 regularization, increased dropout (0.4), label smoothing (0.1), progressive unfreezing, cosine learning rate scheduling, and improved data augmentation (rotation, zoom, shear, Gaussian noise)
 - ✅ **TensorFlow Graph Compatibility Fix** - Fixed AttributeError in augment_image function by removing conditional config attribute access that caused issues in TensorFlow graph mode, and corrected multi-output loss configuration
 - ✅ **Stable Data Augmentation** - Updated augmentation pipeline to use only stable transformations: horizontal flip, brightness, contrast, small saturation/hue changes, and light Gaussian noise; removed aggressive zoom, rotation, cropping, and padding for better training stability
+- ✅ **Explore Page Type Safety** - Removed legacy Place type mapping and updated explore page to use GraphQL types directly for better type safety and maintainability
 
 ---
 
@@ -154,7 +174,7 @@
 | FR2 | Educational Content | 🟡 Partial | User articles implemented, educational content pending |
 | FR3 | AI-Powered Item Identification | ✅ Complete | Camera + object detection model + backend analysis working; real TFLite model integrated |
 | FR4 | Community Marketplace (Posts) | ✅ Complete | Full CRUD + likes + comments + stats |
-| FR5 | Event Management | 🟡 Partial | Backend complete, mobile UI pending |
+| FR5 | Event Management | ✅ Complete | Backend and mobile UI implemented |
 | FR6 | Gamification System | 🟡 Partial | Points + badges backend done, leaderboard pending |
 | FR7 | Location Services | ✅ Complete | Google Maps + recycling places working |
 
@@ -201,10 +221,10 @@
 - **Resolution:** Core pipeline improvements complete and functional; training works on compatible hardware (Linux/Windows with CUDA or CPU-only)
 
 **TD-02: Events Mobile UI Not Implemented**
-- **Status:** 🔴 Not Started
-- **Impact:** Users cannot access events feature despite backend being ready
+- **Status:** ✅ **Completed**
+- **Impact:** Full event management UI implemented with RSVP functionality and creator dashboard
 - **Effort:** 12 hours
-- **Next Steps:** Create event list, detail, and creation screens
+- **Resolution:** Created event list, detail, and creation screens with form validation; implemented RSVP join/leave functionality; added event creator dashboard for updating events; integrated LocationPicker component for enhanced location selection; replaced Alert dialogs with Toast notifications for better UX
 
 ### Medium Priority
 
@@ -244,7 +264,13 @@
 
 ## 📈 Next Tasks (Priority Order)
 
-1. **Points Awarding for Classifications** (High Priority)
+1. **Prisma Datasource URL Migration** (High Priority)
+   - Move connection URLs from `schema.prisma` to `prisma.config.ts`
+   - Update PrismaClient constructor to use `adapter` or `accelerateUrl`
+   - Test database connections after migration
+   - Update documentation for new configuration approach
+
+2. **Points Awarding for Classifications** (High Priority)
    - Connect classification results to points system
    - Award points based on correct recycling identification
    - Update user stats and badges
@@ -258,12 +284,7 @@
    - ✅ Add early stopping and better callbacks
    - ✅ Test improved models for better generalization
 
-3. **Events Mobile UI** (High Priority)
-   - Create event list screen
-   - Build event detail view
-   - Implement event creation form
-   - Add event registration UI
-   - Show events on map in explore page
+3. **Events Mobile UI** (Completed ✅ - Includes creator dashboard and date/time picker improvements)
 
 3. **Leaderboard Implementation** (Medium Priority)
    - Create leaderboard GraphQL query
@@ -322,9 +343,16 @@
 
 ### Backend (Development)
 - **Environment:** Local Development
-- **Status:** 🟢 Running Locally
+- **Status:** 🟢 Running Locally (`pnpm --filter backend run start:dev`)
 - **URL:** `http://localhost:3000/graphql`
 - **Database:** MongoDB Atlas (Development Cluster)
+- **Docker:** Excluded from development builds to prevent rebuild overhead
+
+### Backend (Production)
+- **Environment:** Docker Container
+- **Status:** 🟢 Available via `docker-compose --profile production up backend`
+- **Build Context:** `./apps/backend/Dockerfile`
+- **Notes:** Only build when deploying to production
 
 ### Mobile (Development)
 - **Android:** 🟡 In Development

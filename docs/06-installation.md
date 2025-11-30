@@ -71,7 +71,7 @@ GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
 # Service Ports (optional, defaults provided)
 BACKEND_PORT="3000"
 OLLAMA_PORT="11434"
-WASTE_LLM_PORT="8000"
+LLM_PORT="8000"
 STATPING_PORT="8080"
 ```
 
@@ -153,7 +153,7 @@ This starts:
 - **Redis** (cache) on port 6379
 - **Backend** (NestJS API) on port 3000
 - **Ollama** (LLM runtime) on port 11434
-- **Waste LLM Service** (AI analysis) on port 8000
+- **LLM Service** (AI analysis) on port 8000
 - **Statping** (monitoring) on port 8080
 
 **Verify services are running:**
@@ -225,7 +225,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 deactivate
 
-cd ../waste-llm-service
+cd ../llm-service
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -255,7 +255,7 @@ After starting services, verify:
 
 - [ ] **Docker Services Running:** `docker-compose ps` shows all containers healthy
 - [ ] **Backend API:** http://localhost:3000/graphql (GraphQL Playground)
-- [ ] **Waste LLM Service:** http://localhost:8000/docs (FastAPI docs)
+- [ ] **LLM Service:** http://localhost:8000/docs (FastAPI docs)
 - [ ] **Ollama API:** http://localhost:11434/api/tags (model list)
 - [ ] **Statping Monitoring:** http://localhost:8080 (status dashboard)
 - [ ] **Mobile App:** Displays login screen and connects to backend
@@ -445,7 +445,7 @@ Ensure device and computer are on same WiFi.
 **Solution:**
 1. Check Ollama logs: `docker-compose logs ollama`
 2. Verify model pulled: `curl http://localhost:11434/api/tags`
-3. Restart services: `docker-compose restart ollama waste-llm-service`
+3. Restart services: `docker-compose restart ollama llm-service`
 
 ### Legacy Issues (Local Development)
 
@@ -535,7 +535,7 @@ pnpm --filter backend run prisma:studio
 | `FIREBASE_CLIENT_EMAIL` | ✅ | Firebase service account email |
 | `GOOGLE_MAPS_API_KEY` | ✅ | Google Maps API key |
 | `OLLAMA_PORT` | ⚠️ | Ollama service port (default: 11434) |
-| `WASTE_LLM_PORT` | ⚠️ | Waste LLM service port (default: 8000) |
+| `LLM_PORT` | ⚠️ | LLM service port (default: 8000) |
 | `STATPING_PORT` | ⚠️ | Statping monitoring port (default: 8080) |
 
 ### Mobile `.env`

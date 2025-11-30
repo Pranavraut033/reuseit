@@ -48,7 +48,10 @@ services:
     networks:
       - reuseit-network
 
+  # PRODUCTION ONLY: Backend service (excluded from development to avoid rebuilds)
+  # Use: docker-compose --profile production up backend
   backend:
+    profiles: ['production']
     build:
       context: .
       dockerfile: ./apps/backend/Dockerfile
@@ -65,7 +68,7 @@ services:
       - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
       # Internal URL for LLM service on the Docker network
-      - WASTE_LLM_SERVICE_URL=http://waste-llm-service:8000
+      - LLM_SERVICE_URL=http://llm-service:8000
       - REDIS_URL=redis://redis:6379
     depends_on:
       mongodb:
@@ -86,20 +89,20 @@ services:
       - '${OLLAMA_PORT:-11434}:11434'
     volumes:
       - ollama_data:/root/.ollama
-      - ./apps/waste-llm-service/pull-models.sh:/pull-models.sh
+      - ./apps/llm-service/pull-models.sh:/pull-models.sh
     entrypoint: ['sh']
     command: ['/pull-models.sh']
     networks:
       - reuseit-network
 
-  waste-llm-service:
+  llm-service:
     build:
-      context: ./apps/waste-llm-service
+      context: ./apps/llm-service
       dockerfile: Dockerfile
-    container_name: reuseit-waste-llm
+    container_name: reuseit-llm
     restart: unless-stopped
     ports:
-      - '${WASTE_LLM_PORT:-8000}:8000'
+      - '${LLM_PORT:-8000}:8000'
     environment:
       - OLLAMA_HOST=http://ollama:11434
       - REDIS_URL=redis://redis:6379
@@ -107,7 +110,7 @@ services:
       - ollama
       - redis
     volumes:
-      - ./apps/waste-llm-service/app/models:/app/models:ro
+      - ./apps/llm-service/app/models:/app/models:ro
     networks:
       - reuseit-network
 
