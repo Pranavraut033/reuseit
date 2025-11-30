@@ -3,9 +3,7 @@ import {
   Client,
   type GeocodingAddressComponentType,
 } from '@googlemaps/google-maps-services-js';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
-import type { Cache } from 'cache-manager';
+import { Injectable } from '@nestjs/common';
 
 import { NearbyPlace } from './entities/nearby-place.entity';
 import { PlaceAutocompletePrediction } from './entities/place-autocomplete-prediction.entity';
@@ -17,7 +15,7 @@ export class GoogleMapsService {
   private apiKey: string | undefined;
   private client: Client;
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+  constructor() {
     this.apiKey = process.env.GOOGLE_MAPS_API_KEY;
     if (!this.apiKey) {
       console.warn('GOOGLE_MAPS_API_KEY not set for backend GoogleMapsService');
@@ -41,10 +39,6 @@ export class GoogleMapsService {
     sessionToken?: string,
   ): Promise<PlaceAutocompletePrediction[]> {
     if (!this.hasKey() || !input.trim()) return [];
-    const cacheKey = `autocomplete:${input}|${latitude}|${longitude}`;
-    const cached = await this.cacheManager.get<PlaceAutocompletePrediction[]>(cacheKey);
-    if (cached) return cached;
-
     try {
       const response = await this.client.placeAutocomplete({
         params: {
@@ -67,7 +61,6 @@ export class GoogleMapsService {
           types: p.types || [],
         }),
       );
-      await this.cacheManager.set(cacheKey, preds, 60); // 1 minute TTL
       return preds;
     } catch (e) {
       console.warn('placesAutocomplete error', e);
@@ -77,9 +70,6 @@ export class GoogleMapsService {
 
   async placeDetails(placeId: string, sessionToken?: string): Promise<PlaceDetails | null> {
     if (!this.hasKey() || !placeId) return null;
-    const cacheKey = `placeDetails:${placeId}`;
-    const cached = await this.cacheManager.get<PlaceDetails>(cacheKey);
-    if (cached) return cached;
 
     try {
       const response = await this.client.placeDetails({
@@ -112,7 +102,6 @@ export class GoogleMapsService {
           }),
         ),
       };
-      await this.cacheManager.set(cacheKey, details, 300); // 5 minutes TTL
       return details;
     } catch (e) {
       console.warn('placeDetails error', e);
@@ -131,18 +120,6 @@ export class GoogleMapsService {
     const unique: Record<string, NearbyPlace> = {};
 
     for (const kw of keywords) {
-      const cacheKey = `nearby:${locationStr}:${radius}:${kw}`;
-      const cachedResults = await this.cacheManager.get<NearbyPlace[]>(cacheKey);
-
-      if (cachedResults) {
-        for (const place of cachedResults) {
-          if (place.placeId && !unique[place.placeId]) {
-            unique[place.placeId] = place;
-          }
-        }
-        continue;
-      }
-
       try {
         const response = await this.client.placesNearby({
           params: {
@@ -180,8 +157,6 @@ export class GoogleMapsService {
             places.push(place);
           }
         }
-
-        await this.cacheManager.set(cacheKey, places, 120); // 2 minutes TTL
       } catch (e) {
         console.warn('nearbyPlaces error', e);
         continue;
@@ -192,10 +167,6 @@ export class GoogleMapsService {
 
   async reverseGeocode(latitude: number, longitude: number): Promise<ReverseGeocodeResult | null> {
     if (!this.hasKey()) return null;
-    const cacheKey = `revgeo:${latitude}:${longitude}`;
-
-    const cached = await this.cacheManager.get<ReverseGeocodeResult>(cacheKey);
-    if (cached) return cached;
 
     try {
       const response = await this.client.reverseGeocode({
@@ -229,7 +200,6 @@ export class GoogleMapsService {
         postalCode,
         formattedAddress: result.formatted_address || '',
       };
-      await this.cacheManager.set(cacheKey, value, 600); // 10 minutes TTL
       return value;
     } catch (e) {
       console.error('reverseGeocode error', e);

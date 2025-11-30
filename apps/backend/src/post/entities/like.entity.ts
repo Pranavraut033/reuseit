@@ -15,6 +15,12 @@ export class Like {
   @Field(() => User)
   user: User;
 
+  @Field(() => ID)
+  userId: string;
+
   @Field(() => Post)
   post: Post;
+
+  @Field(() => ID)
+  postId: string;
 }

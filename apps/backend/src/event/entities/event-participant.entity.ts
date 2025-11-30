@@ -15,6 +15,12 @@ export class EvenParticipant {
   @Field(() => Event)
   event: Event;
 
+  @Field(() => ID)
+  eventId: string;
+
   @Field(() => User)
   user: User;
+
+  @Field(() => ID)
+  userId: string;
 }

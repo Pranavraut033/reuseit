@@ -22,6 +22,9 @@ export class Post {
   @Field(() => User, { nullable: true })
   author?: User;
 
+  @Field(() => ID, { nullable: true })
+  authorId?: string;
+
   @Field(() => String)
   title: string;
 
@@ -49,6 +52,9 @@ export class Post {
   @Field(() => Event, { nullable: true })
   event?: Event;
 
+  @Field(() => ID, { nullable: true })
+  eventId?: string;
+
   @Field(() => [String])
   images: string[];
 
@@ -66,6 +72,9 @@ export class Post {
 
   @Field(() => Location, { nullable: true })
   location?: Location;
+
+  @Field(() => ID, { nullable: true })
+  locationId?: string;
 
   @Field(() => Boolean)
   anonymous: boolean;

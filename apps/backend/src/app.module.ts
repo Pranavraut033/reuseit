@@ -49,6 +49,7 @@ import { RecyclingModule } from './recycling/recycling.module';
     UserModule,
     GoogleMapsModule,
     CacheModule.registerAsync({
+      isGlobal: true,
       useFactory: () => {
         return {
           stores: [

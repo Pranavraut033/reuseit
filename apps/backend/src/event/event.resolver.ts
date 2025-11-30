@@ -1,6 +1,11 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject } from '@nestjs/common';
 import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import type { Cache } from 'cache-manager';
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
+
+import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
 
 import { Location } from '~/location/entities/location.entity';
 import { Post } from '~/post/entities/post.entity';
@@ -20,9 +25,18 @@ import { EventService } from './event.service';
 
 @Resolver(() => Event)
 export class EventResolver {
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    private readonly eventService: EventService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Mutation(() => Event)
+  @InvalidateCache((result: Event) => [
+    'events',
+    'upcomingEvents',
+    `eventsByCreator:${result.creator.id}`,
+    `event:${result.id}`,
+  ])
   createEvent(
     @Args('createEventInput') createEventInput: CreateEventInput,
     @Context('req') req: { user?: User },
@@ -31,26 +45,36 @@ export class EventResolver {
   }
 
   @Query(() => [Event], { name: 'events' })
+  @CacheQuery(() => 'events', 300)
   findAll() {
     return this.eventService.findAll();
   }
 
   @Query(() => Event, { name: 'event' })
+  @CacheQuery((id: string) => `event:${id}`, 300)
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.eventService.findOne(id);
   }
 
   @Query(() => [Event], { name: 'eventsByCreator' })
+  @CacheQuery((creatorId: string) => `eventsByCreator:${creatorId}`, 300)
   findByCreator(@Args('creatorId', { type: () => String }) creatorId: string) {
     return this.eventService.findByCreator(creatorId);
   }
 
   @Query(() => [Event], { name: 'upcomingEvents' })
+  @CacheQuery(() => 'upcomingEvents', 300)
   findUpcoming() {
     return this.eventService.findUpcoming();
   }
 
   @Mutation(() => Event)
+  @InvalidateCache((result: Event) => [
+    'events',
+    'upcomingEvents',
+    `eventsByCreator:${result.creator.id}`,
+    `event:${result.id}`,
+  ])
   updateEvent(
     @Args('updateEventInput') updateEventInput: UpdateEventInput,
     @Context('req') req: { user?: User },
@@ -59,11 +83,35 @@ export class EventResolver {
   }
 
   @Mutation(() => Event)
+  @InvalidateCache((result: Event) => [
+    'events',
+    'upcomingEvents',
+    `eventsByCreator:${result.creator.id}`,
+    `event:${result.id}`,
+  ])
   removeEvent(
     @Args('id', { type: () => String }) id: string,
     @Context('req') req: { user?: User },
   ) {
     return this.eventService.remove(id, req.user?.id);
+  }
+
+  @Mutation(() => Event)
+  @InvalidateCache((result: Event) => [`event:${result.id}`])
+  joinEvent(
+    @Args('eventId', { type: () => String }) eventId: string,
+    @Context('req') req: { user?: User },
+  ) {
+    return this.eventService.joinEvent(eventId, req.user?.id);
+  }
+
+  @Mutation(() => Event)
+  @InvalidateCache((result: Event) => [`event:${result.id}`])
+  leaveEvent(
+    @Args('eventId', { type: () => String }) eventId: string,
+    @Context('req') req: { user?: User },
+  ) {
+    return this.eventService.leaveEvent(eventId, req.user?.id);
   }
 
   // Field resolvers for relations

@@ -1,7 +1,11 @@
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
+import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
 import { CurrentUser } from '~/decorators/CurrentUser';
 import { Post } from '~/post/entities/post.entity';
 import { User } from '~/user/entities/user.entity';
@@ -18,14 +22,23 @@ import { LocationService } from './location.service';
 
 @Resolver(() => Location)
 export class LocationResolver {
-  constructor(private readonly locationService: LocationService) {}
+  constructor(
+    private readonly locationService: LocationService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Query(() => [Location], { name: 'locations' })
+  @CacheQuery(() => 'locations', 600)
   findAll() {
     return this.locationService.findAll();
   }
 
   @Query(() => Location, { name: 'location' })
+  @CacheQuery(
+    (latitude: number, longitude: number, radiusInKm?: number) =>
+      `locationNearby:${latitude}:${longitude}:${radiusInKm || 10}`,
+    300,
+  )
   findNearby(
     @Args('latitude', { type: () => Number }) latitude: number,
     @Args('longitude', { type: () => Number }) longitude: number,
@@ -36,11 +49,13 @@ export class LocationResolver {
   }
 
   @Query(() => Location, { name: 'location' })
+  @CacheQuery((id: string) => `location:${id}`, 600)
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.locationService.findOne(id);
   }
 
   @Mutation(() => Location)
+  @InvalidateCache((result: Location) => [`locations`, `location:${result.id}`])
   createLocation(
     @Args('createLocationInput') createLocationInput: CreateLocationInput,
     @CurrentUser() user?: User,
@@ -49,11 +64,13 @@ export class LocationResolver {
   }
 
   @Mutation(() => Location)
+  @InvalidateCache((result: Location) => [`locations`, `location:${result.id}`])
   updateLocation(@Args('updateLocationInput') updateLocationInput: UpdateLocationInput) {
     return this.locationService.update(updateLocationInput);
   }
 
   @Mutation(() => Location)
+  @InvalidateCache((_result: Location, id: string) => [`locations`, `location:${id}`])
   removeLocation(@Args('id', { type: () => String }) id: string) {
     return this.locationService.remove(id);
   }

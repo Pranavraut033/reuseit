@@ -15,9 +15,15 @@ export class Comment {
   @Field(() => User, { nullable: true })
   author?: User;
 
+  @Field(() => ID, { nullable: true })
+  authorId?: string;
+
   @Field()
   content: string;
 
   @Field(() => Post)
   post: Post;
+
+  @Field(() => ID)
+  postId: string;
 }

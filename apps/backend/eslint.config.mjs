@@ -17,6 +17,13 @@ export default tseslint.config(
   eslintPluginPrettierRecommended,
   sharedConfig.base,
   sharedConfig.typescript,
+  // add simple-import-sort plugin for TS files
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
+    plugins: {
+      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
+    },
+  },
   {
     languageOptions: {
       globals: {

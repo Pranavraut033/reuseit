@@ -20,6 +20,9 @@ export class Event {
   @Field(() => User)
   creator: User;
 
+  @Field(() => ID)
+  creatorId: string;
+
   @Field()
   title: string;
 
@@ -35,11 +38,14 @@ export class Event {
   @Field({ nullable: true })
   endTime?: Date;
 
-  @Field(() => Location)
-  location: Location;
+  @Field(() => Location, { nullable: true })
+  location?: Location;
 
-  @Field(() => EvenParticipant, { nullable: true })
-  participants?: EvenParticipant;
+  @Field(() => ID)
+  locationId: string;
+
+  @Field(() => [EvenParticipant])
+  participants: EvenParticipant[];
 
   @Field(() => [Post])
   posts: Post[];

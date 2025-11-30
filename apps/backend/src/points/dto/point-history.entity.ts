@@ -18,4 +18,7 @@ export class PointsHistory {
 
   @Field(() => User)
   user: User;
+
+  @Field(() => ID)
+  userId: string;
 }

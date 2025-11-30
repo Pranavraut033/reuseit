@@ -1,7 +1,11 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject } from '@nestjs/common';
 import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import type { Cache } from 'cache-manager';
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
+import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
 import { UserArticle } from '~/user/entities/user-article.entity';
 
 import { User } from '../user/entities/user.entity';
@@ -21,9 +25,13 @@ import { PostService } from './post.service';
 
 @Resolver(() => Post)
 export class PostResolver {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Mutation(() => Post)
+  @InvalidateCache((result: Post) => [`posts`, `postsByAuthor:${result.authorId}`])
   createPost(
     @Args('createPostInput') createPostInput: CreatePostInput,
     @Context('req') req: { user?: User },
@@ -32,26 +40,35 @@ export class PostResolver {
   }
 
   @Query(() => [Post], { name: 'posts' })
+  @CacheQuery(() => 'posts', 300)
   async findAll() {
     return this.postService.findAll();
   }
 
   @Query(() => [Post], { name: 'postsByAuthor' })
+  @CacheQuery((authorId: string) => `postsByAuthor:${authorId}`, 300)
   async findByAuthor(@Args('authorId', { type: () => String }) authorId: string) {
     return this.postService.findByAuthor(authorId);
   }
 
   @Query(() => [Post], { name: 'postsByIds' })
+  @CacheQuery((ids: string[]) => `postsByIds:${ids.sort().join(',')}`, 300)
   async findByIds(@Args('ids', { type: () => [String] }) ids: string[]) {
     return this.postService.findByIds(ids);
   }
 
   @Query(() => Post, { name: 'post' })
+  @CacheQuery((id: string) => `post:${id}`, 300)
   async findOne(@Args('id', { type: () => String }) id: string) {
     return this.postService.findOne(id);
   }
 
   @Mutation(() => Post)
+  @InvalidateCache((result: Post, updatePostInput: UpdatePostInput) => [
+    'posts',
+    `postsByAuthor:${result.authorId}`,
+    `post:${updatePostInput.id}`,
+  ])
   updatePost(
     @Args('updatePostInput') updatePostInput: UpdatePostInput,
     @Context('req') req: { user?: User },
@@ -60,11 +77,17 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
+  @InvalidateCache((result: Post) => [
+    'posts',
+    `postsByAuthor:${result.authorId}`,
+    `post:${result.id}`,
+  ])
   removePost(@Args('id', { type: () => String }) id: string, @Context('req') req: { user?: User }) {
     return this.postService.remove(id, req.user?.id);
   }
 
   @Mutation(() => Boolean)
+  @InvalidateCache((_result: boolean, postId: string) => [`post:${postId}`])
   async togglePostLike(
     @Args('postId', { type: () => String }) postId: string,
     @Context('req') req: { user?: User },

@@ -14,6 +14,12 @@ export class BadgeAssignment {
   @Field(() => Badge)
   badge: Badge;
 
+  @Field(() => ID)
+  badgeId: string;
+
   @Field(() => User)
   user: User;
+
+  @Field(() => ID)
+  userId: string;
 }

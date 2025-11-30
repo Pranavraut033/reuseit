@@ -21,6 +21,12 @@ export class UserArticle {
   @Field(() => User)
   user: User;
 
+  @Field(() => ID)
+  userId: string;
+
   @Field(() => Post, { nullable: true })
   post?: Post;
+
+  @Field(() => ID, { nullable: true })
+  postId?: string;
 }

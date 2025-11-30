@@ -8,15 +8,19 @@ type UserArticle {
   description: String
   imageUrl: [String!]!
   user: User!
+  userId: ID!
   post: Post
+  postId: ID
 }
 
 type Comment {
   id: ID!
   createdAt: DateTime!
   author: User
+  authorId: ID
   content: String!
   post: Post!
+  postId: ID!
 }
 
 """
@@ -28,7 +32,9 @@ type Like {
   id: ID!
   createdAt: DateTime!
   user: User!
+  userId: ID!
   post: Post!
+  postId: ID!
 }
 
 type Post {
@@ -36,6 +42,7 @@ type Post {
   createdAt: DateTime!
   updatedAt: DateTime!
   author: User
+  authorId: ID
   title: String!
   category: String
   condition: String
@@ -47,12 +54,14 @@ type Post {
   description: String!
   userArticles: [UserArticle!]!
   event: Event
+  eventId: ID
   images: [String!]!
   likes: [Like!]!
   likedByCurrentUser: Boolean
   likeCount: Float!
   commentCount: Float!
   location: Location
+  locationId: ID
   anonymous: Boolean!
 }
 
@@ -92,7 +101,9 @@ type EvenParticipant {
   id: ID!
   createdAt: DateTime!
   event: Event!
+  eventId: ID!
   user: User!
+  userId: ID!
 }
 
 type Event {
@@ -100,13 +111,15 @@ type Event {
   createdAt: DateTime!
   updatedAt: DateTime!
   creator: User!
+  creatorId: ID!
   title: String!
   imageUrl: [String!]!
   description: String
   startTime: DateTime!
   endTime: DateTime
-  location: Location!
-  participants: EvenParticipant
+  location: Location
+  locationId: ID!
+  participants: [EvenParticipant!]!
   posts: [Post!]!
 }
 
@@ -116,6 +129,7 @@ type PointsHistory {
   amount: Int!
   reason: String!
   user: User!
+  userId: ID!
 }
 
 type User {
@@ -149,7 +163,9 @@ type BadgeAssignment {
   id: ID!
   awardedAt: DateTime!
   badge: Badge!
+  badgeId: ID!
   user: User!
+  userId: ID!
 }
 
 type Badge {
@@ -211,67 +227,10 @@ type ReverseGeocodeResult {
   formattedAddress: String
 }
 
-type WasteDetection {
-  name: String!
-  confidence: Float!
-  bbox: [Float!]!
-  class_id: Float!
-}
-
-type RecyclingPlanItem {
-  item_name: String!
-  material_type: String!
-  category: String!
-  german_bin: String!
-  is_pfand: Boolean!
-  recycling_instructions: String!
-  reuse_ideas: String!
-  notes_germany: String!
-}
-
-type LatencyMetrics {
-  detector: Float!
-  reasoner: Float!
-  total: Float!
-}
-
-type ModelInfo {
-  vision: String!
-  llm: String!
-}
-
-type AnalyzeWasteResult {
-  detections: [WasteDetection!]!
-  recycling_plan: [RecyclingPlanItem!]!
-  latency_ms: LatencyMetrics!
-  models: ModelInfo!
-}
-
-type RecyclingInfo {
-  objectName: String!
-  materials: [String!]!
-  bin: GermanBin!
-  rules: [String!]!
-  cityOverride: String
-}
-
-enum GermanBin {
-  GELBER_SACK
-  PAPIER
-  GLAS
-  RESTMUELL
-  SPERRMUELL
-  ELEKTROSCHROTT
-  BIOMUELL
-  SCHADSTOFFSAMMLUNG
-  UNKNOWN
-}
-
-type FinalRecyclingResult {
-  objectName: String!
-  materials: [String!]!
-  recycling: RecyclingInfo!
-  instructions: String!
+type GetAIInsightsResult {
+  extra_facts: [String!]!
+  simplified_summary: String!
+  motivation_text: String!
 }
 
 type Query {
@@ -294,8 +253,7 @@ type Query {
   comments: [Comment!]!
   comment(id: String!): Comment!
   commentsByPost(postId: String!): [Comment!]!
-  finalizeRecycling(input: FinalizeRecyclingInput!): FinalRecyclingResult!
-  analyzeWaste(input: AnalyzeWasteInput!): AnalyzeWasteResult!
+  getAIInsights(input: GetAIInsightsInput!): GetAIInsightsResult!
   placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
   placeDetails(placeId: String!, sessionToken: String): PlaceDetails
   nearbyPlaces(latitude: Float!, longitude: Float!, radius: Float, keywords: [String!]!): [NearbyPlace!]!
@@ -303,16 +261,9 @@ type Query {
   generatePlacesSessionToken: String!
 }
 
-input FinalizeRecyclingInput {
-  objectName: String!
-  materials: [String!]!
-  city: String
-  imageBase64: String
-}
-
-input AnalyzeWasteInput {
-  imageBase64: String!
-  userText: String
+input GetAIInsightsInput {
+  category: String!
+  recyclingInfo: String!
 }
 
 type Mutation {
@@ -332,6 +283,8 @@ type Mutation {
   createEvent(createEventInput: CreateEventInput!): Event!
   updateEvent(updateEventInput: UpdateEventInput!): Event!
   removeEvent(id: String!): Event!
+  joinEvent(eventId: String!): Event!
+  leaveEvent(eventId: String!): Event!
   createLocation(createLocationInput: CreateLocationInput!): Location!
   updateLocation(updateLocationInput: UpdateLocationInput!): Location!
   removeLocation(id: String!): Location!

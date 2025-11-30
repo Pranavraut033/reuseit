@@ -222,4 +222,86 @@ export class EventService {
 
     return event as unknown as Event;
   }
+
+  async joinEvent(eventId: string, userId: string | undefined): Promise<Event> {
+    if (!userId) {
+      throw new UnauthorizedException('User must be authenticated to join an event');
+    }
+
+    // Check if event exists
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+
+    // Check if user is already a participant
+    const existingParticipant = await this.prisma.evenParticipant.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+    });
+
+    if (existingParticipant) {
+      throw new BadRequestException('User is already participating in this event');
+    }
+
+    // Add user as participant
+    await this.prisma.evenParticipant.create({
+      data: {
+        eventId,
+        userId,
+      },
+    });
+
+    // Return updated event with participants
+    return this.findOne(eventId);
+  }
+
+  async leaveEvent(eventId: string, userId: string | undefined): Promise<Event> {
+    if (!userId) {
+      throw new UnauthorizedException('User must be authenticated to leave an event');
+    }
+
+    // Check if event exists
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+
+    // Check if user is a participant
+    const existingParticipant = await this.prisma.evenParticipant.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+    });
+
+    if (!existingParticipant) {
+      throw new BadRequestException('User is not participating in this event');
+    }
+
+    // Remove user as participant
+    await this.prisma.evenParticipant.delete({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+    });
+
+    // Return updated event with participants
+    return this.findOne(eventId);
+  }
 }

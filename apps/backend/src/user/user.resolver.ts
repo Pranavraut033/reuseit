@@ -1,6 +1,11 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject } from '@nestjs/common';
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import type { Cache } from 'cache-manager';
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
+
+import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
 
 import { Event } from '~/event/entities/event.entity';
 import { EvenParticipant } from '~/event/entities/event-participant.entity';
@@ -26,19 +31,25 @@ import { UserService } from './user.service';
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Mutation(() => User)
+  @InvalidateCache((result: User) => ['users', `user:${result.id}`])
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.userService.create(createUserInput);
   }
 
   @Query(() => [User], { name: 'users' })
+  @CacheQuery(() => 'users', 600)
   findAll() {
     return this.userService.findAll();
   }
 
   @Query(() => User, { name: 'user' })
+  @CacheQuery((id?: string, email?: string) => `user:${id || email}`, 600)
   findOne(
     @Args('id', { type: () => String, nullable: true }) id?: string,
     @Args('email', { type: () => String, nullable: true }) email?: string,
@@ -47,11 +58,13 @@ export class UserResolver {
   }
 
   @Mutation(() => User)
+  @InvalidateCache((result: User) => ['users', `user:${result.id}`])
   updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
     return this.userService.update(updateUserInput.id, updateUserInput);
   }
 
   @Mutation(() => User)
+  @InvalidateCache((_result: User, id: string) => ['users', `user:${id}`])
   removeUser(@Args('id', { type: () => String }) id: string) {
     return this.userService.remove(id);
   }
