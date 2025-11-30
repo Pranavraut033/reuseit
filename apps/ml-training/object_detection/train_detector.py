@@ -473,14 +473,40 @@ def train_detector(
     config: ObjectDetectionConfig,
     dataset_dir: str = "merged_dataset",
     output_dir: str = "object_detection/models",
+    resume_model_path: str = None,
 ):
     """Train object detection model."""
 
-    # Create output directory
-    os.makedirs(output_dir, exist_ok=True)
-    run_name = f"detector_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    run_dir = os.path.join(output_dir, run_name)
-    os.makedirs(run_dir, exist_ok=True)
+    # Handle resume logic
+    initial_epoch = 0
+    if resume_model_path:
+        if not os.path.exists(resume_model_path):
+            raise ValueError(f"Resume model path does not exist: {resume_model_path}")
+
+        # Try to determine initial epoch from training log
+        log_path = os.path.join(resume_model_path, "training_log.csv")
+        if os.path.exists(log_path):
+            try:
+                with open(log_path, "r") as f:
+                    lines = f.readlines()
+                    # Skip header, count data lines (each line is an epoch)
+                    initial_epoch = len(lines) - 1
+                print(f"[yellow]Resuming from epoch {initial_epoch}[/yellow]")
+            except Exception as e:
+                print(f"[red]Could not parse training log: {e}. Starting from epoch 0.[/red]")
+                initial_epoch = 0
+        else:
+            print(f"[yellow]No training log found. Starting from epoch 0.[/yellow]")
+
+        # Use the resume directory as output directory
+        run_dir = resume_model_path
+        print(f"[yellow]Resuming training in directory: {run_dir}[/yellow]")
+    else:
+        # Create new output directory
+        os.makedirs(output_dir, exist_ok=True)
+        run_name = f"detector_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        run_dir = os.path.join(output_dir, run_name)
+        os.makedirs(run_dir, exist_ok=True)
 
     print(f"[bold cyan]Starting Object Detection Training[/bold cyan]")
     print(f"[cyan]Output directory: {run_dir}[/cyan]")
@@ -488,12 +514,32 @@ def train_detector(
     # Prepare datasets
     train_dataset, val_dataset, num_classes = prepare_dataset(config, dataset_dir)
 
-    # Build model
-    print("[cyan]Building model...[/cyan]")
-    model = build_detection_model(config, num_classes)
-    model.summary()
+    # Build or load model
+    if resume_model_path:
+        model_path = os.path.join(resume_model_path, "best_model.keras")
+        if os.path.exists(model_path):
+            print(f"[cyan]Loading model from {model_path}...[/cyan]")
+            model = keras.models.load_model(model_path)
+            print("[green]Model loaded successfully![/green]")
 
-    # Compile model
+            # Validate that critical parameters match the loaded model
+            expected_input_shape = model.input_shape[1:3]  # (height, width)
+            if config.image_size != expected_input_shape[0]:
+                print(
+                    f"[red]Warning: Loaded model expects input size {expected_input_shape[0]}x{expected_input_shape[1]}, but config specifies {config.image_size}x{config.image_size}[/red]"
+                )
+                print(
+                    f"[yellow]Using model's expected input size: {expected_input_shape[0]}[/yellow]"
+                )
+                config.image_size = expected_input_shape[0]
+        else:
+            raise ValueError(f"Saved model not found at {model_path}")
+    else:
+        print("[cyan]Building new model...[/cyan]")
+        model = build_detection_model(config, num_classes)
+        model.summary()
+
+    # Compile model (always recompile to apply new config parameters)
     optimizer = keras.optimizers.AdamW(
         learning_rate=config.learning_rate, weight_decay=config.weight_decay
     )
@@ -566,6 +612,7 @@ def train_detector(
         train_dataset,
         validation_data=val_dataset,
         epochs=config.epochs,
+        initial_epoch=initial_epoch,
         callbacks=callbacks,
         verbose=1,
     )
@@ -633,6 +680,12 @@ def main():
         default=None,
         help="Use progressive unfreezing during training",
     )
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default=None,
+        help="Path to saved model directory to resume training from",
+    )
 
     args = parser.parse_args()
 
@@ -656,7 +709,12 @@ def main():
         config.use_progressive_unfreezing = args.progressive_unfreezing
 
     # Train model
-    model, run_dir = train_detector(config=config, dataset_dir=args.dataset, output_dir=args.output)
+    model, run_dir = train_detector(
+        config=config,
+        dataset_dir=args.dataset,
+        output_dir=args.output,
+        resume_model_path=args.resume,
+    )
 
     print(f"[bold cyan]Training complete! Results saved to: {run_dir}[/bold cyan]")
 

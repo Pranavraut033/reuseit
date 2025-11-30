@@ -48,6 +48,33 @@ python object_detection/train_detector.py \
     --batch-size 16
 ```
 
+### 2. Resume Training
+
+If training was interrupted, you can resume from a saved checkpoint:
+
+```bash
+cd apps/ml-training
+python object_detection/train_detector.py \
+    --resume object_detection/models/detector_run_20251127_171205 \
+    --epochs 100
+```
+
+The script will automatically:
+- Load the saved model (`best_model.keras`)
+- Parse the training log to determine the last completed epoch
+- Continue training from that epoch
+- Save results to the same directory
+
+**You can change training parameters when resuming:**
+- `--epochs`: Set new total number of epochs
+- `--learning-rate`: Change learning rate
+- `--batch-size`: Change batch size
+- `--max-images-per-class`: Change dataset size per class
+
+**Parameters that cannot be changed when resuming:**
+- `--image-size`: Must match the loaded model's input size
+- Dataset structure (number of classes is fixed by the saved model)
+
 **Arguments**:
 - `--dataset`: Path to dataset directory (default: `merged_dataset`)
 - `--output`: Output directory for trained models (default: `object_detection/models`)

@@ -50,7 +50,7 @@ def get_representative_dataset(dataset_dir: str = "merged_dataset", num_samples:
             # Load and preprocess image
             img = tf.io.read_file(img_path)
             img = tf.image.decode_jpeg(img, channels=3)
-            img = tf.image.resize(img, [320, 320])
+            img = tf.image.resize(img, [224, 224])
             img = tf.cast(img, tf.float32) / 255.0
             img = tf.expand_dims(img, 0)
 
@@ -262,7 +262,7 @@ def main():
     print("\n[bold cyan]Usage in mobile app:[/bold cyan]")
     print(f"1. Copy {os.path.basename(tflite_path)} to your mobile app's assets")
     print("2. Load the model using TensorFlow Lite interpreter")
-    print("3. Input: Image tensor of shape (1, 320, 320, 3) with float32 values [0, 1]")
+    print("3. Input: Image tensor of shape (1, 224, 224, 3) with float32 values [0, 1]")
     print("4. Outputs:")
     print("   - bbox: Bounding box coordinates [x_min, y_min, x_max, y_max]")
     print("   - class: Class probabilities for each waste category")
