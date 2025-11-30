@@ -18,7 +18,7 @@ redis_client = None
 
 class AIEnhancementRequest(BaseModel):
     category: str
-    recycling_info: str
+    result_hash: str
 
 
 class AIEnhancementResponse(BaseModel):
@@ -40,12 +40,10 @@ async def startup():
         redis_client = None
 
 
-async def generate_ai_enhancements(
-    category: str, recycling_info: str
-) -> Dict[str, any]:
+async def generate_ai_enhancements(category: str, result_hash: str) -> Dict[str, any]:
     """Generate AI enhancements for a waste category."""
     # Create cache key
-    cache_key = f"ai_enhancements:{hash(category + recycling_info)}"
+    cache_key = f"ai_enhancements:{hash(category + result_hash)}"
 
     # Check cache first
     if redis_client:
@@ -64,10 +62,16 @@ async def generate_ai_enhancements(
 
         user_input = f"""
 Category: {category}
-Recycling Info: {recycling_info}
+The user is trying to recycle something in this category.
 
-Generate educational content and motivation.
+Generate a JSON with:
+
+extra_facts: 3–6 surprising, true, verifiable facts about {category} reuse (time-scale, energy/CO₂, reverse trivia, or counterintuitive stats).
+simplified_summary: 1 sentence under 80 words explaining {category} reuse.
+motivation_text: 1 uplifting, action-oriented sentence tied to real environmental benefits.
 """
+
+        print(f"Prompt prepared for category: {user_input}")
 
         # Call Ollama
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -87,7 +91,7 @@ Generate educational content and motivation.
         if response.status_code == 200:
             result = response.json()
             llm_response = result.get("message", {}).get("content", "{}")
-
+            print(f"LLM response received: {llm_response}")
             try:
                 parsed_response = json.loads(llm_response)
                 validated_response = validate_ai_response(parsed_response)
@@ -103,16 +107,21 @@ Generate educational content and motivation.
                         print(f"Cache write error: {e}")
 
                 return validated_response
-            except json.JSONDecodeError:
-                print(f"JSON parse error, using fallback")
-                return generate_fallback_enhancements(category)
+            except json.JSONDecodeError as e:
+                print(f"JSON parse error: {e}")
+                print(f"Raw response: {llm_response}")
+                raise HTTPException(
+                    status_code=500, detail="Failed to parse LLM response"
+                )
         else:
-            print(f"LLM API error: {response.status_code}, using fallback")
-            return generate_fallback_enhancements(category)
+            print(f"LLM API error: {response.status_code}")
+            raise HTTPException(
+                status_code=response.status_code, detail="LLM API error"
+            )
 
     except Exception as e:
-        print(f"AI enhancements failed: {e}, using fallback")
-        return generate_fallback_enhancements(category)
+        print(f"AI enhancements failed: {e}")
+        raise HTTPException(status_code=500, detail=f"AI enhancement failed: {str(e)}")
 
 
 def validate_ai_response(llm_response: any) -> Dict[str, any]:
@@ -143,98 +152,11 @@ def validate_ai_response(llm_response: any) -> Dict[str, any]:
     }
 
 
-def generate_fallback_enhancements(category: str) -> Dict[str, any]:
-    """Generate fallback AI enhancements."""
-    fallbacks = {
-        "paper_cardboard": {
-            "extra_facts": [
-                "Paper recycling saves energy",
-                "Recycled paper can be reused multiple times",
-            ],
-            "simplified_summary": "Paper and cardboard waste includes newspapers and packaging. Recycling helps save trees.",
-            "motivation_text": "Your paper recycling makes a real difference for our forests!",
-        },
-        "glass": {
-            "extra_facts": [
-                "Glass can be recycled forever",
-                "Recycling glass saves energy",
-            ],
-            "simplified_summary": "Glass waste includes bottles and jars. Glass recycling conserves natural resources.",
-            "motivation_text": "Recycling glass helps preserve our planet's resources!",
-        },
-        "recyclables": {
-            "extra_facts": [
-                "Plastic recycling reduces pollution",
-                "Recycling saves manufacturing energy",
-            ],
-            "simplified_summary": "Recyclables include plastic bottles and metal cans. Proper recycling reduces waste.",
-            "motivation_text": "Your recycling efforts help create a cleaner environment!",
-        },
-        "bio_waste": {
-            "extra_facts": [
-                "Composting reduces methane",
-                "Food waste creates nutrient-rich soil",
-            ],
-            "simplified_summary": "Bio waste includes food scraps and organic materials. Composting creates healthy soil.",
-            "motivation_text": "Composting food waste helps reduce greenhouse gases!",
-        },
-        "textile_reuse": {
-            "extra_facts": [
-                "Textile reuse saves water",
-                "Fashion industry impacts environment",
-            ],
-            "simplified_summary": "Textile waste includes clothing and fabrics. Reusing textiles conserves resources.",
-            "motivation_text": "Reusing clothes helps reduce fashion's environmental impact!",
-        },
-        "electronics": {
-            "extra_facts": [
-                "E-waste contains valuable metals",
-                "Proper recycling prevents pollution",
-            ],
-            "simplified_summary": "Electronic waste includes old devices. Proper recycling recovers valuable materials.",
-            "motivation_text": "Recycling electronics helps recover precious resources!",
-        },
-        "battery": {
-            "extra_facts": [
-                "Batteries contain heavy metals",
-                "Proper disposal prevents contamination",
-            ],
-            "simplified_summary": "Battery waste includes all types of batteries. Safe disposal protects the environment.",
-            "motivation_text": "Proper battery recycling keeps our environment safe!",
-        },
-        "residual_waste": {
-            "extra_facts": [
-                "Reducing waste saves landfill space",
-                "Better recycling minimizes residual waste",
-            ],
-            "simplified_summary": "Residual waste includes non-recyclable materials. Minimizing this waste helps the planet.",
-            "motivation_text": "Reducing residual waste helps preserve our planet!",
-        },
-    }
-
-    return fallbacks.get(
-        category,
-        {
-            "extra_facts": [],
-            "simplified_summary": "This waste requires proper disposal to protect the environment.",
-            "motivation_text": "Every small action helps protect our planet!",
-        },
-    )
-
-
 @app.post("/enhance", response_model=AIEnhancementResponse)
 async def enhance_waste_info(request: AIEnhancementRequest):
     """Generate AI enhancements for waste recycling information."""
-    try:
-        enhancements = await generate_ai_enhancements(
-            request.category, request.recycling_info
-        )
-        return AIEnhancementResponse(**enhancements)
-    except Exception as e:
-        print(f"Enhancement failed: {e}")
-        # Return fallback
-        fallback = generate_fallback_enhancements(request.category)
-        return AIEnhancementResponse(**fallback)
+    enhancements = await generate_ai_enhancements(request.category, request.result_hash)
+    return AIEnhancementResponse(**enhancements)
 
 
 @app.get("/health")
