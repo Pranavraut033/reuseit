@@ -27,3 +27,5 @@ alt/
 # Object detection directories
 object_detection/models/
 object_detection/test_results/
+yolov8n.pt
+yolov8x.pt

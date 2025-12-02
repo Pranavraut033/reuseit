@@ -25,14 +25,25 @@ import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from dataset_utils import get_canonical_classes
+from object_detection.train_detector import apply_classwise_nms
 
 
 class ObjectDetector:
     """Wrapper for object detection model inference."""
 
-    def __init__(self, model_path: str, is_tflite: bool = False):
+    def __init__(
+        self,
+        model_path: str,
+        is_tflite: bool = False,
+        iou_threshold: float = 0.5,
+        score_threshold: float = 0.3,
+        max_output_per_class: int = 10,
+    ):
         self.is_tflite = is_tflite
         self.classes = get_canonical_classes()
+        self.iou_threshold = iou_threshold
+        self.score_threshold = score_threshold
+        self.max_output_per_class = max_output_per_class
 
         if is_tflite:
             self._load_tflite(model_path)
@@ -87,10 +98,30 @@ class ObjectDetector:
         """Run Keras model inference."""
         predictions = self.model.predict(input_tensor, verbose=0)
 
+        raw_bboxes = np.asarray(predictions["bbox"])
+        raw_class = np.asarray(predictions["class"])
+        if raw_bboxes.ndim == 3 and raw_bboxes.shape[0] == 1:
+            raw_bboxes = raw_bboxes[0]
+        if raw_class.ndim == 3 and raw_class.shape[0] == 1:
+            raw_class = raw_class[0]
+        raw_edges = predictions.get("edges")
+        edges = raw_edges[0] if raw_edges is not None else None
+
+        # Apply NMS to multi-box predictions
+        selected_boxes, selected_labels, selected_scores = apply_classwise_nms(
+            raw_bboxes,
+            raw_class,
+            iou_threshold=self.iou_threshold,
+            score_threshold=self.score_threshold,
+            max_output_per_class=self.max_output_per_class,
+        )
+
         return {
-            "bbox": predictions["bbox"][0],
-            "class": predictions["class"][0],
-            "edges": predictions["edges"][0],
+            "bboxes": selected_boxes,
+            "labels": selected_labels,
+            "scores": selected_scores,
+            "class_probs": raw_class,
+            "edges": edges,
         }
 
     def _predict_tflite(self, input_tensor: np.ndarray) -> Dict[str, np.ndarray]:
@@ -108,7 +139,29 @@ class ObjectDetector:
             name = detail["name"].split("/")[-1].replace(":0", "")
             outputs[name] = output_data[0]
 
-        return outputs
+        raw_bboxes = np.asarray(outputs.get("bbox"))
+        raw_class = np.asarray(outputs.get("class"))
+        if raw_bboxes.ndim == 3 and raw_bboxes.shape[0] == 1:
+            raw_bboxes = raw_bboxes[0]
+        if raw_class.ndim == 3 and raw_class.shape[0] == 1:
+            raw_class = raw_class[0]
+        raw_edges = outputs.get("edges")
+        if raw_bboxes is None or raw_class is None:
+            return outputs
+        selected_boxes, selected_labels, selected_scores = apply_classwise_nms(
+            raw_bboxes,
+            raw_class,
+            iou_threshold=self.iou_threshold,
+            score_threshold=self.score_threshold,
+            max_output_per_class=self.max_output_per_class,
+        )
+        return {
+            "bboxes": selected_boxes,
+            "labels": selected_labels,
+            "scores": selected_scores,
+            "class_probs": raw_class,
+            "edges": raw_edges,
+        }
 
     def detect(self, image_path: str) -> Tuple[Dict[str, np.ndarray], np.ndarray]:
         """Run full detection pipeline on image."""
@@ -128,56 +181,63 @@ def visualize_predictions(
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 
-    # Original image with bounding box and class
+    # Original image with bounding boxes and class
     ax1 = axes[0]
     ax1.imshow(image)
 
-    # Draw bounding box
-    bbox = predictions["bbox"]
+    # Draw bounding boxes (multiple) if present
     h, w = image.shape[:2]
-    x_min, y_min, x_max, y_max = bbox
-
-    # Denormalize coordinates
-    x_min = int(x_min * w)
-    y_min = int(y_min * h)
-    x_max = int(x_max * w)
-    y_max = int(y_max * h)
-
-    rect = patches.Rectangle(
-        (x_min, y_min),
-        x_max - x_min,
-        y_max - y_min,
-        linewidth=3,
-        edgecolor="lime",
-        facecolor="none",
-    )
-    ax1.add_patch(rect)
-
-    # Add class label
-    class_probs = predictions["class"]
-    class_idx = np.argmax(class_probs)
-    class_name = classes[class_idx]
-    confidence = class_probs[class_idx]
-
-    label = f"{class_name} ({confidence:.2%})"
-    ax1.text(
-        x_min,
-        y_min - 10,
-        label,
-        color="white",
-        fontsize=12,
-        bbox=dict(facecolor="lime", alpha=0.8, pad=5),
-    )
+    bboxes = predictions.get("bboxes")
+    labels = predictions.get("labels")
+    scores = predictions.get("scores")
+    if bboxes is not None and labels is not None:
+        for i, box in enumerate(bboxes):
+            x_min, y_min, x_max, y_max = box
+            x_min = int(x_min * w)
+            y_min = int(y_min * h)
+            x_max = int(x_max * w)
+            y_max = int(y_max * h)
+            rect = patches.Rectangle(
+                (x_min, y_min),
+                x_max - x_min,
+                y_max - y_min,
+                linewidth=2,
+                edgecolor="lime",
+                facecolor="none",
+            )
+            ax1.add_patch(rect)
+            class_idx = int(labels[i]) if labels is not None and len(labels) > i else -1
+            if class_idx >= 0:
+                class_name = classes[class_idx]
+                conf = float(scores[i]) if scores is not None and len(scores) > i else 0.0
+                label = f"{class_name} ({conf:.2%})"
+                ax1.text(
+                    x_min,
+                    y_min - 10,
+                    label,
+                    color="white",
+                    fontsize=12,
+                    bbox=dict(facecolor="lime", alpha=0.8, pad=5),
+                )
 
     ax1.set_title("Detection Result", fontsize=14, fontweight="bold")
     ax1.axis("off")
 
     # Edge detection mask
     ax2 = axes[1]
-    edges = predictions["edges"]
-
-    # Resize edge mask to original image size
-    edges_resized = cv2.resize(edges, (w, h))
+    edges = predictions.get("edges")
+    # If edges are missing, create an empty mask
+    if edges is None:
+        edges_resized = np.zeros((h, w), dtype=np.float32)
+    else:
+        edges_arr = np.asarray(edges)
+        # Remove channel dim if present
+        if edges_arr.ndim == 3 and edges_arr.shape[2] == 1:
+            edges_arr = edges_arr[:, :, 0]
+        # If edges include a batch dimension, squeeze it
+        if edges_arr.ndim == 3 and edges_arr.shape[0] == 1:
+            edges_arr = edges_arr[0]
+        edges_resized = cv2.resize(edges_arr, (w, h))
 
     ax2.imshow(edges_resized, cmap="gray")
     ax2.set_title("Edge Detection", fontsize=14, fontweight="bold")
@@ -217,28 +277,49 @@ def print_predictions(predictions: Dict[str, np.ndarray], classes: List[str]):
     """Print prediction details."""
     print("\n[bold cyan]Detection Results:[/bold cyan]")
 
-    # Bounding box
-    bbox = predictions["bbox"]
-    print(f"\n[yellow]Bounding Box (normalized):[/yellow]")
-    print(f"  x_min: {bbox[0]:.3f}")
-    print(f"  y_min: {bbox[1]:.3f}")
-    print(f"  x_max: {bbox[2]:.3f}")
-    print(f"  y_max: {bbox[3]:.3f}")
+    # Bounding boxes
+    bboxes = predictions.get("bboxes")
+    labels = predictions.get("labels")
+    scores = predictions.get("scores")
+    if bboxes is not None and len(bboxes) > 0:
+        print(f"\n[yellow]Detected Boxes (normalized):[/yellow]")
+        for i, box in enumerate(bboxes):
+            print(
+                f"  Box {i+1}: x_min={box[0]:.3f}, y_min={box[1]:.3f}, x_max={box[2]:.3f}, y_max={box[3]:.3f}"
+            )
+            if labels is not None and len(labels) > i:
+                li = int(labels[i])
+                print(f"    Class: {classes[li]} (score: {scores[i]:.3%})")
 
-    # Classification
-    class_probs = predictions["class"]
-    top_5_indices = np.argsort(class_probs)[::-1][:5]
-
-    print(f"\n[yellow]Top 5 Class Predictions:[/yellow]")
-    for i, idx in enumerate(top_5_indices, 1):
-        print(f"  {i}. {classes[idx]}: {class_probs[idx]:.2%}")
+    # Top class distributions per selected box (optional)
+    class_probs = predictions.get("class_probs")
+    if class_probs is not None:
+        # For each selected box (if any), print top-3 classes
+        print(f"\n[yellow]Per-box Top Classes:[/yellow]")
+        # If labels exist (selected), report them; else we use top of class_probs per box
+        bboxes = predictions.get("bboxes")
+        if bboxes is not None and bboxes.shape[0] > 0:
+            for i in range(bboxes.shape[0]):
+                probs = class_probs[i]
+                top = np.argsort(probs)[::-1][:3]
+                line = ", ".join([f"{classes[t]}: {probs[t]:.2%}" for t in top])
+                print(f"  Box {i+1}: {line}")
 
     # Edge statistics
-    edges = predictions["edges"]
-    edge_coverage = np.mean(edges > 0.5)
-    print(f"\n[yellow]Edge Detection:[/yellow]")
-    print(f"  Edge coverage: {edge_coverage:.2%}")
-    print(f"  Edge intensity (mean): {np.mean(edges):.3f}")
+    edges = predictions.get("edges")
+    if edges is not None:
+        edges_arr = np.asarray(edges)
+        if edges_arr.ndim == 3 and edges_arr.shape[2] == 1:
+            edges_arr = edges_arr[:, :, 0]
+        if edges_arr.ndim == 3 and edges_arr.shape[0] == 1:
+            edges_arr = edges_arr[0]
+        edge_coverage = np.mean(edges_arr > 0.5)
+        print(f"\n[yellow]Edge Detection:[/yellow]")
+        print(f"  Edge coverage: {edge_coverage:.2%}")
+        print(f"  Edge intensity (mean): {np.mean(edges_arr):.3f}")
+    else:
+        print(f"\n[yellow]Edge Detection:[/yellow]")
+        print(f"  No edge data available")
 
 
 def test_on_directory(
@@ -274,14 +355,27 @@ def test_on_directory(
             original_image, predictions, detector.classes, save_path=save_path, show=False
         )
 
-        # Store results
-        class_idx = np.argmax(predictions["class"])
+        # Store results (choose top-scoring detection if any)
+        if "scores" in predictions and len(predictions["scores"]) > 0:
+            best_idx = int(np.argmax(predictions["scores"]))
+            class_idx = int(predictions["labels"][best_idx])
+            confidence = float(predictions["scores"][best_idx])
+            bbox_out = predictions["bboxes"][best_idx].tolist()
+        elif "class_probs" in predictions and predictions["class_probs"].shape[0] > 0:
+            # fallback by selecting the highest-scoring class in the first box
+            class_idx = int(np.argmax(predictions["class_probs"][0]))
+            confidence = float(np.max(predictions["class_probs"][0]))
+            bbox_out = predictions.get("bboxes", np.zeros((1, 4)))[0].tolist()
+        else:
+            class_idx = -1
+            confidence = 0.0
+            bbox_out = []
         results.append(
             {
                 "image": img_file,
-                "predicted_class": detector.classes[class_idx],
-                "confidence": float(predictions["class"][class_idx]),
-                "bbox": predictions["bbox"].tolist(),
+                "predicted_class": detector.classes[class_idx] if class_idx >= 0 else "unknown",
+                "confidence": confidence,
+                "bbox": bbox_out,
             }
         )
 
@@ -311,6 +405,16 @@ def main():
     parser.add_argument(
         "--no-show", action="store_true", help="Do not display visualizations (only save)"
     )
+    parser.add_argument("--iou-threshold", type=float, default=0.5, help="IoU threshold for NMS")
+    parser.add_argument(
+        "--score-threshold", type=float, default=0.3, help="Score threshold for NMS"
+    )
+    parser.add_argument(
+        "--max-output-per-class",
+        type=int,
+        default=10,
+        help="Max boxes per class to return from NMS",
+    )
 
     args = parser.parse_args()
 
@@ -318,7 +422,13 @@ def main():
     is_tflite = args.model_path.endswith(".tflite")
 
     # Load detector
-    detector = ObjectDetector(args.model_path, is_tflite=is_tflite)
+    detector = ObjectDetector(
+        args.model_path,
+        is_tflite=is_tflite,
+        iou_threshold=args.iou_threshold,
+        score_threshold=args.score_threshold,
+        max_output_per_class=args.max_output_per_class,
+    )
 
     if args.image:
         # Test single image

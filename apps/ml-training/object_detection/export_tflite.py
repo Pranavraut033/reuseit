@@ -19,9 +19,12 @@ import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from dataset_utils import get_canonical_classes
+from object_detection.config import ObjectDetectionConfig
 
 
-def get_representative_dataset(dataset_dir: str = "merged_dataset", num_samples: int = 100):
+def get_representative_dataset(
+    dataset_dir: str = "merged_dataset", num_samples: int = 100, image_size: int = 224
+):
     """Generate representative dataset for quantization."""
 
     classes = get_canonical_classes()
@@ -50,7 +53,7 @@ def get_representative_dataset(dataset_dir: str = "merged_dataset", num_samples:
             # Load and preprocess image
             img = tf.io.read_file(img_path)
             img = tf.image.decode_jpeg(img, channels=3)
-            img = tf.image.resize(img, [224, 224])
+            img = tf.image.resize(img, [image_size, image_size])
             img = tf.cast(img, tf.float32) / 255.0
             img = tf.expand_dims(img, 0)
 
@@ -60,7 +63,11 @@ def get_representative_dataset(dataset_dir: str = "merged_dataset", num_samples:
 
 
 def export_tflite(
-    model_path: str, output_path: str, quantize: bool = False, dataset_dir: str = "merged_dataset"
+    model_path: str,
+    output_path: str,
+    quantize: bool = False,
+    dataset_dir: str = "merged_dataset",
+    image_size: int = 224,
 ):
     """Export Keras model to TFLite format.
 
@@ -102,7 +109,9 @@ def export_tflite(
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
         # Set representative dataset for full integer quantization
-        converter.representative_dataset = get_representative_dataset(dataset_dir)
+        converter.representative_dataset = get_representative_dataset(
+            dataset_dir, image_size=image_size
+        )
 
         # Ensure inputs/outputs are float32 (for easier mobile integration)
         converter.target_spec.supported_ops = [
@@ -205,6 +214,8 @@ def export_model_info(model_path: str, output_dir: str):
         "output_names": list(model.output_names),
         "num_parameters": model.count_params(),
         "classes": get_canonical_classes(),
+        "has_bbox": "bbox" in model.output_names,
+        "has_class": "class" in model.output_names,
     }
 
     metadata_path = os.path.join(output_dir, "model_info.json")
@@ -244,11 +255,13 @@ def main():
         args.output = os.path.join(model_dir, f"{model_name}{quantize_suffix}.tflite")
 
     # Export to TFLite
+    config = ObjectDetectionConfig()
     tflite_path = export_tflite(
         model_path=args.model_path,
         output_path=args.output,
         quantize=args.quantize,
         dataset_dir=args.dataset,
+        image_size=config.image_size,
     )
 
     # Export model info if requested
@@ -258,15 +271,25 @@ def main():
     print(f"\n[bold green]Export complete![/bold green]")
     print(f"[cyan]TFLite model: {tflite_path}[/cyan]")
 
+    # Load model to get output info for usage instructions
+    model = keras.models.load_model(args.model_path)
+    output_names = model.output_names
+
     # Print usage instructions
     print("\n[bold cyan]Usage in mobile app:[/bold cyan]")
     print(f"1. Copy {os.path.basename(tflite_path)} to your mobile app's assets")
     print("2. Load the model using TensorFlow Lite interpreter")
-    print("3. Input: Image tensor of shape (1, 224, 224, 3) with float32 values [0, 1]")
+    print(
+        f"3. Input: Image tensor of shape (1, {config.image_size}, {config.image_size}, 3) with float32 values [0, 1]"
+    )
     print("4. Outputs:")
-    print("   - bbox: Bounding box coordinates [x_min, y_min, x_max, y_max]")
-    print("   - class: Class probabilities for each waste category")
-    print("   - edges: Edge detection mask")
+
+    if "bbox" in output_names:
+        print("   - bbox: Bounding box coordinates [x_min, y_min, x_max, y_max]")
+    if "class" in output_names:
+        print("   - class: Class probabilities for each waste category")
+
+    print(f"Model backbone: {config.backbone} (input {config.image_size}x{config.image_size})")
 
 
 if __name__ == "__main__":

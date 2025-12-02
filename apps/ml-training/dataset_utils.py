@@ -24,16 +24,6 @@ CANONICAL_CLASSES = [
     "residual_waste",
 ]
 
-GERMAN_LABEL_INFO = {
-    "paper_cardboard": {"de": "Papier/Pappe", "stream": "Papier"},
-    "glass": {"de": "Glas", "stream": "Glas"},
-    "recyclables": {"de": "Wertstoffe", "stream": "Wertstoffe"},
-    "bio_waste": {"de": "Bioabfall", "stream": "Bio"},
-    "textile_reuse": {"de": "Textilien", "stream": "Textilien"},
-    "electronics": {"de": "Elektroschrott", "stream": "Sonderabfall"},
-    "battery": {"de": "Batterien", "stream": "Sonderabfall"},
-    "residual_waste": {"de": "Restmüll", "stream": "Restmüll"},
-}
 
 # Raw label mapping across datasets -> canonical label (case-insensitive via lowercasing)
 RAW_CLASS_MAP: Dict[str, str] = {
@@ -207,47 +197,6 @@ def ensure_kaggle_download(datasets: List[str], raw_dir: str) -> list[str]:
     return extracted_dirs
 
 
-def consolidate_datasets(extracted_dirs: list[str], merged_dir: str) -> str:
-    os.makedirs(merged_dir, exist_ok=True)
-    for cls in CANONICAL_CLASSES:
-        os.makedirs(os.path.join(merged_dir, cls), exist_ok=True)
-
-    count = 0
-    for ed in extracted_dirs:
-        for root, dirs, files in os.walk(ed):
-            leaf = Path(root).name.lower()
-            canonical = normalize_label(leaf)
-            if canonical is None:
-                continue
-            for f in files:
-                ext = os.path.splitext(f)[1].lower()
-                if ext in IMAGE_EXTS:
-                    src = os.path.join(root, f)
-                    # Strict validation: open and load image, only allow JPEG/PNG
-                    try:
-                        from PIL import Image
-
-                        with Image.open(src) as im:
-                            im.load()  # Actually load image data
-                            if im.format not in ("JPEG", "PNG"):
-                                print(f"[WARN] Skipping unsupported format: {src} ({im.format})")
-                                continue
-                    except Exception:
-                        print(f"[WARN] Skipping invalid image: {src}")
-                        continue
-                    dst = os.path.join(merged_dir, canonical, f"{Path(ed).name}_{leaf}_{f}")
-                    if not os.path.exists(dst):
-                        try:
-                            os.link(src, dst)  # hard link to save space
-                        except OSError:
-                            import shutil
-
-                            shutil.copy2(src, dst)
-                        count += 1
-    print(f"Consolidated {count} images into {merged_dir}")
-    return merged_dir
-
-
 def consolidate_datasets_explicit(raw_dir: str, merged_dir: str, datasets: List[str] = None) -> str:
     """Consolidate datasets using explicit configurations for precise control.
 
@@ -330,7 +279,6 @@ def prepare_datasets(
     raw_dir: str = "raw_datasets",
     merged_dir: str = "merged_dataset",
     datasets: List[str] = None,
-    use_explicit: bool = True,
 ) -> str:
     """Prepare datasets by downloading and consolidating them.
 
@@ -338,7 +286,6 @@ def prepare_datasets(
         raw_dir: Directory for raw/extracted datasets
         merged_dir: Directory for consolidated dataset
         datasets: List of dataset names to process
-        use_explicit: Whether to use explicit configurations (recommended)
 
     Returns:
         Path to merged dataset directory
@@ -351,91 +298,21 @@ def prepare_datasets(
     print(f"Merged directory: {merged_dir}")
 
     # Download and extract datasets
-    extracted_dirs = ensure_kaggle_download(datasets, raw_dir)
+    ensure_kaggle_download(datasets, raw_dir)
 
     # Consolidate datasets
-    if use_explicit:
-        return consolidate_datasets_explicit(raw_dir, merged_dir, datasets)
-    else:
-        return consolidate_datasets(extracted_dirs, merged_dir)
+    return consolidate_datasets_explicit(raw_dir, merged_dir, datasets)
 
 
 def get_canonical_classes() -> list[str]:
     return CANONICAL_CLASSES
 
 
-def get_german_label_info() -> Dict[str, Dict[str, str]]:
-    return GERMAN_LABEL_INFO
-
-
-def build_dataset_index(merged_dir: str, output_json: str) -> str:
-    """Build a JSON index of consolidated dataset for easy consumption.
-
-    Structure:
-    {
-      "version": 1,
-      "root": "merged_dataset",
-      "classes": [...],
-      "items": [
-         {"path": "paper/slug_label_filename.jpg", "canonical": "paper", "german": {..}, "source_dataset": "user/dataset", "original_label": "paper"}
-      ],
-      "stats": {"total_images": N, "per_class": {"paper": M, ...}}
-    }
-    """
-    merged_path = Path(merged_dir)
-    if not merged_path.exists():
-        raise FileNotFoundError(f"Merged directory not found: {merged_dir}")
-    items = []
-    for canonical in CANONICAL_CLASSES:
-        class_dir = merged_path / canonical
-        if not class_dir.exists():
-            continue
-        for f in class_dir.iterdir():
-            if not f.is_file():
-                continue
-            if f.suffix.lower() not in IMAGE_EXTS:
-                continue
-            parts = f.name.split("_")
-            source_slug = parts[0] if parts else "unknown"
-            original_label = parts[1] if len(parts) > 1 else canonical
-            # Attempt to recover original dataset slug from prefix (first underscore replaced by /)
-            source_dataset = (
-                source_slug.replace("_", "/", 1)
-                if "/" not in source_slug and source_slug.count("_") >= 1
-                else source_slug
-            )
-            items.append(
-                {
-                    "path": str(f.relative_to(merged_path)),
-                    "canonical": canonical,
-                    "german": GERMAN_LABEL_INFO.get(canonical, {}),
-                    "source_dataset": source_dataset,
-                    "original_label": original_label,
-                }
-            )
-    index = {
-        "version": 1,
-        "root": merged_path.name,
-        "classes": CANONICAL_CLASSES,
-        "items": items,
-        "stats": {"total_images": len(items), "per_class": {c: 0 for c in CANONICAL_CLASSES}},
-    }
-    for it in items:
-        index["stats"]["per_class"][it["canonical"]] += 1
-    with open(output_json, "w", encoding="utf-8") as fh:
-        json.dump(index, fh, ensure_ascii=False, indent=2)
-    print(f"[INDEX] Wrote dataset index: {output_json} ({len(items)} images)")
-    return output_json
-
-
 __all__ = [
     "ensure_kaggle_download",
-    "consolidate_datasets",
     "consolidate_datasets_explicit",
     "prepare_datasets",
-    "build_dataset_index",
     "get_canonical_classes",
-    "get_german_label_info",
     "normalize_label",
     "DATASET_SLUGS",
     "DATASET_CONFIGS",

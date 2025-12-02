@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-"""Train object detection model for waste items with edge detection.
+"""Train object detection model for waste items.
 
 This model uses MobileNetV2 as backbone with custom detection head that outputs:
 - Bounding boxes (x, y, width, height)
 - Class probabilities
-- Edge masks for detected objects
 """
 
 import argparse
+import csv
 import os
 import json
 from pathlib import Path
@@ -16,7 +16,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-import cv2
 from typing import Tuple, List, Dict
 from rich import print
 from rich.progress import track
@@ -26,188 +25,251 @@ import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from dataset_utils import get_canonical_classes, prepare_datasets
-from object_detection.config import ObjectDetectionConfig
+from object_detection.config import ObjectDetectionConfig, BACKBONE_DEFAULT_INPUT_SIZES
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+DEFAULT_BBOX = np.array([0.1, 0.1, 0.9, 0.9], dtype=np.float32)
+
+_BACKBONE_REGISTRY = {
+    "MobileNetV2": keras.applications.MobileNetV2,
+    "EfficientNetB0": keras.applications.EfficientNetB0,
+    "EfficientNetV2B0": keras.applications.EfficientNetV2B0,
+    "EfficientNetV2S": keras.applications.EfficientNetV2S,
+}
 
 
-def create_synthetic_bboxes(image_shape: Tuple[int, int], num_boxes: int = 1) -> np.ndarray:
-    """Create synthetic bounding boxes for images (as we don't have real annotations).
-
-    This generates random bounding boxes that will be refined during training.
-    In production, you'd use actual annotated data.
-    """
-    boxes = []
-    h, w = image_shape[:2]
-
-    for _ in range(num_boxes):
-        # Generate random box
-        box_w = np.random.randint(int(w * 0.3), int(w * 0.8))
-        box_h = np.random.randint(int(h * 0.3), int(h * 0.8))
-        x = np.random.randint(0, w - box_w)
-        y = np.random.randint(0, h - box_h)
-
-        # Normalize coordinates
-        boxes.append(
-            [x / w, y / h, (x + box_w) / w, (y + box_h) / h]  # x_min  # y_min  # x_max  # y_max
-        )
-
-    return np.array(boxes, dtype=np.float32)
+def _resolve_path(path: str | Path) -> Path:
+    p = Path(path)
+    return p if p.is_absolute() else (BASE_DIR / p).resolve()
 
 
-def detect_edges_canny(image: np.ndarray) -> np.ndarray:
-    """Detect edges using Canny edge detector.
-
-    Ensures input is uint8 (required by OpenCV Canny). Accepts float32 arrays in [0,1]
-    or other numeric dtypes and safely converts them.
-    """
-    # Ensure contiguous array
-    if not image.flags["C_CONTIGUOUS"]:
-        image = np.ascontiguousarray(image)
-
-    # Convert dtype to uint8 expected by Canny
-    if image.dtype != np.uint8:
-        # If values look like normalized floats, scale; else clip to [0,255]
-        if image.dtype in (np.float32, np.float64):
-            # Assume range [0,1] or already [0,255]; detect max to decide.
-            max_val = image.max()
-            if max_val <= 1.5:  # treat as normalized
-                image = (np.clip(image, 0.0, 1.0) * 255.0).astype(np.uint8)
-            else:
-                image = np.clip(image, 0.0, 255.0).astype(np.uint8)
-        else:
-            image = np.clip(image, 0, 255).astype(np.uint8)
-
-    # Convert to grayscale if needed
-    if len(image.shape) == 3:
-        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    else:
-        gray = image
-
-    # Apply Gaussian blur
-    blurred = cv2.GaussianBlur(gray, (5, 5), 1.4)
-
-    # Canny edge detection (guard against OpenCV assertion failures)
+def _safe_float(value: str | float | None) -> float | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, float):
+        return value
     try:
-        edges = cv2.Canny(blurred, threshold1=50, threshold2=150)
-    except cv2.error:
-        # Fallback: return zeros if Canny fails
-        edges = np.zeros_like(gray, dtype=np.uint8)
-
-    # Normalize to [0, 1]
-    return edges.astype(np.float32) / 255.0
+        return float(value)
+    except (ValueError, TypeError):
+        return None
 
 
-def create_edge_mask(image: np.ndarray, bbox: np.ndarray = None) -> np.ndarray:
-    """Create edge mask for the entire image or within bbox."""
-    edges = detect_edges_canny(image)
-
-    if bbox is not None and len(bbox) == 4:
-        # Create mask only within bbox
-        h, w = edges.shape
-        x_min, y_min, x_max, y_max = bbox
-
-        # Denormalize
-        x_min = int(x_min * w)
-        y_min = int(y_min * h)
-        x_max = int(x_max * w)
-        y_max = int(y_max * h)
-
-        mask = np.zeros_like(edges)
-        mask[y_min:y_max, x_min:x_max] = edges[y_min:y_max, x_min:x_max]
-        return mask
-
-    return edges
+def _normalize_image_key(path: str | Path) -> str:
+    return os.path.normpath(str(path))
 
 
-def augment_image(image: tf.Tensor, config: ObjectDetectionConfig) -> tf.Tensor:
-    """Apply stable data augmentation for robust training."""
-    # Random horizontal flip
-    if tf.random.uniform([]) < 0.5:
-        image = tf.image.flip_left_right(image)
+def _build_backbone_features(
+    config: ObjectDetectionConfig, inputs: tf.Tensor
+) -> Tuple[keras.Model, tf.Tensor]:
+    backbone_cls = _BACKBONE_REGISTRY.get(config.backbone)
+    if backbone_cls is None:
+        supported = ", ".join(sorted(_BACKBONE_REGISTRY))
+        raise ValueError(f"Unsupported backbone {config.backbone}. Choose from: {supported}")
 
-    # Random brightness
+    input_size = config.backbone_input_size or BACKBONE_DEFAULT_INPUT_SIZES.get(
+        config.backbone, 224
+    )
+
+    if config.image_size != input_size:
+        backbone_input = layers.Resizing(input_size, input_size, name="backbone_resize")(inputs)
+    else:
+        backbone_input = inputs
+
+    backbone_model = backbone_cls(
+        include_top=False,
+        weights=config.backbone_weights,
+        input_tensor=backbone_input,
+    )
+    backbone_model.trainable = config.backbone_trainable
+    return backbone_model, backbone_model.output
+
+
+def _collect_backbone_layers(
+    model: keras.Model, config: ObjectDetectionConfig
+) -> list[keras.layers.Layer]:
+    if hasattr(model, "backbone_model") and isinstance(model.backbone_model, keras.Model):
+        return list(model.backbone_model.layers)
+
+    keyword = config.backbone.lower()
+    return [layer for layer in model.layers if keyword in layer.name.lower()]
+
+
+def load_yolo_annotations(csv_path: str | Path, dataset_dir: Path) -> Dict[str, List[np.ndarray]]:
+    annotations: Dict[str, List[np.ndarray]] = {}
+    csv_file = _resolve_path(csv_path)
+    if not csv_file.exists():
+        print(f"[yellow]YOLO CSV not found at {csv_file}; falling back to default bbox[/yellow]")
+        return annotations
+
+    dataset_dir = _resolve_path(dataset_dir)
+    with open(csv_file, newline="") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            filename = row.get("filename")
+            if not filename:
+                continue
+            rel_path = os.path.normpath(filename)
+            abs_path = (dataset_dir / rel_path).resolve(strict=False)
+            if not abs_path.exists():
+                continue
+
+            x_center = _safe_float(row.get("x_center"))
+            y_center = _safe_float(row.get("y_center"))
+            width = _safe_float(row.get("width"))
+            height = _safe_float(row.get("height"))
+            if x_center is None or y_center is None or width is None or height is None:
+                continue
+
+            image_width = _safe_float(row.get("image_width"))
+            image_height = _safe_float(row.get("image_height"))
+
+            if image_width and image_width > 0:
+                x_center /= image_width
+                width /= image_width
+            if image_height and image_height > 0:
+                y_center /= image_height
+                height /= image_height
+
+            half_w = width / 2.0
+            half_h = height / 2.0
+            x_min = x_center - half_w
+            x_max = x_center + half_w
+            y_min = y_center - half_h
+            y_max = y_center + half_h
+
+            x_min = float(np.clip(x_min, 0.0, 1.0))
+            x_max = float(np.clip(x_max, 0.0, 1.0))
+            y_min = float(np.clip(y_min, 0.0, 1.0))
+            y_max = float(np.clip(y_max, 0.0, 1.0))
+
+            if x_max <= x_min or y_max <= y_min:
+                continue
+
+            key = _normalize_image_key(abs_path)
+            annotations.setdefault(key, []).append(
+                np.array([x_min, y_min, x_max, y_max], dtype=np.float32)
+            )
+
+    return annotations
+
+
+def _aggregate_bboxes(boxes: List[np.ndarray]) -> np.ndarray:
+    stack = np.vstack(boxes)
+    x_min = float(np.clip(np.min(stack[:, 0]), 0.0, 1.0))
+    y_min = float(np.clip(np.min(stack[:, 1]), 0.0, 1.0))
+    x_max = float(np.clip(np.max(stack[:, 2]), 0.0, 1.0))
+    y_max = float(np.clip(np.max(stack[:, 3]), 0.0, 1.0))
+    return np.array([x_min, y_min, x_max, y_max], dtype=np.float32)
+
+
+def _get_bbox_target(image_path: str, annotations: Dict[str, List[np.ndarray]]) -> np.ndarray:
+    key = _normalize_image_key(image_path)
+    boxes = annotations.get(key)
+    if not boxes:
+        return DEFAULT_BBOX
+    valid = [box for box in boxes if box[2] > box[0] and box[3] > box[1]]
+    if not valid:
+        return DEFAULT_BBOX
+    return _aggregate_bboxes(valid)
+
+
+def _apply_gaussian_blur(image: tf.Tensor) -> tf.Tensor:
+    kernel = tf.constant([[1.0, 2.0, 1.0], [2.0, 4.0, 2.0], [1.0, 2.0, 1.0]], dtype=tf.float32)
+    kernel = kernel / tf.reduce_sum(kernel)
+    kernel = tf.reshape(kernel, [3, 3, 1, 1])
+    kernel = tf.tile(kernel, [1, 1, 3, 1])
+    blurred = tf.nn.depthwise_conv2d(
+        tf.expand_dims(image, axis=0), kernel, strides=[1, 1, 1, 1], padding="SAME"
+    )
+    return tf.squeeze(blurred, axis=0)
+
+
+def _simulate_jpeg_compression(image: tf.Tensor, quality_range: tuple[int, int]) -> tf.Tensor:
+    min_q, max_q = quality_range
+
+    def _compress(img: tf.Tensor) -> tf.Tensor:
+        quality = np.random.randint(min_q, max_q + 1)
+        img_uint8 = tf.image.convert_image_dtype(img, tf.uint8)
+        encoded = tf.io.encode_jpeg(img_uint8, quality=int(quality))
+        decoded = tf.image.decode_jpeg(encoded, channels=3)
+        return tf.image.convert_image_dtype(decoded, tf.float32)
+
+    compressed = tf.py_function(_compress, [image], tf.float32)
+    compressed.set_shape(image.shape)
+    return compressed
+
+
+def augment_image_and_bbox(
+    image: tf.Tensor, bbox: tf.Tensor, config: ObjectDetectionConfig
+) -> Tuple[tf.Tensor, tf.Tensor]:
+    """Apply light augmentation while keeping bbox targets in sync."""
+
+    flip = tf.random.uniform([]) < config.flip_prob
+    image = tf.cond(flip, lambda: tf.image.flip_left_right(image), lambda: image)
+    bbox = tf.cond(
+        flip,
+        lambda: tf.stack([1.0 - bbox[2], bbox[1], 1.0 - bbox[0], bbox[3]]),
+        lambda: bbox,
+    )
+
     image = tf.image.random_brightness(image, config.brightness_range)
-
-    # Random contrast
     image = tf.image.random_contrast(image, *config.contrast_range)
-
-    # Random saturation (small range)
     image = tf.image.random_saturation(image, *config.saturation_range)
-
-    # Random hue (very small range)
     image = tf.image.random_hue(image, config.hue_range)
 
-    # Add light Gaussian noise
     if config.gaussian_noise_std > 0:
         noise = tf.random.normal(tf.shape(image), mean=0.0, stddev=config.gaussian_noise_std)
         image = tf.clip_by_value(image + noise, 0.0, 1.0)
 
-    # Ensure values are in valid range
-    image = tf.clip_by_value(image, 0.0, 1.0)
+    if tf.random.uniform([]) < config.blur_prob:
+        image = _apply_gaussian_blur(image)
 
-    return image
+    if tf.random.uniform([]) < config.compression_prob:
+        image = _simulate_jpeg_compression(image, config.compression_quality_range)
+
+    image = tf.clip_by_value(image, 0.0, 1.0)
+    return image, bbox
 
 
 def load_and_preprocess_image(
-    image_path: str, label: int, config: ObjectDetectionConfig, is_training: bool = True
+    image_path: str,
+    label: int,
+    bbox: np.ndarray,
+    config: ObjectDetectionConfig,
+    is_training: bool = True,
 ) -> Tuple[tf.Tensor, Dict]:
     """Load image and create detection targets."""
-    # Load image
     image = tf.io.read_file(image_path)
     image = tf.image.decode_jpeg(image, channels=3)
     image = tf.image.resize(image, [config.image_size, config.image_size])
     image = tf.cast(image, tf.float32) / 255.0
 
-    # Apply augmentation during training
+    bbox_tensor = tf.reshape(tf.cast(bbox, tf.float32), [4])
     if is_training and tf.random.uniform([]) < config.augment_prob:
-        image = augment_image(image, config)
+        image, bbox_tensor = augment_image_and_bbox(image, bbox_tensor, config)
 
-    # Create synthetic bbox (in real scenario, load from annotations)
-    # For simplicity, using center crop as bbox
-    bbox = tf.constant([[0.1, 0.1, 0.9, 0.9]], dtype=tf.float32)
+    bbox_tensor = tf.clip_by_value(bbox_tensor, 0.0, 1.0)
+    image.set_shape((config.image_size, config.image_size, 3))
 
-    # Create edge mask using numpy operations
-    edge_mask = tf.numpy_function(
-        func=lambda img: create_edge_mask(img), inp=[image], Tout=tf.float32
-    )
-    edge_mask = tf.reshape(edge_mask, [config.image_size, config.image_size, 1])
-
-    # One-hot encode class
     num_classes = len(get_canonical_classes())
     class_label = tf.one_hot(label, num_classes)
 
-    targets = {"bbox": bbox, "class": class_label, "edges": edge_mask}
-
+    targets = {"bbox": bbox_tensor, "class": class_label}
     return image, targets
 
 
 def build_detection_model(config: ObjectDetectionConfig, num_classes: int) -> keras.Model:
-    """Build object detection model with edge detection and regularization.
+    """Build object detection model with bbox and classification heads.
 
     Architecture:
     - MobileNetV2 backbone (feature extraction)
-    - Detection head (bounding boxes + classification)
-    - Edge detection head (edge masks)
+    - Detection heads for bounding boxes and class probabilities
     - L2 regularization and dropout for overfitting prevention
     """
 
     # Input
     inputs = keras.Input(shape=(config.image_size, config.image_size, 3), name="image")
-
-    # Backbone: MobileNetV2
-    # Use fixed backbone input size for pretrained weights; resize input if different.
-    BACKBONE_SIZE = 224
-    if config.image_size != BACKBONE_SIZE:
-        backbone_input = layers.Resizing(BACKBONE_SIZE, BACKBONE_SIZE, name="backbone_resize")(
-            inputs
-        )
-    else:
-        backbone_input = inputs
-
-    backbone = keras.applications.MobileNetV2(include_top=False, weights="imagenet")
-    backbone.trainable = config.backbone_trainable
-
-    # Extract features
-    x = backbone(backbone_input, training=config.backbone_trainable)
+    backbone_model, x = _build_backbone_features(config, inputs)
 
     # Global features for classification and bbox
     global_pool = layers.GlobalAveragePooling2D()(x)
@@ -246,108 +308,16 @@ def build_detection_model(config: ObjectDetectionConfig, num_classes: int) -> ke
     class_dense = layers.Dropout(config.dropout_rate)(class_dense)
     class_output = layers.Dense(num_classes, activation="softmax", name="class")(class_dense)
 
-    # === Edge Detection Head ===
-    # Upsample features for pixel-wise edge prediction
-    edge_features = layers.Conv2D(
-        128,
-        1,
-        activation="relu",
-        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
-        name="edge_conv1",
-    )(x)
-    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
-    edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up1")(edge_features)
-    edge_features = layers.Conv2D(
-        64,
-        3,
-        padding="same",
-        activation="relu",
-        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
-        name="edge_conv2",
-    )(edge_features)
-    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
-    edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up2")(edge_features)
-    edge_features = layers.Conv2D(
-        32,
-        3,
-        padding="same",
-        activation="relu",
-        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
-        name="edge_conv3",
-    )(edge_features)
-    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
-    edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up3")(edge_features)
-    edge_features = layers.Conv2D(
-        16,
-        3,
-        padding="same",
-        activation="relu",
-        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
-        name="edge_conv4",
-    )(edge_features)
-    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
-    edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up4")(edge_features)
-    edge_features = layers.Conv2D(
-        8,
-        3,
-        padding="same",
-        activation="relu",
-        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
-        name="edge_conv5",
-    )(edge_features)
-    edge_features = layers.Dropout(config.dropout_rate)(edge_features)
-    edge_features = layers.UpSampling2D(size=(2, 2), name="edge_up5")(edge_features)
-
-    # Final edge prediction at backbone-derived spatial resolution (BACKBONE_SIZE x BACKBONE_SIZE)
-    edge_output = layers.Conv2D(1, 1, activation="sigmoid", name="edges")(edge_features)
-
-    # If requested image_size differs from backbone size, resize edge map to match targets
-    if config.image_size != BACKBONE_SIZE:
-        edge_output = layers.Resizing(config.image_size, config.image_size, name="edges_resize")(
-            edge_output
-        )
-
     # Build model
     model = keras.Model(
         inputs=inputs,
-        outputs={"bbox": bbox_output, "class": class_output, "edges": edge_output},
+        outputs={"bbox": bbox_output, "class": class_output},
         name="waste_object_detector",
     )
+    model.backbone_model = backbone_model
+    model.backbone_keyword = config.backbone.lower()
 
     return model
-
-
-class DetectionLoss(keras.losses.Loss):
-    """Custom loss combining bbox, classification, and edge losses with label smoothing."""
-
-    def __init__(self, config: ObjectDetectionConfig, **kwargs):
-        super().__init__(**kwargs)
-        self.config = config
-        self.bbox_loss = keras.losses.MeanSquaredError()
-        self.class_loss = keras.losses.CategoricalCrossentropy(
-            label_smoothing=config.label_smoothing
-        )
-        self.edge_loss = keras.losses.BinaryCrossentropy()
-
-    def call(self, y_true, y_pred):
-        # y_true and y_pred are tuples: (bbox_true, class_true, edges_true)
-        # and (bbox_pred, class_pred, edges_pred)
-        bbox_true, class_true, edges_true = y_true
-        bbox_pred, class_pred, edges_pred = y_pred
-
-        # Calculate individual losses
-        bbox_loss = self.bbox_loss(bbox_true, bbox_pred)
-        class_loss = self.class_loss(class_true, class_pred)
-        edge_loss = self.edge_loss(edges_true, edges_pred)
-
-        # Weighted combination
-        total_loss = (
-            self.config.bbox_weight * bbox_loss
-            + self.config.class_weight * class_loss
-            + self.config.edge_weight * edge_loss
-        )
-
-        return total_loss
 
 
 def cosine_learning_rate(epoch, initial_lr, total_epochs, min_lr):
@@ -363,105 +333,115 @@ def cosine_learning_rate(epoch, initial_lr, total_epochs, min_lr):
 class ProgressiveUnfreezingCallback(keras.callbacks.Callback):
     """Callback for progressive unfreezing of backbone layers."""
 
-    def __init__(self, backbone_model, backbone, unfreeze_schedule):
+    def __init__(self, backbone_layers, unfreeze_schedule, compile_kwargs=None, backbone_name=None):
         super().__init__()
-        self.backbone_model = backbone_model
-        self.backbone = backbone
-        self.unfreeze_schedule = unfreeze_schedule
-        self.unfrozen_layers = 0
+        self.backbone_layers = backbone_layers or []
+        self.unfreeze_schedule = unfreeze_schedule or {}
+        self.compile_kwargs = compile_kwargs or {}
+        self.backbone_name = backbone_name or "backbone"
+        self.unfrozen_layers = sum(1 for layer in self.backbone_layers if layer.trainable)
+        self._cursor = len(self.backbone_layers)
 
     def on_epoch_begin(self, epoch, logs=None):
         """Unfreeze layers according to schedule."""
-        if epoch in self.unfreeze_schedule:
-            layers_to_unfreeze = self.unfreeze_schedule[epoch]
+        if not self.backbone_layers:
+            return
 
-            # Get backbone layers (excluding the first few which are input processing)
-            backbone_layers = [
-                layer for layer in self.backbone.layers if "conv" in layer.name.lower()
-            ]
+        layers_to_unfreeze = self.unfreeze_schedule.get(epoch, 0)
+        if layers_to_unfreeze <= 0:
+            return
 
-            # Unfreeze the specified number of layers from the end
-            for i in range(min(layers_to_unfreeze, len(backbone_layers))):
-                layer_idx = len(backbone_layers) - 1 - i
-                if layer_idx >= 0:
-                    backbone_layers[layer_idx].trainable = True
+        unfrozen = 0
+        while layers_to_unfreeze > 0 and self._cursor > 0:
+            self._cursor -= 1
+            layer = self.backbone_layers[self._cursor]
+            if layer.trainable:
+                continue
+            layer.trainable = True
+            unfrozen += 1
+            layers_to_unfreeze -= 1
 
-            self.unfrozen_layers = min(
-                self.unfrozen_layers + layers_to_unfreeze, len(backbone_layers)
-            )
+        self.unfrozen_layers += unfrozen
+        if unfrozen:
             print(
-                f"[cyan]Epoch {epoch}: Unfroze {layers_to_unfreeze} layers. Total unfrozen: {self.unfrozen_layers}/{len(backbone_layers)}[/cyan]"
+                f"[cyan]Epoch {epoch}: Unfroze {unfrozen} layers. Total unfrozen: {self.unfrozen_layers}/{len(self.backbone_layers)} ({self.backbone_name})[/cyan]"
             )
 
 
 def prepare_dataset(config: ObjectDetectionConfig, dataset_dir: str = "merged_dataset"):
-    """Prepare training and validation datasets."""
-    # Check if dataset exists, if not prepare it
-    if not os.path.exists(dataset_dir) or not os.listdir(dataset_dir):
-        print(f"[yellow]Dataset not found at {dataset_dir}, preparing datasets...[/yellow]")
-        prepare_datasets("raw_datasets", dataset_dir)
-        print(f"[green]Dataset prepared at {dataset_dir}[/green]")
+    """Prepare training and validation datasets using YOLO annotations."""
+    dataset_path = _resolve_path(dataset_dir)
+    if not dataset_path.exists() or not any(dataset_path.iterdir()):
+        print(f"[yellow]Dataset not found at {dataset_path}, preparing datasets...[/yellow]")
+        prepare_datasets("raw_datasets", str(dataset_path))
+        print(f"[green]Dataset prepared at {dataset_path}[/green]")
 
-    # Get class names
     classes = get_canonical_classes()
     num_classes = len(classes)
 
-    print(f"[cyan]Loading dataset from {dataset_dir}...[/cyan]")
+    print(f"[cyan]Loading dataset from {dataset_path}...[/cyan]")
     print(f"[cyan]Classes: {classes}[/cyan]")
 
-    # Collect all image paths and labels
-    image_paths = []
-    labels = []
+    image_paths: list[str] = []
+    labels: list[int] = []
 
     for class_idx, class_name in enumerate(classes):
-        class_dir = os.path.join(dataset_dir, class_name)
-        if not os.path.exists(class_dir):
+        class_dir = dataset_path / class_name
+        if not class_dir.exists():
             print(f"[yellow]Warning: Class directory {class_dir} not found[/yellow]")
             continue
 
-        class_images = [
-            os.path.join(class_dir, f)
-            for f in os.listdir(class_dir)
-            if f.lower().endswith((".jpg", ".jpeg", ".png"))
+        class_files = [
+            file.resolve()
+            for file in class_dir.iterdir()
+            if file.is_file() and file.suffix.lower() in (".jpg", ".jpeg", ".png")
         ]
 
         if config.max_images_per_class is not None:
-            class_images = class_images[: config.max_images_per_class]
+            class_files = class_files[: config.max_images_per_class]
 
-        image_paths.extend(class_images)
-        labels.extend([class_idx] * len(class_images))
+        resolved_files = [str(p) for p in class_files]
+        image_paths.extend(resolved_files)
+        labels.extend([class_idx] * len(resolved_files))
 
     print(f"[green]Found {len(image_paths)} images across {num_classes} classes[/green]")
+    if not image_paths:
+        raise ValueError("No training images found in dataset directory")
 
-    # Convert to numpy arrays
+    annotations = load_yolo_annotations(config.csv_labels_path, dataset_path)
+    bbox_targets = np.stack([_get_bbox_target(path, annotations) for path in image_paths], axis=0)
+
     image_paths = np.array(image_paths)
-    labels = np.array(labels)
+    labels = np.array(labels, dtype=np.int32)
 
-    # Shuffle dataset
     np.random.seed(config.seed)
     indices = np.random.permutation(len(image_paths))
     image_paths = image_paths[indices]
     labels = labels[indices]
+    bbox_targets = bbox_targets[indices]
 
-    # Split into train/val
     split_idx = int(len(image_paths) * (1 - config.validation_split))
     train_paths, val_paths = image_paths[:split_idx], image_paths[split_idx:]
     train_labels, val_labels = labels[:split_idx], labels[split_idx:]
+    train_bboxes, val_bboxes = bbox_targets[:split_idx], bbox_targets[split_idx:]
 
     print(f"[green]Training: {len(train_paths)} images[/green]")
     print(f"[green]Validation: {len(val_paths)} images[/green]")
 
-    # Create TensorFlow datasets
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_paths, train_labels))
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_paths, train_labels, train_bboxes))
     train_dataset = train_dataset.map(
-        lambda path, label: load_and_preprocess_image(path, label, config, is_training=True),
+        lambda path, label, bbox: load_and_preprocess_image(
+            path, label, bbox, config, is_training=True
+        ),
         num_parallel_calls=tf.data.AUTOTUNE,
     )
     train_dataset = train_dataset.batch(config.batch_size).prefetch(tf.data.AUTOTUNE)
 
-    val_dataset = tf.data.Dataset.from_tensor_slices((val_paths, val_labels))
+    val_dataset = tf.data.Dataset.from_tensor_slices((val_paths, val_labels, val_bboxes))
     val_dataset = val_dataset.map(
-        lambda path, label: load_and_preprocess_image(path, label, config, is_training=False),
+        lambda path, label, bbox: load_and_preprocess_image(
+            path, label, bbox, config, is_training=False
+        ),
         num_parallel_calls=tf.data.AUTOTUNE,
     )
     val_dataset = val_dataset.batch(config.batch_size).prefetch(tf.data.AUTOTUNE)
@@ -544,20 +524,17 @@ def train_detector(
         learning_rate=config.learning_rate, weight_decay=config.weight_decay
     )
 
-    model.compile(
-        optimizer=optimizer,
-        loss={
+    compile_kwargs = {
+        "optimizer": optimizer,
+        "loss": {
             "bbox": keras.losses.MeanSquaredError(),
             "class": keras.losses.CategoricalCrossentropy(label_smoothing=config.label_smoothing),
-            "edges": keras.losses.BinaryCrossentropy(),
         },
-        loss_weights={
-            "bbox": config.bbox_weight,
-            "class": config.class_weight,
-            "edges": config.edge_weight,
-        },
-        metrics={"class": ["accuracy"], "bbox": ["mae"], "edges": ["binary_accuracy"]},
-    )
+        "loss_weights": {"bbox": config.bbox_weight, "class": config.class_weight},
+        "metrics": {"class": ["accuracy"], "bbox": ["mae"]},
+    }
+
+    model.compile(**compile_kwargs)
 
     # Enhanced callbacks
     callbacks = [
@@ -588,11 +565,13 @@ def train_detector(
 
     # Add progressive unfreezing callback if enabled
     if config.use_progressive_unfreezing:
+        backbone_layers = _collect_backbone_layers(model, config)
         callbacks.append(
             ProgressiveUnfreezingCallback(
-                backbone_model=model,
-                backbone=model.get_layer("mobilenetv2_1.00_224"),
-                unfreeze_schedule=config.unfreeze_schedule,
+                backbone_layers,
+                config.unfreeze_schedule,
+                compile_kwargs=compile_kwargs,
+                backbone_name=config.backbone,
             )
         )
 
@@ -637,6 +616,8 @@ def train_detector(
             "val_loss": float(history.history["val_loss"][-1]),
             "class_accuracy": float(history.history["class_accuracy"][-1]),
             "val_class_accuracy": float(history.history["val_class_accuracy"][-1]),
+            "bbox_mae": float(history.history["bbox_mae"][-1]),
+            "val_bbox_mae": float(history.history["val_bbox_mae"][-1]),
         },
     }
 
