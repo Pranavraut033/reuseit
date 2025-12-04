@@ -47,8 +47,7 @@ const AnimatedTabIcon = memo(function AnimatedTabIcon({
     <MotiView
       animate={animate}
       transition={{ type: 'timing', duration: 200 }}
-      style={{ alignItems: 'center', justifyContent: 'center' }}
-    >
+      style={{ alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={iconName} solid color={color} size={18} />
     </MotiView>
   );
@@ -101,8 +100,7 @@ export default function TabLayout() {
             marginRight: 48 + 16 * 2,
           },
           // tabBarBackground: () => <TabBarBackground />,
-        }}
-      >
+        }}>
         <Tabs.Screen name="index" options={homeOptions} />
         <Tabs.Screen name="posts" options={postsOptions} />
         <Tabs.Screen name="explore" options={exploreOptions} />

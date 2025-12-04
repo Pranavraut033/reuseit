@@ -48,8 +48,7 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
             </View>
             <TouchableOpacity
               className="size-12 rounded-full bg-gray-700 p-3 shadow-lg"
-              onPress={onClose}
-            >
+              onPress={onClose}>
               <Text className="m-auto text-sm text-white">✕</Text>
             </TouchableOpacity>
           </View>
@@ -75,12 +74,10 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
                       borderColor: '#00d4ff',
                       backgroundColor: 'rgba(0, 212, 255, 0.1)',
                       borderRadius: 12,
-                    }}
-                  >
+                    }}>
                     <LinearGradient
                       colors={['#00d4ff', '#0099cc']}
-                      className="absolute -top-8 left-0 rounded-full px-3 py-1"
-                    >
+                      className="absolute -top-8 left-0 rounded-full px-3 py-1">
                       <Text className="text-xs font-bold text-white">
                         {detection.name} {(detection.confidence * 100).toFixed(0)}%
                       </Text>
@@ -103,14 +100,12 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
               <LinearGradient
                 key={index}
                 colors={['rgba(34, 197, 94, 0.2)', 'rgba(34, 197, 94, 0.1)']}
-                className="mb-4 rounded-2xl border border-green-500/20 p-6 backdrop-blur-lg"
-              >
+                className="mb-4 rounded-2xl border border-green-500/20 p-6 backdrop-blur-lg">
                 <View className="mb-4 flex-row items-center justify-between">
                   <Text className="text-lg font-bold text-white">{item.item_name}</Text>
                   <LinearGradient
                     colors={['#22c55e', '#16a34a']}
-                    className="rounded-full px-3 py-1"
-                  >
+                    className="rounded-full px-3 py-1">
                     <Text className="text-sm font-bold text-white">🌟 +10 Eco Points</Text>
                   </LinearGradient>
                 </View>
@@ -135,8 +130,7 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
 
                 <LinearGradient
                   colors={['rgba(245, 158, 11, 0.2)', 'rgba(245, 158, 11, 0.1)']}
-                  className="mb-3 rounded-xl border border-yellow-500/20 p-3"
-                >
+                  className="mb-3 rounded-xl border border-yellow-500/20 p-3">
                   <Text className="font-semibold text-yellow-400">
                     🇩🇪 German Bin: {item.german_bin}
                   </Text>
@@ -172,8 +166,7 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
                 {item.environmental_benefits && (
                   <LinearGradient
                     colors={['rgba(34, 197, 94, 0.2)', 'rgba(34, 197, 94, 0.1)']}
-                    className="mb-3 rounded-xl border border-green-500/20 p-3"
-                  >
+                    className="mb-3 rounded-xl border border-green-500/20 p-3">
                     <Text className="text-sm text-green-300">🌱 {item.environmental_benefits}</Text>
                   </LinearGradient>
                 )}
@@ -184,8 +177,7 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
                   <View className="mt-4">
                     <LinearGradient
                       colors={['rgba(147, 51, 234, 0.15)', 'rgba(147, 51, 234, 0.08)']}
-                      className="rounded-2xl border border-purple-500/30 p-4 backdrop-blur-lg"
-                    >
+                      className="rounded-2xl border border-purple-500/30 p-4 backdrop-blur-lg">
                       <View className="mb-3 flex-row items-center">
                         <Text className="mr-2 text-lg">🤖</Text>
                         <Text className="text-sm font-semibold text-purple-300">AI Insights</Text>
@@ -222,8 +214,7 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
           <View className="mx-6 mb-6">
             <LinearGradient
               colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
-              className="rounded-2xl border border-white/10 p-6 backdrop-blur-lg"
-            >
+              className="rounded-2xl border border-white/10 p-6 backdrop-blur-lg">
               <View className="mb-4 flex-row items-center">
                 <Text className="mr-2 text-xl">⚡</Text>
                 <Text className="text-xl font-bold text-white">Performance</Text>
@@ -247,8 +238,7 @@ export const ResultContent: React.FC<ResultContentProps> = ({ result, pickedImag
           <View className="mx-6 mb-6">
             <LinearGradient
               colors={['rgba(168, 85, 247, 0.2)', 'rgba(168, 85, 247, 0.1)']}
-              className="rounded-2xl border border-purple-500/20 p-6 backdrop-blur-lg"
-            >
+              className="rounded-2xl border border-purple-500/20 p-6 backdrop-blur-lg">
               <Text className="mb-2 text-center text-2xl font-bold text-white">🎊 Great Job!</Text>
               <Text className="text-center text-sm text-gray-300">
                 You&apos;re making the planet happier! 🌍

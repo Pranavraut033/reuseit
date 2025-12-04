@@ -85,8 +85,7 @@ export default function EditEventScreen() {
         <Text className="text-center text-red-500">Event not found</Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => router.back()}
-        >
+          onPress={() => router.back()}>
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -101,8 +100,7 @@ export default function EditEventScreen() {
         </Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => router.back()}
-        >
+          onPress={() => router.back()}>
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -154,8 +152,7 @@ export default function EditEventScreen() {
         <View className="mb-6 flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
-          >
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100">
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-900">Edit Event</Text>
@@ -189,7 +186,7 @@ export default function EditEventScreen() {
               title="Update Event"
               loading={updating}
               loadingText="Updating..."
-              className="mt-6 rounded-lg px-4 py-3 bg-blue-500"
+              className="mt-6 rounded-lg bg-blue-500 px-4 py-3"
               onPress={handleSubmit(onSubmit)}
             />
           </View>

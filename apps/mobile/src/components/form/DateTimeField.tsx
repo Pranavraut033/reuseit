@@ -37,8 +37,7 @@ const DateTimeField: React.FC<DateTimeFieldProps> = ({
               <View className="flex-row gap-2">
                 <TouchableOpacity
                   className="flex-1 flex-row items-center gap-3 rounded-lg border border-gray-300 px-4 py-3"
-                  onPress={() => setShowDatePicker(true)}
-                >
+                  onPress={() => setShowDatePicker(true)}>
                   <Ionicons name="calendar-outline" size={20} color="#6B7280" />
                   <Text className="text-base text-gray-800">
                     {(value as Date) ? format(value as Date, 'MMM dd, yyyy') : 'Select date'}
@@ -46,8 +45,7 @@ const DateTimeField: React.FC<DateTimeFieldProps> = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   className="flex-1 flex-row items-center gap-3 rounded-lg border border-gray-300 px-4 py-3"
-                  onPress={() => setShowTimePicker(true)}
-                >
+                  onPress={() => setShowTimePicker(true)}>
                   <Ionicons name="time-outline" size={20} color="#6B7280" />
                   <Text className="text-base text-gray-800">
                     {(value as Date) ? format(value as Date, 'HH:mm') : 'Select time'}
@@ -109,8 +107,7 @@ const DateTimeField: React.FC<DateTimeFieldProps> = ({
             <>
               <TouchableOpacity
                 className="flex-row items-center gap-3 rounded-lg border border-gray-300 px-4 py-3"
-                onPress={() => setShowPicker(true)}
-              >
+                onPress={() => setShowPicker(true)}>
                 <Ionicons name="calendar-outline" size={20} color="#6B7280" />
                 <Text className="text-base text-gray-800">
                   {(value as Date) ? format(value as Date, 'MMM dd, yyyy HH:mm') : placeholder}

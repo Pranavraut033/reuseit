@@ -128,8 +128,7 @@ export default function CreateEventScreen() {
         <View className="mb-6 flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
-          >
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100">
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-900">Create Event</Text>

@@ -155,8 +155,7 @@ export default function ExplorePage() {
     <ScreenContainer safeArea={false} statusBarStyle="light-content">
       <View
         className="left-4 right-4 top-4 z-10 rounded p-6"
-        style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}
-      >
+        style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}>
         <Text className="text-center text-xl font-semibold text-primary-dark">
           {t('explore.title')}
         </Text>
@@ -175,8 +174,7 @@ export default function ExplorePage() {
       {isLoadingPlaces && (
         <View
           className="absolute left-0 right-0 z-20 items-center"
-          style={{ bottom: insets.bottom + 16 + 78 }}
-        >
+          style={{ bottom: insets.bottom + 16 + 78 }}>
           <View className="rounded-full bg-white px-4 py-2 shadow-lg">
             <Text className="text-sm text-gray-700">{t('explore.loading')}</Text>
           </View>
@@ -193,8 +191,7 @@ export default function ExplorePage() {
           showsMyLocationButton={false}
           followsUserLocation
           showsUserLocation
-          style={styles.map}
-        >
+          style={styles.map}>
           {/* Render fetched places as markers */}
           {places?.map((p) => {
             const lat = p.latitude;
@@ -253,8 +250,7 @@ export default function ExplorePage() {
               colors={['#34A853', '#5cd67c']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              className="w-full  flex-row p-4 shadow-lg"
-            >
+              className="w-full  flex-row p-4 shadow-lg">
               <View className="mr-4 h-28 w-28 overflow-hidden rounded-xl border-2 border-white shadow-md">
                 <PlacePhoto place={selectedPlace} />
               </View>
@@ -277,8 +273,7 @@ export default function ExplorePage() {
                     textClassName="text-primary"
                     onPress={() => {
                       openInMaps(selectedPlace);
-                    }}
-                  >
+                    }}>
                     {t('explore.directions')}
                   </Button>
 
@@ -286,8 +281,7 @@ export default function ExplorePage() {
                     size="small"
                     type="neutral"
                     className="rounded-full"
-                    onPress={() => setSelectedPlace(null)}
-                  >
+                    onPress={() => setSelectedPlace(null)}>
                     <Text className="text-sm font-semibold text-white">{t('explore.close')}</Text>
                   </Button>
                 </View>

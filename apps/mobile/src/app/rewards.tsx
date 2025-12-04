@@ -98,8 +98,7 @@ const PointsScreen = () => {
               className="mb-3 flex-row items-center rounded-xl bg-white p-4 shadow-sm"
               accessible={true}
               accessibilityLabel={`Earned ${entry.amount} points for ${entry.reason.replace('_', ' ')}`}
-              accessibilityRole="text"
-            >
+              accessibilityRole="text">
               <View className="h-10 w-10 items-center justify-center rounded-full bg-green-100">
                 <FontAwesome5 name="star" size={18} color="#10B981" />
               </View>

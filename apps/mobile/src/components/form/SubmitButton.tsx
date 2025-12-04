@@ -24,8 +24,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
     <TouchableOpacity
       className={`${className} ${isDisabled ? 'bg-gray-400' : ''}`}
       onPress={onPress}
-      disabled={isDisabled}
-    >
+      disabled={isDisabled}>
       <Text className="text-center text-lg font-semibold text-white">
         {loading ? loadingText || 'Loading...' : title}
       </Text>

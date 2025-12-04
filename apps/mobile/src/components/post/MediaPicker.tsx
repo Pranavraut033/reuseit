@@ -18,7 +18,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 import { t } from '~/utils/i18n';
 import { compressImage } from '~/utils/imageCompression';

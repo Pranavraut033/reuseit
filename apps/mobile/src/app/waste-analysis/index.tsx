@@ -31,8 +31,7 @@ function WasteAnalysisContent() {
             <View className="absolute left-0 right-0 top-12 items-center">
               <TouchableOpacity
                 className="rounded-full bg-black/50 px-4 py-2"
-                onPress={() => setIsOffline(!isOffline)}
-              >
+                onPress={() => setIsOffline(!isOffline)}>
                 <Text className="text-sm font-medium text-white">
                   {isOffline ? '🔌 Offline' : '🌐 Online'}
                 </Text>

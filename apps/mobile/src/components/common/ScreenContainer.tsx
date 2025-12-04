@@ -44,8 +44,7 @@ export default function ScreenContainer({
     <ScrollView
       contentContainerStyle={[{ flexGrow: 1, padding }, style]}
       keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+      showsVerticalScrollIndicator={false}>
       {children}
     </ScrollView>
   ) : (
@@ -55,8 +54,7 @@ export default function ScreenContainer({
   const keyboardWrapper = keyboardAvoiding ? (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {scrollContent}
     </KeyboardAvoidingView>
   ) : (

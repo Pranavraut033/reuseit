@@ -30,8 +30,7 @@ const FeedsScreen = () => {
         <View className="flex-row items-center justify-between p-4">
           <Text className="text-xl font-bold text-gray-800">Latest Posts</Text>
         </View>
-      }
-    >
+      }>
       {!posts.length && loading && (
         <View className="items-center justify-center py-12">
           <ActivityIndicator size="large" color="#3B82F6" />
@@ -40,7 +39,7 @@ const FeedsScreen = () => {
       )}
 
       {error && (
-        <View className="rounded-xl flex flex-row items-center bg-red-50 p-6 mb-4">
+        <View className="mb-4 flex flex-row items-center rounded-xl bg-red-50 p-6">
           <Ionicons name="alert-circle" size={48} color="#EF4444" />
           <View className="ml-4">
             <Text className="text-center text-lg font-medium text-red-700">

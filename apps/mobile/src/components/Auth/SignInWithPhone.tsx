@@ -82,8 +82,7 @@ function SignInWithPhone() {
               value: /^\d{9,14}$/,
               message: 'Please enter a valid phone number',
             },
-          }}
-        >
+          }}>
           {({ onChange, onBlur, value }) => (
             <PhoneInput
               value={value as string}

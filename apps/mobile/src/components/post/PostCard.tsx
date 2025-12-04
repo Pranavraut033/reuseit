@@ -151,8 +151,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-1.5 py-1 mb-3"
-            >
+              contentContainerClassName="gap-1.5 py-1 mb-3">
               {tags.map((tag, index) => (
                 <View key={index} className="rounded-xl bg-blue-50 px-2.5 py-1">
                   <Text className="text-xs font-medium text-blue-600">#{tag}</Text>
