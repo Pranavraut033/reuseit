@@ -10,8 +10,8 @@
       },
       "developmentClient": true,
       "distribution": "internal",
-      "node": "24.9.0",
-      "pnpm": "8.12.0",
+      "node": "24.2.0",
+      "pnpm": "10.24.0",
       "env": {
         "NODE_ENV": "development"
       },
@@ -28,7 +28,7 @@
       },
       "distribution": "internal",
       "node": "24.9.0",
-      "pnpm": "8.12.0",
+      "pnpm": "10.24.0",
       "env": {
         "NODE_ENV": "staging"
       },
@@ -41,7 +41,7 @@
     },
     "production": {
       "node": "24.9.0",
-      "pnpm": "8.12.0",
+      "pnpm": "10.24.0",
       "autoIncrement": true,
       "env": {
         "NODE_ENV": "production"
@@ -54,19 +54,6 @@
       },
       "cache": {
         "key": "production-cache"
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./credentials/android/service-account.json",
-        "track": "internal"
-      },
-      "ios": {
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-        "appleId": "YOUR_APPLE_ID",
-        "appleTeamId": "YOUR_TEAM_ID"
       }
     }
   }

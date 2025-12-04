@@ -48,7 +48,7 @@ async function loadModel() {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     model = await loadTensorflowModel(modelSource);
-    console.warn('Object detection TFLite model loaded successfully');
+    if (__DEV__) console.warn('Object detection TFLite model loaded successfully');
   } catch (error) {
     console.error('Failed to load object detection TFLite model:', error);
     throw new Error('Model loading failed');
@@ -71,7 +71,7 @@ async function preprocessImage(imageUri: string): Promise<Float32Array> {
       encoding: 'base64',
     });
 
-    console.warn('Preprocessed image base64 length:', base64?.length);
+    if (__DEV__) console.warn('Preprocessed image base64 length:', base64?.length);
     if (!base64) {
       throw new Error('Failed to convert image to base64');
     }
@@ -80,7 +80,7 @@ async function preprocessImage(imageUri: string): Promise<Float32Array> {
     const rawData = Buffer.from(base64, 'base64');
     const jpegData = jpeg.decode(rawData, { useTArray: true });
 
-    console.warn('JPEG decoded - width:', jpegData.width, 'height:', jpegData.height);
+    if (__DEV__) console.warn('JPEG decoded - width:', jpegData.width, 'height:', jpegData.height);
 
     // Convert RGBA to RGB and normalize to [0, 1]
     // Model expects: pixel values normalized to [0, 1]
@@ -98,7 +98,7 @@ async function preprocessImage(imageUri: string): Promise<Float32Array> {
       data[i * 3 + 2] = b;
     }
 
-    console.warn('First 10 preprocessed values:', Array.from(data.slice(0, 30)));
+    if (__DEV__) console.warn('First 10 preprocessed values:', Array.from(data.slice(0, 30)));
 
     // Find min/max for validation
     let min = data[0];
@@ -107,7 +107,7 @@ async function preprocessImage(imageUri: string): Promise<Float32Array> {
       if (data[i] < min) min = data[i];
       if (data[i] > max) max = data[i];
     }
-    console.warn('Preprocessed image - min:', min, 'max:', max);
+    if (__DEV__) console.warn('Preprocessed image - min:', min, 'max:', max);
     return data;
   } catch (error) {
     console.error('Image preprocessing failed:', error);
@@ -126,8 +126,8 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     // Preprocess image
     const inputData = await preprocessImage(uri);
 
-    console.warn('Input data shape:', inputData.length, 'Expected:', IMAGE_SIZE * IMAGE_SIZE * 3);
-    console.warn('Input data first 10:', Array.from(inputData.slice(0, 10)));
+    if (__DEV__) console.warn('Input data shape:', inputData.length, 'Expected:', IMAGE_SIZE * IMAGE_SIZE * 3);
+    if (__DEV__) console.warn('Input data first 10:', Array.from(inputData.slice(0, 10)));
 
     // Check if image is almost all black (or white) to avoid meaningless detections
     const mean = inputData.reduce((sum, val) => sum + val, 0) / inputData.length;
@@ -147,15 +147,15 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     const bboxOutput = outputs[0]; // Bounding boxes
     const classOutput = outputs[1]; // Class probabilities
 
-    console.warn('bbox output length:', bboxOutput.length);
-    console.warn('class output length:', classOutput.length);
+    if (__DEV__) console.warn('bbox output length:', bboxOutput.length);
+    if (__DEV__) console.warn('class output length:', classOutput.length);
 
     // Convert outputs to arrays
     const bboxArray: number[] = Array.from(bboxOutput as unknown as ArrayLike<number>);
     const classArray: number[] = Array.from(classOutput as unknown as ArrayLike<number>);
 
-    console.warn('bbox values (first 10):', bboxArray.slice(0, 10));
-    console.warn('class probabilities (first 10):', classArray.slice(0, 10));
+    if (__DEV__) console.warn('bbox values (first 10):', bboxArray.slice(0, 10));
+    if (__DEV__) console.warn('class probabilities (first 10):', classArray.slice(0, 10));
 
     // Parse multiple detections
     const detections: DetectionResult[] = [];
@@ -192,7 +192,7 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
       confidence: maxConfidence,
     };
 
-    console.warn(`Parsed ${detections.length} detections above threshold ${CONFIDENCE_THRESHOLD}`);
+    if (__DEV__) console.warn(`Parsed ${detections.length} detections above threshold ${CONFIDENCE_THRESHOLD}`);
 
     return result;
   } catch (error) {
