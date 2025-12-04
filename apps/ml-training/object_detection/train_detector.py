@@ -18,7 +18,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from typing import Tuple, List, Dict
 from rich import print
-from rich.progress import track
 
 # Add parent directory to path for imports
 import sys
@@ -29,6 +28,7 @@ from object_detection.config import ObjectDetectionConfig, BACKBONE_DEFAULT_INPU
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_BBOX = np.array([0.1, 0.1, 0.9, 0.9], dtype=np.float32)
+MAX_BOXES = 10  # Maximum number of bounding boxes per image
 
 _BACKBONE_REGISTRY = {
     "MobileNetV2": keras.applications.MobileNetV2,
@@ -90,8 +90,21 @@ def _collect_backbone_layers(
     if hasattr(model, "backbone_model") and isinstance(model.backbone_model, keras.Model):
         return list(model.backbone_model.layers)
 
+    # For loaded models, find the backbone sub-model
+    for layer in model.layers:
+        if isinstance(layer, keras.Model):
+            return list(layer.layers)
+
+    # Fallback to keyword search
     keyword = config.backbone.lower()
-    return [layer for layer in model.layers if keyword in layer.name.lower()]
+    candidates = [layer for layer in model.layers if keyword in layer.name.lower()]
+    if candidates:
+        # If it's a Model, return its layers
+        if isinstance(candidates[0], keras.Model):
+            return list(candidates[0].layers)
+        else:
+            return candidates
+    return []
 
 
 def load_yolo_annotations(csv_path: str | Path, dataset_dir: Path) -> Dict[str, List[np.ndarray]]:
@@ -153,24 +166,49 @@ def load_yolo_annotations(csv_path: str | Path, dataset_dir: Path) -> Dict[str, 
     return annotations
 
 
-def _aggregate_bboxes(boxes: List[np.ndarray]) -> np.ndarray:
-    stack = np.vstack(boxes)
-    x_min = float(np.clip(np.min(stack[:, 0]), 0.0, 1.0))
-    y_min = float(np.clip(np.min(stack[:, 1]), 0.0, 1.0))
-    x_max = float(np.clip(np.max(stack[:, 2]), 0.0, 1.0))
-    y_max = float(np.clip(np.max(stack[:, 3]), 0.0, 1.0))
-    return np.array([x_min, y_min, x_max, y_max], dtype=np.float32)
-
-
-def _get_bbox_target(image_path: str, annotations: Dict[str, List[np.ndarray]]) -> np.ndarray:
-    key = _normalize_image_key(image_path)
-    boxes = annotations.get(key)
+def _select_multiple_bboxes(boxes: List[np.ndarray], max_boxes: int = MAX_BOXES) -> np.ndarray:
+    """Select up to max_boxes bounding boxes, padding with default boxes if needed."""
     if not boxes:
-        return DEFAULT_BBOX
-    valid = [box for box in boxes if box[2] > box[0] and box[3] > box[1]]
-    if not valid:
-        return DEFAULT_BBOX
-    return _aggregate_bboxes(valid)
+        # Return max_boxes default boxes
+        return np.tile(DEFAULT_BBOX, (max_boxes, 1))
+
+    valid_boxes = [box for box in boxes if box[2] > box[0] and box[3] > box[1]]
+    if not valid_boxes:
+        return np.tile(DEFAULT_BBOX, (max_boxes, 1))
+
+    # Take up to max_boxes boxes
+    selected_boxes = valid_boxes[:max_boxes]
+
+    # Pad with default boxes if needed
+    while len(selected_boxes) < max_boxes:
+        selected_boxes.append(DEFAULT_BBOX.copy())
+
+    return np.array(selected_boxes, dtype=np.float32)
+
+
+def _get_bbox_target(
+    image_path: str, annotations: Dict[str, List[np.ndarray]]
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Get bboxes and obj_mask: obj=1 for real/default, obj=0 for pads."""
+    key = _normalize_image_key(image_path)
+    boxes = annotations.get(key, [])
+    valid_boxes = [box for box in boxes if box[2] > box[0] and box[3] > box[1]]
+
+    if not valid_boxes:
+        # No annotations: use single default object
+        real_boxes = [DEFAULT_BBOX]
+    else:
+        real_boxes = valid_boxes[:MAX_BOXES]
+
+    num_real = len(real_boxes)
+    pad_num = MAX_BOXES - num_real
+    pad_bboxes = np.zeros((pad_num, 4), dtype=np.float32)
+    bboxes = np.vstack((real_boxes, pad_bboxes))
+
+    obj_mask = np.zeros(MAX_BOXES, dtype=np.float32)
+    obj_mask[:num_real] = 1.0
+
+    return bboxes, obj_mask
 
 
 def _apply_gaussian_blur(image: tf.Tensor) -> tf.Tensor:
@@ -199,43 +237,55 @@ def _simulate_jpeg_compression(image: tf.Tensor, quality_range: tuple[int, int])
     return compressed
 
 
-def augment_image_and_bbox(
-    image: tf.Tensor, bbox: tf.Tensor, config: ObjectDetectionConfig
-) -> Tuple[tf.Tensor, tf.Tensor]:
-    """Apply light augmentation while keeping bbox targets in sync."""
+def augment_image_and_bboxes(
+    image: tf.Tensor, bboxes: tf.Tensor, obj_mask: tf.Tensor, config: ObjectDetectionConfig
+) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    """Apply augmentation; flip bboxes conditionally on obj=1."""
 
-    flip = tf.random.uniform([]) < config.flip_prob
-    image = tf.cond(flip, lambda: tf.image.flip_left_right(image), lambda: image)
-    bbox = tf.cond(
-        flip,
-        lambda: tf.stack([1.0 - bbox[2], bbox[1], 1.0 - bbox[0], bbox[3]]),
-        lambda: bbox,
+    # Horizontal flip
+    flip_prob = config.flip_prob
+    do_flip = tf.random.uniform(()) < flip_prob
+    image = tf.cond(do_flip, lambda: tf.image.flip_left_right(image), lambda: image)
+    bboxes_flip = tf.stack(
+        [
+            1.0 - bboxes[:, 2],  # x_min = 1 - x_max
+            bboxes[:, 1],  # y_min
+            1.0 - bboxes[:, 0],  # x_max = 1 - x_min
+            bboxes[:, 3],  # y_max
+        ],
+        axis=1,
     )
+    obj_selector = tf.expand_dims(obj_mask > 0, -1)
+    bboxes = tf.cond(do_flip, lambda: tf.where(obj_selector, bboxes_flip, bboxes), lambda: bboxes)
+    # obj_mask unchanged
 
+    # Image-only augmentations (unchanged)
     image = tf.image.random_brightness(image, config.brightness_range)
     image = tf.image.random_contrast(image, *config.contrast_range)
     image = tf.image.random_saturation(image, *config.saturation_range)
     image = tf.image.random_hue(image, config.hue_range)
 
     if config.gaussian_noise_std > 0:
-        noise = tf.random.normal(tf.shape(image), mean=0.0, stddev=config.gaussian_noise_std)
+        noise = tf.random.normal(tf.shape(image), 0.0, config.gaussian_noise_std)
         image = tf.clip_by_value(image + noise, 0.0, 1.0)
 
-    if tf.random.uniform([]) < config.blur_prob:
+    if tf.random.uniform(()) < config.blur_prob:
         image = _apply_gaussian_blur(image)
 
-    if tf.random.uniform([]) < config.compression_prob:
+    if tf.random.uniform(()) < config.compression_prob:
         image = _simulate_jpeg_compression(image, config.compression_quality_range)
 
     image = tf.clip_by_value(image, 0.0, 1.0)
-    return image, bbox
+    return image, bboxes, obj_mask
 
 
 def load_and_preprocess_image(
     image_path: str,
     label: int,
-    bbox: np.ndarray,
+    bboxes: np.ndarray,
+    obj_mask: np.ndarray,
     config: ObjectDetectionConfig,
+    num_waste_classes: int,
     is_training: bool = True,
 ) -> Tuple[tf.Tensor, Dict]:
     """Load image and create detection targets."""
@@ -244,80 +294,260 @@ def load_and_preprocess_image(
     image = tf.image.resize(image, [config.image_size, config.image_size])
     image = tf.cast(image, tf.float32) / 255.0
 
-    bbox_tensor = tf.reshape(tf.cast(bbox, tf.float32), [4])
-    if is_training and tf.random.uniform([]) < config.augment_prob:
-        image, bbox_tensor = augment_image_and_bbox(image, bbox_tensor, config)
+    bbox_tensor = tf.reshape(tf.cast(bboxes, tf.float32), [MAX_BOXES, 4])
+    obj_tensor = tf.cast(obj_mask, tf.float32)
+
+    bg_class = num_waste_classes
+    class_ids = tf.where(obj_tensor > 0, tf.cast(label, tf.int32), tf.cast(bg_class, tf.int32))
+    class_labels = tf.one_hot(class_ids, bg_class + 1)
+
+    # Apply augmentation
+    if is_training and tf.random.uniform(()) < config.augment_prob:
+        image, bbox_tensor, obj_tensor = augment_image_and_bboxes(
+            image, bbox_tensor, obj_tensor, config
+        )
 
     bbox_tensor = tf.clip_by_value(bbox_tensor, 0.0, 1.0)
     image.set_shape((config.image_size, config.image_size, 3))
 
-    num_classes = len(get_canonical_classes())
-    class_label = tf.one_hot(label, num_classes)
-
-    targets = {"bbox": bbox_tensor, "class": class_label}
+    targets = {"bbox": bbox_tensor, "obj": obj_tensor, "class": class_labels}
     return image, targets
 
 
 def build_detection_model(config: ObjectDetectionConfig, num_classes: int) -> keras.Model:
-    """Build object detection model with bbox and classification heads.
+    """Build object detection model with multiple bbox and classification heads.
 
     Architecture:
-    - MobileNetV2 backbone (feature extraction)
-    - Detection heads for bounding boxes and class probabilities
-    - L2 regularization and dropout for overfitting prevention
+    - EfficientNet backbone (better feature extraction)
+    - Enhanced detection heads with more capacity
+    - Better regularization and normalization
     """
 
     # Input
     inputs = keras.Input(shape=(config.image_size, config.image_size, 3), name="image")
     backbone_model, x = _build_backbone_features(config, inputs)
 
-    # Global features for classification and bbox
+    # Enhanced global features with additional processing
     global_pool = layers.GlobalAveragePooling2D()(x)
 
-    # === Bounding Box Head ===
+    # Add batch normalization for better training stability
+    global_pool = layers.BatchNormalization()(global_pool)
+    global_pool = layers.Dropout(config.dropout_rate)(global_pool)
+
+    # === Enhanced Bounding Box Head ===
     bbox_dense = layers.Dense(
-        256,
+        512,
         activation="relu",
         kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
         name="bbox_dense1",
     )(global_pool)
+    bbox_dense = layers.BatchNormalization()(bbox_dense)
     bbox_dense = layers.Dropout(config.dropout_rate)(bbox_dense)
+
     bbox_dense = layers.Dense(
-        128,
+        256,
         activation="relu",
         kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
         name="bbox_dense2",
     )(bbox_dense)
+    bbox_dense = layers.BatchNormalization()(bbox_dense)
     bbox_dense = layers.Dropout(config.dropout_rate)(bbox_dense)
-    bbox_output = layers.Dense(4, activation="sigmoid", name="bbox")(bbox_dense)
 
-    # === Classification Head ===
+    bbox_dense = layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="bbox_dense3",
+    )(bbox_dense)
+    bbox_dense = layers.Dropout(config.dropout_rate)(bbox_dense)
+
+    bbox_output = layers.Dense(MAX_BOXES * 4, activation="sigmoid", name="bbox")(bbox_dense)
+    bbox_output = layers.Reshape((MAX_BOXES, 4))(bbox_output)
+
+    # === Enhanced Classification Head ===
     class_dense = layers.Dense(
-        256,
+        512,
         activation="relu",
         kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
         name="class_dense1",
     )(global_pool)
+    class_dense = layers.BatchNormalization()(class_dense)
     class_dense = layers.Dropout(config.dropout_rate)(class_dense)
+
     class_dense = layers.Dense(
-        128,
+        256,
         activation="relu",
         kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
         name="class_dense2",
     )(class_dense)
+    class_dense = layers.BatchNormalization()(class_dense)
     class_dense = layers.Dropout(config.dropout_rate)(class_dense)
-    class_output = layers.Dense(num_classes, activation="softmax", name="class")(class_dense)
+
+    class_dense = layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="class_dense3",
+    )(class_dense)
+    class_dense = layers.Dropout(config.dropout_rate)(class_dense)
+
+    class_output = layers.Dense(MAX_BOXES * num_classes, activation="softmax", name="class")(
+        class_dense
+    )
+    class_output = layers.Reshape((MAX_BOXES, num_classes))(class_output)
+
+    # === Objectness Head ===
+    obj_dense = layers.Dense(
+        512,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="obj_dense1",
+    )(global_pool)
+    obj_dense = layers.BatchNormalization()(obj_dense)
+    obj_dense = layers.Dropout(config.dropout_rate)(obj_dense)
+
+    obj_dense = layers.Dense(
+        256,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="obj_dense2",
+    )(obj_dense)
+    obj_dense = layers.BatchNormalization()(obj_dense)
+    obj_dense = layers.Dropout(config.dropout_rate)(obj_dense)
+
+    obj_dense = layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=keras.regularizers.l2(config.l2_regularization),
+        name="obj_dense3",
+    )(obj_dense)
+    obj_dense = layers.Dropout(config.dropout_rate)(obj_dense)
+
+    obj_output = layers.Dense(MAX_BOXES, activation="sigmoid", name="obj")(obj_dense)
 
     # Build model
     model = keras.Model(
         inputs=inputs,
-        outputs={"bbox": bbox_output, "class": class_output},
+        outputs={"bbox": bbox_output, "class": class_output, "obj": obj_output},
         name="waste_object_detector",
     )
     model.backbone_model = backbone_model
     model.backbone_keyword = config.backbone.lower()
 
     return model
+
+
+def focal_loss(alpha=0.25, gamma=2.0):
+    """Focal loss for better handling of class imbalance."""
+
+    def focal_loss_fixed(y_true, y_pred):
+        # Clip predictions to prevent log(0)
+        y_pred = tf.clip_by_value(y_pred, 1e-7, 1.0)
+
+        # Calculate focal loss
+        cross_entropy = -y_true * tf.math.log(y_pred)
+        weight = alpha * tf.pow(1 - y_pred, gamma)
+        focal = weight * cross_entropy
+
+        return tf.reduce_mean(focal)
+
+    return focal_loss_fixed
+
+
+def apply_classwise_nms(
+    bboxes: np.ndarray,
+    class_probs: np.ndarray,
+    iou_threshold: float = 0.5,
+    score_threshold: float = 0.3,
+    max_output_per_class: int = 10,
+):
+    """Apply per-class non-maximum suppression (NMS) on multi-box predictions.
+
+    Args:
+        bboxes: Array of shape (num_boxes, 4) with [x_min, y_min, x_max, y_max]
+        class_probs: Array of shape (num_boxes, num_classes) with class probabilities
+        iou_threshold: IoU threshold for suppression
+        score_threshold: Minimum class score to consider
+        max_output_per_class: Maximum boxes to keep per class
+
+    Returns:
+        (selected_boxes, selected_labels, selected_scores)
+    """
+    if bboxes is None or class_probs is None:
+        return (
+            np.zeros((0, 4), dtype=np.float32),
+            np.array([], dtype=np.int32),
+            np.array([], dtype=np.float32),
+        )
+
+    num_boxes = int(bboxes.shape[0])
+    num_classes = int(class_probs.shape[1])
+
+    def iou_matrix(box, boxes):
+        # box: (4,), boxes: (N,4)
+        x1 = np.maximum(box[0], boxes[:, 0])
+        y1 = np.maximum(box[1], boxes[:, 1])
+        x2 = np.minimum(box[2], boxes[:, 2])
+        y2 = np.minimum(box[3], boxes[:, 3])
+        inter_w = np.maximum(0.0, x2 - x1)
+        inter_h = np.maximum(0.0, y2 - y1)
+        inter = inter_w * inter_h
+        area_box = (box[2] - box[0]) * (box[3] - box[1])
+        area_boxes = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+        union = area_box + area_boxes - inter
+        iou = inter / (union + 1e-8)
+        return iou
+
+    selected_boxes = []
+    selected_labels = []
+    selected_scores = []
+
+    for cls in range(num_classes):
+        scores = class_probs[:, cls]
+        # Select indices above threshold
+        idxs = np.where(scores > score_threshold)[0]
+        if idxs.size == 0:
+            continue
+
+        # Sort by score desc
+        idxs = idxs[np.argsort(scores[idxs])[::-1]]
+
+        keep = []
+        for idx in idxs:
+            box = bboxes[idx]
+            if len(keep) == 0:
+                keep.append(idx)
+            else:
+                kept_boxes = bboxes[np.array(keep)]
+                ious = iou_matrix(box, kept_boxes)
+                if np.max(ious) <= iou_threshold:
+                    keep.append(idx)
+            if len(keep) >= max_output_per_class:
+                break
+
+        for k in keep:
+            selected_boxes.append(bboxes[k])
+            selected_labels.append(int(cls))
+            selected_scores.append(float(scores[k]))
+
+    if len(selected_boxes) == 0:
+        return (
+            np.zeros((0, 4), dtype=np.float32),
+            np.array([], dtype=np.int32),
+            np.array([], dtype=np.float32),
+        )
+
+    # Convert to arrays and sort by score desc globally
+    selected_boxes = np.stack(selected_boxes, axis=0)
+    selected_labels = np.array(selected_labels, dtype=np.int32)
+    selected_scores = np.array(selected_scores, dtype=np.float32)
+
+    order = np.argsort(selected_scores)[::-1]
+    selected_boxes = selected_boxes[order]
+    selected_labels = selected_labels[order]
+    selected_scores = selected_scores[order]
+
+    return selected_boxes, selected_labels, selected_scores
 
 
 def cosine_learning_rate(epoch, initial_lr, total_epochs, min_lr):
@@ -366,6 +596,8 @@ class ProgressiveUnfreezingCallback(keras.callbacks.Callback):
             print(
                 f"[cyan]Epoch {epoch}: Unfroze {unfrozen} layers. Total unfrozen: {self.unfrozen_layers}/{len(self.backbone_layers)} ({self.backbone_name})[/cyan]"
             )
+            # # Recompile model after unfreezing layers
+            # self.model.compile(**self.compile_kwargs)
 
 
 def prepare_dataset(config: ObjectDetectionConfig, dataset_dir: str = "merged_dataset"):
@@ -409,7 +641,9 @@ def prepare_dataset(config: ObjectDetectionConfig, dataset_dir: str = "merged_da
         raise ValueError("No training images found in dataset directory")
 
     annotations = load_yolo_annotations(config.csv_labels_path, dataset_path)
-    bbox_targets = np.stack([_get_bbox_target(path, annotations) for path in image_paths], axis=0)
+    bbox_and_obj_list = [_get_bbox_target(path, annotations) for path in image_paths]
+    bbox_targets = np.stack([item[0] for item in bbox_and_obj_list], axis=0)  # (N, 10, 4)
+    obj_targets = np.stack([item[1] for item in bbox_and_obj_list], axis=0)  # (N, 10)
 
     image_paths = np.array(image_paths)
     labels = np.array(labels, dtype=np.int32)
@@ -419,34 +653,53 @@ def prepare_dataset(config: ObjectDetectionConfig, dataset_dir: str = "merged_da
     image_paths = image_paths[indices]
     labels = labels[indices]
     bbox_targets = bbox_targets[indices]
+    obj_targets = obj_targets[indices]
 
     split_idx = int(len(image_paths) * (1 - config.validation_split))
     train_paths, val_paths = image_paths[:split_idx], image_paths[split_idx:]
     train_labels, val_labels = labels[:split_idx], labels[split_idx:]
     train_bboxes, val_bboxes = bbox_targets[:split_idx], bbox_targets[split_idx:]
+    train_objs, val_objs = obj_targets[:split_idx], obj_targets[split_idx:]
 
     print(f"[green]Training: {len(train_paths)} images[/green]")
     print(f"[green]Validation: {len(val_paths)} images[/green]")
 
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_paths, train_labels, train_bboxes))
-    train_dataset = train_dataset.map(
-        lambda path, label, bbox: load_and_preprocess_image(
-            path, label, bbox, config, is_training=True
-        ),
-        num_parallel_calls=tf.data.AUTOTUNE,
-    )
-    train_dataset = train_dataset.batch(config.batch_size).prefetch(tf.data.AUTOTUNE)
+    num_waste_classes = num_classes
 
-    val_dataset = tf.data.Dataset.from_tensor_slices((val_paths, val_labels, val_bboxes))
-    val_dataset = val_dataset.map(
-        lambda path, label, bbox: load_and_preprocess_image(
-            path, label, bbox, config, is_training=False
-        ),
-        num_parallel_calls=tf.data.AUTOTUNE,
-    )
-    val_dataset = val_dataset.batch(config.batch_size).prefetch(tf.data.AUTOTUNE)
+    def make_preprocess_fn(num_waste_classes_local):
+        def preprocess(path, label, bboxes, obj_mask):
+            return load_and_preprocess_image(
+                path, label, bboxes, obj_mask, config, num_waste_classes_local, is_training=True
+            )
 
-    return train_dataset, val_dataset, num_classes
+        return preprocess
+
+    train_dataset = tf.data.Dataset.from_tensor_slices(
+        (train_paths, train_labels, train_bboxes, train_objs)
+    )
+    train_dataset = (
+        train_dataset.map(
+            make_preprocess_fn(num_waste_classes),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+        .batch(config.batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+    val_preprocess = lambda path, label, bboxes, obj_mask: load_and_preprocess_image(
+        path, label, bboxes, obj_mask, config, num_waste_classes, is_training=False
+    )
+    val_dataset = tf.data.Dataset.from_tensor_slices((val_paths, val_labels, val_bboxes, val_objs))
+    val_dataset = (
+        val_dataset.map(
+            val_preprocess,
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+        .batch(config.batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+    return train_dataset, val_dataset, num_waste_classes
 
 
 def train_detector(
@@ -492,14 +745,17 @@ def train_detector(
     print(f"[cyan]Output directory: {run_dir}[/cyan]")
 
     # Prepare datasets
-    train_dataset, val_dataset, num_classes = prepare_dataset(config, dataset_dir)
+    train_dataset, val_dataset, num_waste_classes = prepare_dataset(config, dataset_dir)
+    total_classes = num_waste_classes + 1
 
     # Build or load model
     if resume_model_path:
         model_path = os.path.join(resume_model_path, "best_model.keras")
         if os.path.exists(model_path):
             print(f"[cyan]Loading model from {model_path}...[/cyan]")
-            model = keras.models.load_model(model_path)
+            model = keras.models.load_model(
+                model_path, custom_objects={"focal_loss_fixed": focal_loss()}
+            )
             print("[green]Model loaded successfully![/green]")
 
             # Validate that critical parameters match the loaded model
@@ -516,7 +772,7 @@ def train_detector(
             raise ValueError(f"Saved model not found at {model_path}")
     else:
         print("[cyan]Building new model...[/cyan]")
-        model = build_detection_model(config, num_classes)
+        model = build_detection_model(config, total_classes)
         model.summary()
 
     # Compile model (always recompile to apply new config parameters)
@@ -528,10 +784,15 @@ def train_detector(
         "optimizer": optimizer,
         "loss": {
             "bbox": keras.losses.MeanSquaredError(),
-            "class": keras.losses.CategoricalCrossentropy(label_smoothing=config.label_smoothing),
+            "class": focal_loss(alpha=0.25, gamma=2.0),
+            "obj": keras.losses.BinaryCrossentropy(),
         },
-        "loss_weights": {"bbox": config.bbox_weight, "class": config.class_weight},
-        "metrics": {"class": ["accuracy"], "bbox": ["mae"]},
+        "loss_weights": {"bbox": config.bbox_weight, "class": config.class_weight, "obj": 1.0},
+        "metrics": {
+            "class": ["accuracy"],
+            "bbox": ["mae"],
+            "obj": ["accuracy"],
+        },
     }
 
     model.compile(**compile_kwargs)
@@ -566,6 +827,9 @@ def train_detector(
     # Add progressive unfreezing callback if enabled
     if config.use_progressive_unfreezing:
         backbone_layers = _collect_backbone_layers(model, config)
+        print(
+            f"[cyan]Collected {len(backbone_layers)} backbone layers for progressive unfreezing[/cyan]"
+        )
         callbacks.append(
             ProgressiveUnfreezingCallback(
                 backbone_layers,
@@ -609,7 +873,7 @@ def train_detector(
             "batch_size": config.batch_size,
             "epochs": config.epochs,
             "learning_rate": config.learning_rate,
-            "num_classes": num_classes,
+            "num_classes": total_classes,
         },
         "final_metrics": {
             "loss": float(history.history["loss"][-1]),
@@ -618,6 +882,16 @@ def train_detector(
             "val_class_accuracy": float(history.history["val_class_accuracy"][-1]),
             "bbox_mae": float(history.history["bbox_mae"][-1]),
             "val_bbox_mae": float(history.history["val_bbox_mae"][-1]),
+            "obj_accuracy": (
+                float(history.history["obj_accuracy"][-1])
+                if "obj_accuracy" in history.history
+                else 0
+            ),
+            "val_obj_accuracy": (
+                float(history.history["val_obj_accuracy"][-1])
+                if "val_obj_accuracy" in history.history
+                else 0
+            ),
         },
     }
 
@@ -658,7 +932,7 @@ def main():
     parser.add_argument(
         "--progressive-unfreezing",
         action="store_true",
-        default=None,
+        default=True,
         help="Use progressive unfreezing during training",
     )
     parser.add_argument(

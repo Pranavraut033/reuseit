@@ -17,93 +17,93 @@ class ObjectDetectionConfig:
 
     # Model architecture
     image_size: int = 224  # Use 224 for optimal pre-trained weights
-    backbone: str = "EfficientNetV2S"  # Upgrade to EfficientNetV2S for richer real-world features
+    backbone: str = "EfficientNetV2B0"  # Better backbone for higher accuracy
     backbone_input_size: int | None = None
     backbone_weights: str | None = "imagenet"
-    backbone_trainable: bool = False  # Whether to train backbone initially
+    backbone_trainable: bool = True  # Enable backbone training for better performance
 
-    # Training parameters
-    batch_size: int = 16
-    epochs: int = 100  # Increased for better convergence
-    learning_rate: float = 1e-4
+    # Training parameters - optimized for higher accuracy
+    batch_size: int = 8  # Smaller batch size for better generalization
+    epochs: int = 150  # More epochs for convergence
+    learning_rate: float = 5e-4  # Lower learning rate for stable training
     validation_split: float = 0.2
     seed: int = 42
 
-    # Loss weights - re-enable bbox if real annotations available
-    bbox_weight: float = 1.0  # Re-enabled for real bounding boxes
-    class_weight: float = 1.0
-    edge_weight: float = 0.0  # Disabled for simplicity
+    # Loss weights - prioritize classification for better accuracy
+    bbox_weight: float = 0.5  # Reduced bbox weight
+    class_weight: float = 2.0  # Increased classification weight
+    # edge_weight: float = 0.0  # Disabled for simplicity - NOT USED
 
-    # Detection parameters
-    max_boxes: int = 10
-    iou_threshold: float = 0.5
-    confidence_threshold: float = 0.5
+    # Detection parameters - NOT USED in training
+    # max_boxes: int = 10
+    # iou_threshold: float = 0.5
+    # confidence_threshold: float = 0.5
 
     # Enhanced data augmentation for mobile generalization
-    augment_prob: float = 0.9  # Increased augmentation probability
+    augment_prob: float = 1.0  # Increased augmentation probability
     brightness_range: float = 0.4  # Increased range
     contrast_range: tuple = (0.6, 1.4)  # Wider range
     saturation_range: tuple = (0.7, 1.3)  # Wider range
     hue_range: float = 0.1  # Increased hue range
-    gaussian_noise_std: float = 0.05  # Increased noise
-    rotation_range: float = 15.0  # Legacy rotation support
-    zoom_range: tuple = (0.8, 1.2)  # Legacy zoom support
-    crop_prob: float = 0.5  # Legacy crop support
+    gaussian_noise_std: float = 0.1  # Increased noise
+    # rotation_range: float = 15.0  # Legacy rotation support - NOT USED
+    # zoom_range: tuple = (0.8, 1.2)  # Legacy zoom support - NOT USED
+    # crop_prob: float = 0.5  # Legacy crop support - NOT USED
     flip_prob: float = 0.5  # Keep bbox-safe horizontal flips
     blur_prob: float = 0.25  # Probability of applying mild blur
     compression_prob: float = 0.2  # JPEG compression mimic
     compression_quality_range: Tuple[int, int] = (70, 95)
 
-    # Regularization - increased for overfitting prevention
-    dropout_rate: float = 0.5  # Increased dropout
-    l2_regularization: float = 5e-4  # Increased L2 regularization
-    label_smoothing: float = 0.2  # Increased label smoothing
-    use_batch_norm: bool = True  # New: add batch normalization
+    # Regularization - increased for better generalization
+    dropout_rate: float = 0.4  # Higher dropout
+    l2_regularization: float = 5e-4  # Higher L2 regularization
+    label_smoothing: float = 0.1  # Reduced label smoothing for focal loss
+    # use_batch_norm: bool = True  # New: add batch normalization - NOT USED
 
     # Advanced training techniques
-    use_mixed_precision: bool = True
+    # use_mixed_precision: bool = True  # NOT USED
     use_progressive_unfreezing: bool = True
     unfreeze_schedule: dict = field(
-        default_factory=lambda: {epoch: 51 for epoch in range(5, 100, 6)}
+        default_factory=lambda: {epoch: 50 for epoch in range(3, 150, 5)}
     )
-    warmup_epochs: int = 5
+    # warmup_epochs: int = 5  # NOT USED
 
     # Callbacks - enhanced for overfitting prevention
     early_stopping_patience: int = 20  # More patient
-    reduce_lr_patience: int = 10
-    reduce_lr_factor: float = 0.5  # Less aggressive reduction
+    # reduce_lr_patience: int = 10  # DUPLICATE - using lr_reduce_patience
+    # reduce_lr_factor: float = 0.5  # DUPLICATE - using lr_reduce_factor
     lr_reduce_factor: float = 0.5
     lr_reduce_patience: int = 10
     min_learning_rate: float = 1e-7
 
     # Optimizer settings
-    optimizer: str = "adamw"
+    # optimizer: str = "adamw"  # Hardcoded to AdamW - NOT USED
     weight_decay: float = 2e-4  # Increased weight decay
-    use_lookahead: bool = False
+    # use_lookahead: bool = False  # NOT USED
 
     # Learning rate schedule
-    lr_schedule: str = "cosine"
+    # lr_schedule: str = "cosine"  # NOT USED
     use_cosine_lr: bool = True
-    cosine_warmup_steps: int = 1000
+    # cosine_warmup_steps: int = 1000  # NOT USED
 
     # Augmentation behavior
-    use_arbitrary_rotation: bool = False  # prefer rot90 unless explicitly enabled
+    # use_arbitrary_rotation: bool = False  # prefer rot90 unless explicitly enabled - NOT USED
 
     # Monitoring and logging
-    log_tensorboard: bool = True
-    save_best_only: bool = True
-    monitor_metric: str = "val_loss"
+    # log_tensorboard: bool = True  # Always enabled - NOT USED as config
+    # save_best_only: bool = True  # Always True - NOT USED as config
+    # monitor_metric: str = "val_loss"  # Always "val_loss" - NOT USED as config
 
     # Paths
     dataset_dir: str = "merged_dataset"
     output_dir: str = "object_detection/models"
     csv_labels_path: str = "yolo_labels.csv"  # Path to CSV file with YOLO labels
 
-    # Export settings
-    tflite_quantize: bool = True
-    representative_samples: int = 100
+    # Export settings - NOT USED in training
+    # tflite_quantize: bool = True
+    # representative_samples: int = 100
     max_images_per_class: int | None = None
-    cache_dataset: bool = False
+    # cache_dataset: bool = False
 
     def __post_init__(self):
         """Validate configuration."""
@@ -170,7 +170,7 @@ HIGH_ACCURACY_CONFIG = ObjectDetectionConfig(
     epochs=100,
     learning_rate=5e-5,
     early_stopping_patience=15,
-    edge_weight=0.5,
+    # edge_weight=0.5,  # Commented out as edge_weight is not used
 )
 
 # Mobile-optimized configuration
@@ -178,6 +178,6 @@ MOBILE_CONFIG = ObjectDetectionConfig(
     image_size=224,
     batch_size=16,
     epochs=50,
-    tflite_quantize=True,
-    edge_weight=0.2,  # Lower weight for faster inference
+    # tflite_quantize=True,  # Commented out as tflite_quantize is not used
+    # edge_weight=0.2,  # Lower weight for faster inference - Commented out as edge_weight is not used
 )

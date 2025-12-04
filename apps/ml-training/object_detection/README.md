@@ -219,12 +219,11 @@ Expected performance metrics:
 ## Limitations
 
 1. **Synthetic bboxes**: Current implementation uses synthetic bounding boxes for demonstration
-2. **Single object**: Model predicts one bounding box per image (can be extended to multi-object)
+2. **Multi-object detection**: Model predicts up to 10 bounding boxes per image
 3. **Edge detection**: Simple Canny-based approach (could be improved with learned edges)
 
 ## Future Improvements
 
-- [ ] Add support for multi-object detection (e.g., using anchor boxes or YOLO-style grid)
 - [ ] Implement proper dataset with real bounding box annotations
 - [ ] Use focal loss for better classification with class imbalance
 - [ ] Add non-maximum suppression (NMS) for overlapping detections

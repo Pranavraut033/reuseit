@@ -29,3 +29,9 @@ object_detection/models/
 object_detection/test_results/
 yolov8n.pt
 yolov8x.pt
+
+test_images/
+
+yolo_training/yolo_dataset/
+yolo_training/yolo_training_results/
+yolo_training/visualized/

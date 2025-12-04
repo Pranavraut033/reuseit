@@ -1,0 +1,14 @@
+path: .
+train: yolo_dataset/images/train
+val: yolo_dataset/images/val
+test: yolo_dataset/images/test
+
+names:
+  0: paper_cardboard
+  1: glass
+  2: recyclables
+  3: bio_waste
+  4: textile_reuse
+  5: electronics
+  6: battery
+  7: residual_waste

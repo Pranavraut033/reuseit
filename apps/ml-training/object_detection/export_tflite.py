@@ -55,9 +55,10 @@ def get_representative_dataset(
             img = tf.image.decode_jpeg(img, channels=3)
             img = tf.image.resize(img, [image_size, image_size])
             img = tf.cast(img, tf.float32) / 255.0
-            img = tf.expand_dims(img, 0)
-
-            yield [img]
+            # Convert to numpy and add batch dimension for TFLite converter
+            img_np = img.numpy()
+            img_np = np.expand_dims(img_np, 0)
+            yield [img_np]
 
     return representative_data_gen
 
@@ -72,13 +73,27 @@ def export_tflite(
     """Export Keras model to TFLite format.
 
     Args:
-        model_path: Path to saved Keras model (.keras or .h5)
+        model_path: Path to saved Keras model (.keras or .h5) or SavedModel directory
         output_path: Output path for .tflite file
         quantize: Whether to apply int8 quantization
         dataset_dir: Dataset directory for representative samples
     """
 
     print(f"[cyan]Loading model from {model_path}...[/cyan]")
+
+    # If model_path is a directory, look for .keras files
+    if os.path.isdir(model_path):
+        keras_files = [f for f in os.listdir(model_path) if f.endswith(".keras")]
+        if "final_model.keras" in keras_files:
+            model_path = os.path.join(model_path, "final_model.keras")
+        elif "best_model.keras" in keras_files:
+            model_path = os.path.join(model_path, "best_model.keras")
+        elif keras_files:
+            model_path = os.path.join(model_path, keras_files[0])
+        else:
+            raise ValueError(f"No .keras files found in directory {model_path}")
+        print(f"[cyan]Using model file: {model_path}[/cyan]")
+
     model = keras.models.load_model(model_path)
 
     print("[cyan]Converting to TFLite...[/cyan]")
@@ -109,15 +124,16 @@ def export_tflite(
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
         # Set representative dataset for full integer quantization
+        # Provide representative dataset generator (yielding numpy batches)
         converter.representative_dataset = get_representative_dataset(
-            dataset_dir, image_size=image_size
+            dataset_dir, num_samples=100, image_size=image_size
         )
 
-        # Ensure inputs/outputs are float32 (for easier mobile integration)
-        converter.target_spec.supported_ops = [
-            tf.lite.OpsSet.TFLITE_BUILTINS_INT8,
-            tf.lite.OpsSet.TFLITE_BUILTINS,
-        ]
+        # Prefer INT8 builtin ops for full integer quantization
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+
+        # Keep float32 I/O to make mobile integration easier (post-training quantization
+        # while accepting float inputs). Internally model weights will be quantized.
         converter.inference_input_type = tf.float32
         converter.inference_output_type = tf.float32
 
@@ -127,12 +143,11 @@ def export_tflite(
 
         # For float32, still apply default optimizations
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
-
-    # Allow TensorFlow ops as fallback for compatibility
-    converter.target_spec.supported_ops = [
-        tf.lite.OpsSet.TFLITE_BUILTINS,
-        tf.lite.OpsSet.SELECT_TF_OPS,
-    ]
+        # For non-quantized conversion allow TF ops fallback for compatibility
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS,
+        ]
 
     # Convert model
     try:
@@ -199,23 +214,40 @@ def verify_tflite_model(tflite_path: str):
 def export_model_info(model_path: str, output_dir: str):
     """Export model architecture and metadata."""
 
+    # If model_path is a directory, look for .keras files
+    original_path = model_path
+    if os.path.isdir(model_path):
+        keras_files = [f for f in os.listdir(model_path) if f.endswith(".keras")]
+        if "final_model.keras" in keras_files:
+            model_path = os.path.join(model_path, "final_model.keras")
+        elif "best_model.keras" in keras_files:
+            model_path = os.path.join(model_path, "best_model.keras")
+        elif keras_files:
+            model_path = os.path.join(model_path, keras_files[0])
+        else:
+            raise ValueError(f"No .keras files found in directory {model_path}")
+
+    # Handle Keras model
     model = keras.models.load_model(model_path)
+    input_shape = model.input_shape
+    output_names = list(model.output_names)
+    num_parameters = model.count_params()
 
     # Save model summary
     summary_path = os.path.join(output_dir, "model_summary.txt")
     with open(summary_path, "w") as f:
         model.summary(print_fn=lambda x: f.write(x + "\n"))
-
     print(f"[green]Model summary saved to {summary_path}[/green]")
 
     # Save metadata
     metadata = {
-        "input_shape": model.input_shape,
-        "output_names": list(model.output_names),
-        "num_parameters": model.count_params(),
+        "input_shape": input_shape,
+        "output_names": output_names,
+        "num_parameters": num_parameters,
         "classes": get_canonical_classes(),
-        "has_bbox": "bbox" in model.output_names,
-        "has_class": "class" in model.output_names,
+        "has_bbox": "bbox" in output_names,
+        "has_class": "class" in output_names,
+        "model_format": "keras",
     }
 
     metadata_path = os.path.join(output_dir, "model_info.json")
@@ -227,7 +259,11 @@ def export_model_info(model_path: str, output_dir: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Export object detection model to TFLite")
-    parser.add_argument("model_path", type=str, help="Path to trained Keras model (.keras or .h5)")
+    parser.add_argument(
+        "model_path",
+        type=str,
+        help="Path to trained Keras model (.keras or .h5) or SavedModel directory",
+    )
     parser.add_argument(
         "--output",
         type=str,
@@ -272,7 +308,18 @@ def main():
     print(f"[cyan]TFLite model: {tflite_path}[/cyan]")
 
     # Load model to get output info for usage instructions
-    model = keras.models.load_model(args.model_path)
+    model_load_path = args.model_path
+    if os.path.isdir(args.model_path):
+        keras_files = [f for f in os.listdir(args.model_path) if f.endswith(".keras")]
+        if "final_model.keras" in keras_files:
+            model_load_path = os.path.join(args.model_path, "final_model.keras")
+        elif "best_model.keras" in keras_files:
+            model_load_path = os.path.join(args.model_path, "best_model.keras")
+        elif keras_files:
+            model_load_path = os.path.join(args.model_path, keras_files[0])
+        else:
+            raise ValueError(f"No .keras files found in directory {args.model_path}")
+    model = keras.models.load_model(model_load_path)
     output_names = model.output_names
 
     # Print usage instructions
