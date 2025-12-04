@@ -2,9 +2,10 @@ import { useQuery } from '@apollo/client/react';
 import { router } from 'expo-router';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
+import { getFragmentData } from '~/__generated__';
 import ScreenContainer from '~/components/common/ScreenContainer';
 import { GET_UPCOMING_EVENTS } from '~/gql/events';
-import { Event } from '~/gql/fragments';
+import { Event, EVENT_FIELDS, LOCATION_FIELDS } from '~/gql/fragments';
 
 const EventListItem = ({ event }: { event: Event }) => {
   const startDate = new Date(event.startTime);
@@ -14,7 +15,8 @@ const EventListItem = ({ event }: { event: Event }) => {
   return (
     <TouchableOpacity
       className="mb-4 rounded-lg bg-white p-4 shadow-sm"
-      onPress={() => (router.push as any)(`/events/${event.id}`)}>
+      onPress={() => (router.push as any)(`/events/${event.id}`)}
+    >
       <Text className="text-lg font-semibold text-gray-900">{event.title}</Text>
       <Text className="mt-1 text-sm text-gray-600">{event.description}</Text>
       <View className="mt-2 flex-row items-center">
@@ -36,7 +38,6 @@ const EventListItem = ({ event }: { event: Event }) => {
 
 export default function EventsScreen() {
   const { data, loading, error, refetch } = useQuery(GET_UPCOMING_EVENTS);
-
   if (loading) {
     return (
       <ScreenContainer>
@@ -51,14 +52,22 @@ export default function EventsScreen() {
         <Text className="text-center text-red-500">Error loading events</Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => refetch()}>
+          onPress={() => refetch()}
+        >
           <Text className="text-white">Retry</Text>
         </TouchableOpacity>
       </ScreenContainer>
     );
   }
 
-  const events = (data as any)?.upcomingEvents || [];
+  const events = (data?.upcomingEvents || []).map((e) => {
+    const event = getFragmentData(EVENT_FIELDS, e);
+
+    return {
+      ...event,
+      location: event.location ? getFragmentData(LOCATION_FIELDS, event.location) : undefined,
+    };
+  });
 
   return (
     <ScreenContainer>
@@ -66,7 +75,8 @@ export default function EventsScreen() {
         <Text className="text-2xl font-bold text-gray-900">Upcoming Events</Text>
         <TouchableOpacity
           className="rounded-lg bg-green-500 px-4 py-2"
-          onPress={() => (router.push as any)('/events/create')}>
+          onPress={() => (router.push as any)('/events/create')}
+        >
           <Text className="text-white">Create Event</Text>
         </TouchableOpacity>
       </View>
@@ -76,7 +86,8 @@ export default function EventsScreen() {
           <Text className="text-center text-gray-500">No upcoming events</Text>
           <TouchableOpacity
             className="mt-4 rounded-lg bg-green-500 px-4 py-2"
-            onPress={() => (router.push as any)('/events/create')}>
+            onPress={() => (router.push as any)('/events/create')}
+          >
             <Text className="text-white">Create First Event</Text>
           </TouchableOpacity>
         </View>

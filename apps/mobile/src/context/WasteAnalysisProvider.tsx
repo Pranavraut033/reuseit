@@ -10,10 +10,10 @@ import React, {
 import { Alert } from 'react-native';
 
 import { AI_INSIGHTS_QUERY } from '~/gql/queries/aiInsights';
+import { useObjectDetector } from '~/hooks/useObjectDetector';
 import { useWhatChanged } from '~/hooks/useWhatChanged';
 import { ObjectDetectionResult } from '~/ml/objectDetector';
 import { getRecyclingInfo, getWasteBin } from '~/ml/recyclingInfo';
-import { useObjectDetector } from '~/ml/useObjectDetector';
 import { AnalyzeWasteResult } from '~/types/wasteAnalysis';
 
 const WASTE_LABELS = [
@@ -115,8 +115,6 @@ export const WasteAnalysisProvider: React.FC<WasteAnalysisProviderProps> = ({ ch
     useLazyQuery(AI_INSIGHTS_QUERY);
 
   useEffect(() => {
-    console.log({ aiData });
-
     setResult(results ? convertResultToAnalyzeWasteResult(results, aiData?.AIInsights) : undefined);
   }, [results, aiData]);
 
@@ -132,15 +130,12 @@ export const WasteAnalysisProvider: React.FC<WasteAnalysisProviderProps> = ({ ch
       try {
         setIsAnalyzing(true);
         let result = await detect(uriToUse);
-        if (!result) {
-          throw new Error('Detection failed');
-        }
 
         if (!isOffline) {
           // Online mode: run local detection first, then get AI enhancements
-          const resultHash = stringHashCode(JSON.stringify(result));
 
           if (result && result.detections.length > 0) {
+            const resultHash = stringHashCode(JSON.stringify(result));
             const detection = result.detections[0];
             const maxProbIndex = detection.class.indexOf(Math.max(...detection.class));
             const category = WASTE_LABELS[maxProbIndex];

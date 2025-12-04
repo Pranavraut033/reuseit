@@ -8,7 +8,6 @@ import { initTensorflow } from './tensorflow';
 export interface DetectionResult {
   bbox: number[]; // [x1, y1, x2, y2] normalized coordinates
   class: number[]; // Class probabilities for waste categories
-  edges: number[]; // Edge detection mask (flattened)
 }
 
 export interface ObjectDetectionResult {
@@ -33,7 +32,6 @@ const _labels = [
 export const IMAGE_SIZE = 224; // Model expects 224x224 input (matches training config)
 const MAX_BOXES = 10; // Maximum number of detections per image
 const NUM_CLASSES = 8; // Number of waste categories
-const EDGE_SIZE = IMAGE_SIZE * IMAGE_SIZE; // 50176
 const CONFIDENCE_THRESHOLD = 0.3; // Minimum confidence to include detection
 
 let model: TensorflowModel | null = null;
@@ -140,28 +138,24 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     // Run inference
     const outputs = await loadedModel.run([inputData]);
 
-    // The model outputs multiple tensors: bbox, class, edges
-    // Based on the training log, we expect 3 outputs
-    if (outputs.length !== 3) {
-      throw new Error(`Expected 3 outputs, got ${outputs.length}`);
+    // The model outputs two tensors: bbox, class
+    // bbox: [MAX_BOXES, 4], class: [MAX_BOXES, NUM_CLASSES]
+    if (outputs.length !== 2) {
+      throw new Error(`Expected 2 outputs, got ${outputs.length}`);
     }
 
-    const bboxOutput = outputs[0]; // Bounding box coordinates
+    const bboxOutput = outputs[0]; // Bounding boxes
     const classOutput = outputs[1]; // Class probabilities
-    const edgesOutput = outputs[2]; // Edge detection mask
 
     console.warn('bbox output length:', bboxOutput.length);
     console.warn('class output length:', classOutput.length);
-    console.warn('edges output length:', edgesOutput.length);
 
     // Convert outputs to arrays
     const bboxArray: number[] = Array.from(bboxOutput as unknown as ArrayLike<number>);
     const classArray: number[] = Array.from(classOutput as unknown as ArrayLike<number>);
-    const edgesArray: number[] = Array.from(edgesOutput as unknown as ArrayLike<number>);
 
     console.warn('bbox values (first 10):', bboxArray.slice(0, 10));
     console.warn('class probabilities (first 10):', classArray.slice(0, 10));
-    console.warn('edges values (first 10):', edgesArray.slice(0, 10));
 
     // Parse multiple detections
     const detections: DetectionResult[] = [];
@@ -170,16 +164,12 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     for (let i = 0; i < MAX_BOXES; i++) {
       const bboxStart = i * 4;
       const classStart = i * NUM_CLASSES;
-      const edgesStart = i * EDGE_SIZE;
 
       // Extract bbox [x1, y1, x2, y2]
       const bbox = bboxArray.slice(bboxStart, bboxStart + 4);
 
       // Extract class probabilities
       const classProbs = classArray.slice(classStart, classStart + NUM_CLASSES);
-
-      // Extract edge mask
-      const edgesFlat = edgesArray.slice(edgesStart, edgesStart + EDGE_SIZE);
 
       // Calculate confidence as max class probability
       const confidence = Math.max(...classProbs);
@@ -189,7 +179,6 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
         detections.push({
           bbox,
           class: classProbs,
-          edges: edgesFlat,
         });
 
         if (confidence > maxConfidence) {

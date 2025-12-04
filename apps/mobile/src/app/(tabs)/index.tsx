@@ -69,7 +69,8 @@ const FeedsScreen = () => {
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,
-        }}>
+        }}
+      >
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
             <Text className="text-3xl font-bold text-white">{appConfig.name}</Text>
@@ -82,7 +83,8 @@ const FeedsScreen = () => {
           </View>
           <View
             className="h-16 w-16 items-center justify-center rounded-full bg-white"
-            style={{ opacity: 0.2 }}>
+            style={{ opacity: 0.2 }}
+          >
             <Ionicons name="person" size={32} color="white" />
           </View>
         </View>
@@ -97,14 +99,16 @@ const FeedsScreen = () => {
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
-        }}>
+        }}
+      >
+        {/* TODO: populate points */}
         <View className="mb-4 flex-row items-center justify-between">
           <View className="flex-row items-center">
             <Ionicons name="trophy" size={24} color="#10B981" />
             <Text className="ml-2 text-lg font-bold text-gray-800">Your Impact</Text>
           </View>
           <View className="rounded-full bg-emerald-100 px-4 py-2">
-            <Text className="font-bold text-emerald-700">0 pts</Text>
+            <Text className="font-bold text-emerald-700">{user?.points ?? 0} pts</Text>
           </View>
         </View>
         <View className="mb-4 flex-row items-center justify-between">
@@ -154,7 +158,8 @@ const FeedsScreen = () => {
               accessible={true}
               accessibilityLabel={action.accessibilityLabel}
               accessibilityRole="button"
-              onPress={action.onPress}>
+              onPress={action.onPress}
+            >
               <LinearGradient
                 colors={action.colors}
                 start={{ x: 0, y: 0 }}
@@ -167,7 +172,8 @@ const FeedsScreen = () => {
                   shadowOpacity: 0.2,
                   shadowRadius: 2,
                   borderRadius: 9999,
-                }}>
+                }}
+              >
                 <Feather name={action.icon} size={28} color="white" />
               </LinearGradient>
               <Text className="mt-3 text-sm font-semibold text-gray-800">{action.title}</Text>

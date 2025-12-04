@@ -1,6 +1,5 @@
 import { FontAwesome6 as Icon } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { Tabs, usePathname } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { MotiView } from 'moti';
 import { ComponentProps, memo, useMemo } from 'react';
 import { Text } from 'react-native';
@@ -75,6 +74,7 @@ export default function TabLayout() {
   const exploreOptions = useTabOptions('Explore', 'map-location-dot');
   const postsOptions = useTabOptions('Posts', 'newspaper');
   const profileOptions = useTabOptions('Profile', 'user');
+  const eventsOptions = useTabOptions('Events', 'calendar');
   const { bottom } = useSafeAreaInsets();
 
   return (
@@ -107,28 +107,29 @@ export default function TabLayout() {
         <Tabs.Screen name="posts" options={postsOptions} />
         <Tabs.Screen name="explore" options={exploreOptions} />
         <Tabs.Screen name="profile" options={profileOptions} />
+        <Tabs.Screen name="events" options={eventsOptions} />
       </Tabs>
     </>
   );
 }
 
-function TabBarBackground() {
-  const pathname = usePathname();
-  const isExplore = pathname === '/explore';
+// function TabBarBackground() {
+//   const pathname = usePathname();
+//   const isExplore = pathname === '/explore';
 
-  return (
-    <BlurView
-      intensity={100}
-      tint="extraLight"
-      className="absolute inset-0 z-[11]"
-      experimentalBlurMethod={isExplore ? 'none' : 'dimezisBlurView'}
-      style={{
-        flex: 1,
-        zIndex: 20,
-        borderRadius: 999,
-        overflow: 'hidden',
-        backgroundColor: isExplore ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.9)',
-      }}
-    />
-  );
-}
+//   return (
+//     <BlurView
+//       intensity={100}
+//       tint="extraLight"
+//       className="absolute inset-0 z-[11]"
+//       experimentalBlurMethod={isExplore ? 'none' : 'dimezisBlurView'}
+//       style={{
+//         flex: 1,
+//         zIndex: 20,
+//         borderRadius: 999,
+//         overflow: 'hidden',
+//         backgroundColor: isExplore ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.9)',
+//       }}
+//     />
+//   );
+// }

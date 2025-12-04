@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { Button } from '../common/Button';
-import Field from '../common/Field';
+import { Button } from '~/components/common/Button';
+import Field from '~/components/form/Field';
 
 const CodeModal: React.FC<{
   visible: boolean;
@@ -17,11 +17,13 @@ const CodeModal: React.FC<{
       <TouchableOpacity
         className="flex-1 items-center justify-center bg-black/50"
         activeOpacity={1}
-        onPress={onClose}>
+        onPress={onClose}
+      >
         <View className="w-full flex-1 items-center justify-center">
           <View
             onStartShouldSetResponder={() => true}
-            className="w-11/12 items-center rounded-3xl border border-gray-100 bg-white p-8 shadow-2xl">
+            className="w-11/12 items-center rounded-3xl border border-gray-100 bg-white p-8 shadow-2xl"
+          >
             <View className="mb-4 w-full flex-row items-center justify-between">
               <Text className="text-lg font-semibold text-gray-900">Enter OTP</Text>
               <TouchableOpacity onPress={onClose} className="p-1">

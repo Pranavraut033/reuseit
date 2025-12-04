@@ -1,47 +1,34 @@
 import { useMutation, useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FormProvider, useForm } from 'react-hook-form';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Toast } from 'toastify-react-native';
 
 import ScreenContainer from '~/components/common/ScreenContainer';
-import { LocationPicker } from '~/components/post/LocationPicker';
+import { DateTimeField, LocationField, SubmitButton, TextField } from '~/components/form';
 import { useAuth } from '~/context/AuthContext';
 import { GET_EVENT } from '~/gql/events';
 import { UPDATE_EVENT } from '~/gql/events/mutations';
 import { Event } from '~/gql/fragments';
-import { LocationCreateFormData } from '~/gql/helper.types';
-
-type FormData = {
-  title: string;
-  description: string;
-  startTime: Date;
-  endTime: Date | null;
-  location: LocationCreateFormData | null;
-};
+import { EventCreateFormData, eventCreateSchema } from '~/utils/eventValidation';
 
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
   const [updating, setUpdating] = useState(false);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const { data, loading, error } = useQuery(GET_EVENT, {
     variables: { id: id as string },
     skip: !id,
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FormData>();
+  const methods = useForm<EventCreateFormData>({
+    resolver: yupResolver(eventCreateSchema),
+  });
+  const { handleSubmit, reset } = methods;
 
   const [updateEvent] = useMutation(UPDATE_EVENT, {
     onCompleted: (_data: any) => {
@@ -75,7 +62,8 @@ export default function EditEventScreen() {
               postalCode: event.location.postalCode || undefined,
               type: event.location.type,
             }
-          : null,
+          : undefined,
+        imageUrl: event.imageUrl || [],
       });
     }
   }, [event, reset]);
@@ -97,7 +85,8 @@ export default function EditEventScreen() {
         <Text className="text-center text-red-500">Event not found</Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => router.back()}>
+          onPress={() => router.back()}
+        >
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -112,14 +101,15 @@ export default function EditEventScreen() {
         </Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => router.back()}>
+          onPress={() => router.back()}
+        >
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
       </ScreenContainer>
     );
   }
 
-  const onSubmit = (formData: FormData) => {
+  const onSubmit = (formData: EventCreateFormData) => {
     setUpdating(true);
 
     const startTime = formData.startTime;
@@ -164,164 +154,46 @@ export default function EditEventScreen() {
         <View className="mb-6 flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+          >
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-900">Edit Event</Text>
         </View>
 
         {/* Form */}
-        <View className="space-y-4">
-          {/* Title */}
-          <View>
-            <Text className="mb-2 text-sm font-medium text-gray-700">Event Title *</Text>
-            <Controller
-              control={control}
-              rules={{ required: 'Title is required' }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  className="rounded-lg border border-gray-300 px-4 py-3 text-base"
-                  placeholder="Enter event title"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
-              name="title"
-            />
-            {errors.title && (
-              <Text className="mt-1 text-sm text-red-500">{errors.title.message}</Text>
-            )}
-          </View>
+        <FormProvider {...methods}>
+          <View className="space-y-4">
+            <TextField name="title" label="Event Title *" placeholder="Enter event title" />
 
-          {/* Description */}
-          <View>
-            <Text className="mb-2 text-sm font-medium text-gray-700">Description</Text>
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  className="rounded-lg border border-gray-300 px-4 py-3 text-base"
-                  placeholder="Enter event description"
-                  multiline
-                  numberOfLines={4}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  style={{ height: 100, textAlignVertical: 'top' }}
-                />
-              )}
+            <TextField
               name="description"
+              label="Description"
+              placeholder="Enter event description"
+              multiline
+              numberOfLines={4}
             />
-          </View>
 
-          {/* Start Time */}
-          <View>
-            <Text className="mb-2 text-sm font-medium text-gray-700">Start Time *</Text>
-            <Controller
-              control={control}
-              rules={{ required: 'Start time is required' }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TouchableOpacity
-                    className="flex-row items-center gap-3 rounded-lg border border-gray-300 px-4 py-3"
-                    onPress={() => setShowStartDatePicker(true)}>
-                    <Ionicons name="calendar-outline" size={20} color="#6B7280" />
-                    <Text className="text-base text-gray-800">
-                      {value ? format(value, 'MMM dd, yyyy HH:mm') : 'Select start time'}
-                    </Text>
-                  </TouchableOpacity>
+            <DateTimeField name="startTime" label="Start Time *" minimumDate={new Date()} />
 
-                  {showStartDatePicker && (
-                    <DateTimePicker
-                      value={value || new Date()}
-                      mode="datetime"
-                      minimumDate={new Date()}
-                      onChange={(event, selectedDate) => {
-                        if (Platform.OS === 'android') {
-                          setShowStartDatePicker(false);
-                        }
-                        if (event.type === 'set' && selectedDate) {
-                          onChange(selectedDate);
-                        }
-                        if (Platform.OS === 'ios' && event.type === 'dismissed') {
-                          setShowStartDatePicker(false);
-                        }
-                      }}
-                    />
-                  )}
-                </>
-              )}
-              name="startTime"
-            />
-            {errors.startTime && (
-              <Text className="mt-1 text-sm text-red-500">{errors.startTime.message}</Text>
-            )}
-          </View>
-
-          {/* End Time */}
-          <View>
-            <Text className="mb-2 text-sm font-medium text-gray-700">End Time</Text>
-            <Controller
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TouchableOpacity
-                    className="flex-row items-center gap-3 rounded-lg border border-gray-300 px-4 py-3"
-                    onPress={() => setShowEndDatePicker(true)}>
-                    <Ionicons name="calendar-outline" size={20} color="#6B7280" />
-                    <Text className="text-base text-gray-800">
-                      {value ? format(value, 'MMM dd, yyyy HH:mm') : 'Select end time (optional)'}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {showEndDatePicker && (
-                    <DateTimePicker
-                      value={value || new Date()}
-                      mode="datetime"
-                      minimumDate={new Date()}
-                      onChange={(event, selectedDate) => {
-                        if (Platform.OS === 'android') {
-                          setShowEndDatePicker(false);
-                        }
-                        if (event.type === 'set' && selectedDate) {
-                          onChange(selectedDate);
-                        }
-                        if (Platform.OS === 'ios' && event.type === 'dismissed') {
-                          setShowEndDatePicker(false);
-                        }
-                      }}
-                    />
-                  )}
-                </>
-              )}
+            <DateTimeField
               name="endTime"
+              label="End Time"
+              placeholder="Select end time (optional)"
+              minimumDate={new Date()}
+            />
+
+            <LocationField name="location" />
+
+            <SubmitButton
+              title="Update Event"
+              loading={updating}
+              loadingText="Updating..."
+              className="mt-6 rounded-lg px-4 py-3 bg-blue-500"
+              onPress={handleSubmit(onSubmit)}
             />
           </View>
-
-          {/* Location */}
-          <Controller
-            control={control}
-            rules={{ required: 'Location is required' }}
-            render={({ field: { onChange, value } }) => (
-              <LocationPicker location={value} onLocationChange={onChange} />
-            )}
-            name="location"
-          />
-          {errors.location && (
-            <Text className="mt-1 text-sm text-red-500">{errors.location.message}</Text>
-          )}
-
-          {/* Submit Button */}
-          <TouchableOpacity
-            className={`mt-6 rounded-lg px-4 py-3 ${updating ? 'bg-gray-400' : 'bg-blue-500'}`}
-            onPress={handleSubmit(onSubmit)}
-            disabled={updating}>
-            <Text className="text-center text-lg font-semibold text-white">
-              {updating ? 'Updating...' : 'Update Event'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </FormProvider>
       </ScrollView>
     </ScreenContainer>
   );

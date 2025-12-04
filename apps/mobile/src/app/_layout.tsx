@@ -43,6 +43,7 @@ export default function RootLayout() {
 
 function App() {
   const { user } = useAuth();
+
   const pathname = usePathname();
 
   if (!user && pathname !== '/login') return <Login />;
@@ -55,6 +56,8 @@ function App() {
       <Stack.Screen name="posts/index" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="posts/create" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="posts/[id]" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="events/create" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="events/[id]" options={{ animation: 'slide_from_right' }} />
     </Stack>
   );
 }

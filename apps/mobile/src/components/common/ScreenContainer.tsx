@@ -15,37 +15,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ScreenContainerProps = {
   children: React.ReactNode;
-
-  /** Enable scrolling */
+  header?: React.ReactNode;
   scroll?: boolean;
-
-  /** Enable keyboard avoiding behavior */
   keyboardAvoiding?: boolean;
-
-  /** Dismiss keyboard on outside press */
   dismissKeyboardOnPress?: boolean;
-
-  /** Apply padding inside the content */
   padding?: number;
-
-  /** Add SafeAreaView */
   safeArea?: boolean;
-
-  /** Style overrides */
   style?: ViewStyle;
-
-  /** Hide or style the StatusBar */
   statusBarStyle?: StatusBarStyle;
-
-  /** Additional className for styling */
-  className?: string;
-
-  /** Add extra padding at the bottom for tab bar */
   paddingForTabs?: boolean;
+  root?: React.ReactNode;
 };
 
 export default function ScreenContainer({
   children,
+  header,
   scroll = false,
   keyboardAvoiding = false,
   dismissKeyboardOnPress = keyboardAvoiding,
@@ -54,50 +38,55 @@ export default function ScreenContainer({
   paddingForTabs = false,
   style,
   statusBarStyle = 'dark-content',
+  root,
 }: ScreenContainerProps) {
-  const ContentWrapper = scroll ? ScrollView : View;
-
-  const Base = (
-    <ContentWrapper
-      className="flex-1"
-      contentContainerStyle={scroll ? [{ padding }, style] : undefined}
-      style={!scroll ? [{ padding }, style] : undefined}
+  const scrollContent = scroll ? (
+    <ScrollView
+      contentContainerStyle={[{ flexGrow: 1, padding }, style]}
       keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}>
+      showsVerticalScrollIndicator={false}
+    >
       {children}
-    </ContentWrapper>
+    </ScrollView>
+  ) : (
+    <View style={[{ flex: 1, padding }, style]}>{children}</View>
   );
 
-  const WrappedWithKeyboard = keyboardAvoiding ? (
+  const keyboardWrapper = keyboardAvoiding ? (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      {Base}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      {scrollContent}
     </KeyboardAvoidingView>
   ) : (
-    Base
+    scrollContent
   );
 
-  const WrappedWithDismiss = dismissKeyboardOnPress ? (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1 }}>{WrappedWithKeyboard}</View>
+  const dismissWrapper = dismissKeyboardOnPress ? (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={{ flex: 1 }}>{keyboardWrapper}</View>
     </TouchableWithoutFeedback>
   ) : (
-    WrappedWithKeyboard
-  );
-
-  const FinalSafeArea = safeArea ? (
-    <SafeAreaView style={{ flex: 1, paddingBottom: paddingForTabs ? 100 : 0 }}>
-      {WrappedWithDismiss}
-    </SafeAreaView>
-  ) : (
-    <View style={{ flex: 1, paddingBottom: paddingForTabs ? 100 : 0 }}>{WrappedWithDismiss}</View>
+    <View style={{ flex: 1 }}>{keyboardWrapper}</View>
   );
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar barStyle={statusBarStyle} />
-      {FinalSafeArea}
+      {safeArea ? (
+        <SafeAreaView style={{ flex: 1, paddingBottom: paddingForTabs ? 100 : 0 }}>
+          {header}
+          {dismissWrapper}
+          {root}
+        </SafeAreaView>
+      ) : (
+        <>
+          {header}
+          {dismissWrapper}
+          {root}
+        </>
+      )}
     </GestureHandlerRootView>
   );
 }

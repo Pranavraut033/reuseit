@@ -12,16 +12,13 @@ import {
   Alert,
   Image,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import DraggableFlatList, {
-  RenderItemParams,
-  ScaleDecorator,
-} from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 import { t } from '~/utils/i18n';
 import { compressImage } from '~/utils/imageCompression';
@@ -175,39 +172,6 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
     [images, onImagesChange],
   );
 
-  const renderImageItem = ({ item, drag, isActive }: RenderItemParams<MediaItem>) => {
-    return (
-      <ScaleDecorator>
-        <TouchableOpacity
-          onLongPress={drag}
-          disabled={isActive || images.length <= 1}
-          style={[styles.imageContainer, isActive && styles.imageContainerActive]}
-          accessible={true}
-          accessibilityLabel={t('accessibility.dragHandle')}
-          accessibilityRole="button">
-          <Image source={{ uri: item.uri }} style={styles.image} resizeMode="cover" />
-
-          {/* Delete button */}
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => removeImage(item.id)}
-            accessible={true}
-            accessibilityLabel={t('accessibility.removePhotoButton')}
-            accessibilityRole="button">
-            <Ionicons name="close-circle" size={24} color="#EF4444" />
-          </TouchableOpacity>
-
-          {/* Drag handle indicator */}
-          {images.length > 1 && (
-            <View style={styles.dragHandle}>
-              <Ionicons name="swap-vertical" size={20} color="#FFF" />
-            </View>
-          )}
-        </TouchableOpacity>
-      </ScaleDecorator>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -219,20 +183,28 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
 
       {images.length > 0 && (
         <View style={styles.imagesWrapper}>
-          <GestureHandlerRootView style={styles.gestureContainer}>
-            <DraggableFlatList
-              data={images}
-              onDragEnd={({ data }) => onImagesChange(data)}
-              keyExtractor={(item) => item.id}
-              renderItem={renderImageItem}
-              numColumns={2}
-              scrollEnabled={false}
-              containerStyle={styles.imageGrid}
-            />
-          </GestureHandlerRootView>
-          {images.length > 1 && (
-            <Text style={styles.reorderHint}>{t('postCreate.reorderPhotos')}</Text>
-          )}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.imagesScrollContent}
+          >
+            {images.map((item) => (
+              <View key={item.id} style={styles.imageContainer}>
+                <Image source={{ uri: item.uri }} style={styles.image} resizeMode="cover" />
+
+                {/* Delete button */}
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => removeImage(item.id)}
+                  accessible={true}
+                  accessibilityLabel={t('accessibility.removePhotoButton')}
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="close-circle" size={24} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
         </View>
       )}
 
@@ -244,7 +216,8 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
           disabled={isProcessing}
           accessible={true}
           accessibilityLabel={t('accessibility.addPhotoButton')}
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           {isProcessing ? (
             <ActivityIndicator color="#3B82F6" size="small" />
           ) : (
@@ -287,6 +260,10 @@ const styles = StyleSheet.create({
   imagesWrapper: {
     marginBottom: 12,
   },
+  imagesScrollContent: {
+    gap: 8,
+    paddingVertical: 4,
+  },
   gestureContainer: {
     flex: 1,
   },
@@ -294,9 +271,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   imageContainer: {
-    flex: 1,
-    aspectRatio: 1,
-    margin: 4,
+    width: 80,
+    height: 80,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',

@@ -2,11 +2,10 @@ import { CameraView } from 'expo-camera';
 import { useRef, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { CameraHUD } from '~/components/Camera/CameraHUD';
+import { Viewfinder } from '~/components/Camera/Viewfinder';
+import { Button } from '~/components/common/Button';
 import { useCameraPermission } from '~/hooks/useCameraPermission';
-
-import { CameraHUD } from '../identify/CameraHUD';
-import { Viewfinder } from '../identify/Viewfinder';
-import { Button } from './Button';
 
 type Props = {
   onImageClick: (value: string | null) => void;

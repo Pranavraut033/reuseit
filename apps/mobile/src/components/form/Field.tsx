@@ -11,20 +11,25 @@ import { Text, TextInput as RNTextInput, TextInputProps, View } from 'react-nati
 
 import cn from '~/utils/cn';
 
-type FieldProps<TValue extends FieldValues> = {
-  children?: (props: ControllerRenderProps<TValue>) => React.ReactElement;
+type FieldProps = {
+  children?: (props: ControllerRenderProps<FieldValues>) => React.ReactElement;
   className?: string;
   inputClassName?: string;
   name: string;
-  rules?: Omit<RegisterOptions, 'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'>;
-} & Omit<TextInputProps, 'onChange' | 'onBlur' | 'value' | 'ref' | 'children'>;
+  rules?: RegisterOptions;
+  valueType?: 'string' | 'number';
+} & Pick<
+  TextInputProps,
+  Exclude<keyof TextInputProps, 'onChange' | 'onBlur' | 'value' | 'ref' | 'children'>
+>;
 
-const Field: React.FC<FieldProps<FieldValues>> = ({
+const Field: React.FC<FieldProps> = ({
   children,
   className,
   inputClassName,
   name,
   rules,
+  valueType = 'string',
   ...rest
 }) => {
   const context = useFormContext();
@@ -45,7 +50,20 @@ const Field: React.FC<FieldProps<FieldValues>> = ({
         render={(props) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const { onChange, onBlur, value: _v } = props.field;
-          const value = _v as string;
+
+          // Convert value to string for TextInput display
+          const displayValue =
+            valueType === 'number' ? (_v != null ? String(_v) : '') : (_v as string) || '';
+
+          // Handle change based on valueType
+          const handleChangeText = (text: string) => {
+            if (valueType === 'number') {
+              const numValue = text === '' ? undefined : parseFloat(text);
+              onChange(isNaN(numValue as number) ? 0 : numValue);
+            } else {
+              onChange(text);
+            }
+          };
 
           return (
             children?.(props.field) || (
@@ -55,8 +73,9 @@ const Field: React.FC<FieldProps<FieldValues>> = ({
                   inputClassName,
                 )}
                 onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
+                onChangeText={handleChangeText}
+                value={displayValue}
+                keyboardType={valueType === 'number' ? 'numeric' : rest.keyboardType}
                 {...rest}
               />
             )

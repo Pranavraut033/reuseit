@@ -2,26 +2,29 @@ import { useMutation } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { yupResolver } from '@hookform/resolvers/yup';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
 import { router } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Alert, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { Alert, Modal, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Toast } from 'toastify-react-native';
 
-import { LocationType } from '~/__generated__/graphql';
+import { CreatePostInput, LocationType, PostType } from '~/__generated__/graphql';
 import ScreenContainer from '~/components/common/ScreenContainer';
-import { LocationPicker } from '~/components/post/LocationPicker';
-import { MediaItem, MediaPicker } from '~/components/post/MediaPicker';
+import {
+  DateTimeField,
+  Label,
+  LocationField,
+  MediaField,
+  MediaItem,
+  TextField,
+} from '~/components/form';
 import { PostCard } from '~/components/post/PostCard';
 import { TagEditor } from '~/components/post/TagEditor';
 import { useAuth } from '~/context/AuthContext';
 import { Post } from '~/gql/fragments';
 import { DateTime } from '~/gql/helper.types';
 import { CREATE_POST, GET_POSTS } from '~/gql/posts';
-import cn from '~/utils/cn';
 import { t } from '~/utils/i18n';
 import { compressImages } from '~/utils/imageCompression';
 import {
@@ -36,12 +39,24 @@ import { suggestTagsFromImages } from '~/utils/tagSuggestion';
 import { Button } from '../common/Button';
 import { FabButton } from '../common/FabButton';
 
+const defaultValues: PostCreateFormData = {
+  anonymous: false,
+  description: '',
+  postType: PostType.General,
+  tags: [],
+  title: '',
+};
+
 export const PostCreateScreen: React.FC = () => {
   const { user } = useAuth();
   const [images, setImages] = useState<MediaItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [scrollHandler, setScrollHandler] = useState<(event: any) => void>();
+
+  const methods = useForm<PostCreateFormData>({
+    resolver: yupResolver(postCreateSchema),
+    mode: 'onChange',
+    defaultValues: defaultValues,
+  });
 
   const {
     control,
@@ -50,21 +65,7 @@ export const PostCreateScreen: React.FC = () => {
     watch,
     setValue,
     reset,
-  } = useForm<PostCreateFormData>({
-    resolver: yupResolver(postCreateSchema),
-    mode: 'onChange',
-    defaultValues: {
-      anonymous: false,
-      title: '',
-      category: '',
-      description: '',
-      condition: '',
-      tags: [],
-      images: [],
-      location: null,
-      pickupDate: null,
-    },
-  });
+  } = methods;
 
   const formValues = watch();
 
@@ -128,8 +129,8 @@ export const PostCreateScreen: React.FC = () => {
   const onSubmit = async (data: PostCreateFormData) => {
     try {
       // Validate images
-      if (images.length === 0 && !data.title && !data.description) {
-        Alert.alert('Invalid Post', 'Please add at least a title, description, or images.');
+      if (images.length === 0 && !data.description) {
+        Alert.alert('Invalid Post', 'Please add at least a description or images.');
         return;
       }
 
@@ -140,7 +141,7 @@ export const PostCreateScreen: React.FC = () => {
       }
 
       // Prepare mutation input
-      const createPostInput: PostCreateFormData = {
+      const createPostInput: CreatePostInput = {
         ...data,
         pickupDate: new Date(data.pickupDate as DateTime),
         images: imageUrls,
@@ -177,10 +178,8 @@ export const PostCreateScreen: React.FC = () => {
 
       // Create post
       return await createPost({
-        variables: { createPostInput },
-        optimisticResponse: {
-          createPost: post,
-        },
+        variables: { createPostInput: createPostInput },
+        optimisticResponse: { createPost: post },
       });
     } catch (error) {
       console.error('Error creating post:', error);
@@ -215,268 +214,268 @@ export const PostCreateScreen: React.FC = () => {
   const isLoading = isCreating || isUploading;
 
   return (
-    <ScreenContainer keyboardAvoiding padding={0}>
-      {/* Header */}
-      <View className={`flex-row items-center border-b border-gray-200 bg-white px-4 py-3`}>
-        <TouchableOpacity
-          onPress={handleCancel}
-          disabled={isLoading}
-          accessible={true}
-          accessibilityLabel={t('accessibility.cancelButton')}
-          accessibilityRole="button">
-          <Ionicons name="arrow-back" size={28} color="#1F2937" />
-        </TouchableOpacity>
+    <ScreenContainer
+      keyboardAvoiding
+      padding={0}
+      scroll
+      header={
+        <View className={`flex-row items-center border-b border-gray-200 bg-white px-4 py-3`}>
+          <TouchableOpacity
+            onPress={handleCancel}
+            disabled={isLoading}
+            accessible={true}
+            accessibilityLabel={t('accessibility.cancelButton')}
+            accessibilityRole="button"
+          >
+            <Ionicons name="arrow-back" size={28} color="#1F2937" />
+          </TouchableOpacity>
 
-        <Text className="mx-4 text-xl font-bold text-gray-800">{t('postCreate.title')}</Text>
-        <View className="flex-1" />
-        <Button
-          onPress={handleSubmit(onSubmit)}
-          disabled={isLoading || !isValid}
-          className="rounded-full py-2"
-          accessible={true}
-          accessibilityLabel={t('accessibility.publishButton')}
-          accessibilityRole="button"
-          loading={isLoading}>
-          {t('postCreate.publish')}
-        </Button>
-      </View>
-      <ScrollView
-        className="flex-1"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onScroll={(e) => {
-          scrollHandler?.(e);
-        }}>
-        <View className="p-4">
-          <View className="mb-5">
-            <View className="mb-3 flex-row items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-2">
-              <Text>
-                Post as{' '}
-                <Text
-                  className={cn({ strikethrough: formValues.anonymous })}
-                  style={formValues.anonymous ? { textDecorationLine: 'line-through' } : undefined}>
-                  {user?.name}
-                </Text>
-                {formValues.anonymous ? ` (${t('postCreate.anonymous')})` : ''}
+          <Text className="mx-4 text-xl font-bold text-gray-800">{t('postCreate.title')}</Text>
+          <View className="flex-1" />
+          <Button
+            onPress={handleSubmit(onSubmit)}
+            disabled={isLoading || !isValid}
+            className="rounded-full py-2"
+            accessible={true}
+            accessibilityLabel={t('accessibility.publishButton')}
+            accessibilityRole="button"
+            loading={isLoading}
+          >
+            {t('postCreate.publish')}
+          </Button>
+        </View>
+      }
+      root={
+        <>
+          <ModalPreview formValues={formValues} images={images} />
+        </>
+      }
+    >
+      <View className="flex-1">
+        <View className="p-4 ">
+          <FormProvider {...methods}>
+            {/* Post Type Section */}
+            <View className="rounded-xl border border-gray-200 bg-white p-4 mb-6">
+              <Text className="mb-4 text-lg font-bold text-gray-800">
+                {t('postCreate.postType')}
               </Text>
               <Controller
                 control={control}
-                name="anonymous"
+                name="postType"
                 render={({ field: { onChange, value } }) => (
-                  <TouchableOpacity
-                    className="flex-row items-center"
-                    onPress={() => onChange(!value)}
-                    accessible={true}
-                    accessibilityLabel={t('accessibility.anonymousToggle')}>
-                    <Ionicons name={value ? 'eye-off' : 'eye'} size={24} color="#1F2937" />
-                  </TouchableOpacity>
+                  <View className="flex-row flex-wrap gap-2">
+                    {[
+                      { value: 'GENERAL', label: t('postTypes.general') },
+                      { value: 'GIVEAWAY', label: t('postTypes.giveaway') },
+                      { value: 'EVENT', label: t('postTypes.event') },
+                      { value: 'MEETUP', label: t('postTypes.meetup') },
+                    ].map((type) => (
+                      <TouchableOpacity
+                        key={type.value}
+                        className={`rounded-full border px-4 py-2.5 ${value === type.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
+                        onPress={() => onChange(type.value)}
+                        disabled={isLoading}
+                        accessible={true}
+                        accessibilityLabel={`${type.label} post type`}
+                        accessibilityRole="button"
+                      >
+                        <Text
+                          className={`text-[14px] font-medium ${value === type.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
+                        >
+                          {type.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 )}
               />
+              {errors.postType && (
+                <Text className="mt-1 text-[13px] text-red-500">{errors.postType.message}</Text>
+              )}
             </View>
-            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
-              {t('postCreate.title')} <Text className="text-red-500">*</Text>
-            </Text>
-            <Controller
-              control={control}
-              name="title"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  className={`rounded-xl border bg-white p-3 text-[15px] text-gray-800 ${errors.title ? 'border-red-500' : 'border-gray-200'}`}
-                  placeholder={t('postCreate.titlePlaceholder')}
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  editable={!isLoading}
-                  maxLength={100}
-                  accessible={true}
-                  accessibilityLabel={t('accessibility.titleInput')}
-                />
-              )}
-            />
-            {errors.title && (
-              <Text className="mt-1 text-[13px] text-red-500">{errors.title.message}</Text>
-            )}
-          </View>
 
-          {/* Description */}
-          <View className="mb-5">
-            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
-              {t('postCreate.description')}
-            </Text>
-            <Controller
-              control={control}
-              name="description"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  className={`min-h-[100px] rounded-xl border bg-white p-3 text-[15px] text-gray-800 ${errors.description ? 'border-red-500' : 'border-gray-200'}`}
-                  placeholder={t('postCreate.descriptionPlaceholder')}
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  multiline
-                  numberOfLines={4}
-                  maxLength={1000}
-                  editable={!isLoading}
-                  textAlignVertical="top"
-                  accessible={true}
-                  accessibilityLabel={t('accessibility.descriptionInput')}
-                />
-              )}
-            />
-          </View>
+            {/* Content Section */}
+            <View className="rounded-xl border border-gray-200 bg-white p-4 mb-6">
+              <Text className="mb-4 text-lg font-bold text-gray-800">
+                {t('postCreate.content')}
+              </Text>
 
-          {/* Category */}
-          <View className="mb-5">
-            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
-              {t('postCreate.category')} <Text className="text-red-500">*</Text>
-            </Text>
-            <Controller
-              control={control}
-              name="category"
-              render={({ field: { onChange, value } }) => (
-                <View className="flex-row flex-wrap gap-2">
-                  {categories.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.value}
-                      className={`rounded-full border px-4 py-2.5 ${value === cat.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
-                      onPress={() => onChange(cat.value)}
-                      disabled={isLoading}
-                      accessible={true}
-                      accessibilityLabel={`${cat.label} category`}
-                      accessibilityRole="button">
-                      <Text
-                        className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
-                        {cat.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            />
-            {errors.category && (
-              <Text className="mt-1 text-[13px] text-red-500">{errors.category.message}</Text>
-            )}
-          </View>
-
-          {/* Condition */}
-          <View className="mb-5">
-            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
-              {t('postCreate.condition')} <Text className="text-red-500">*</Text>
-            </Text>
-            <Controller
-              control={control}
-              name="condition"
-              render={({ field: { onChange, value } }) => (
-                <View className="flex-row gap-2">
-                  {conditions.map((cond) => (
-                    <TouchableOpacity
-                      key={cond.value}
-                      className={`flex-1 items-center rounded-xl border py-3 ${value === cond.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
-                      onPress={() => onChange(cond.value)}
-                      disabled={isLoading}
-                      accessible={true}
-                      accessibilityLabel={`${cond.label} condition`}
-                      accessibilityRole="button">
-                      <Text
-                        className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
-                        {cond.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            />
-            {errors.condition && (
-              <Text className="mt-1 text-[13px] text-red-500">{errors.condition.message}</Text>
-            )}
-          </View>
-
-          {/* Media Picker */}
-          <MediaPicker
-            images={images}
-            onImagesChange={(newImages) => {
-              setImages(newImages);
-              setValue(
-                'images',
-                newImages.map((img) => img.uri),
-              );
-            }}
-            maxImages={4}
-            onTagSuggestions={handleImageTagSuggestions}
-          />
-
-          {/* Tag Editor */}
-          <Controller
-            control={control}
-            name="tags"
-            render={({ field: { onChange, value } }) => (
-              <TagEditor
-                tags={value || []}
-                onTagsChange={onChange}
-                category={formValues.category}
-                condition={formValues.condition}
-                description={formValues.description}
+              <TextField
+                name="title"
+                label={`${t('postCreate.title')} *`}
+                placeholder={t('postCreate.titlePlaceholder')}
+                rules={{ required: 'Title is required' }}
+                maxLength={100}
               />
-            )}
-          />
 
-          {/* Location Picker */}
-          <Controller
-            control={control}
-            name="location"
-            render={({ field: { onChange, value } }) => (
-              <LocationPicker location={value ?? null} onLocationChange={onChange} />
-            )}
-          />
+              <TextField
+                name="description"
+                label={`${t('postCreate.description')} *`}
+                placeholder={t('postCreate.descriptionPlaceholder')}
+                multiline
+                numberOfLines={4}
+                rules={{ required: 'Description is required' }}
+                maxLength={1000}
+              />
 
-          {/* Pickup Date */}
-          <View className="mb-5">
-            <Text className="mb-2 text-[15px] font-semibold text-gray-800">
-              {t('postCreate.pickupDateOptional')}
-            </Text>
-            <Controller
-              control={control}
-              name="pickupDate"
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TouchableOpacity
-                    className="flex-row items-center gap-3 rounded-xl border border-gray-200 bg-white p-3"
-                    onPress={() => setShowDatePicker(true)}
-                    accessible={true}
-                    accessibilityLabel={t('accessibility.datePickerButton')}
-                    accessibilityRole="button">
-                    <Ionicons name="calendar-outline" size={20} color="#6B7280" />
-                    <Text className="text-[15px] text-gray-800">
-                      {value ? format(new Date(value), 'MMM dd, yyyy') : 'Select pickup date'}
+              {(formValues.postType === 'GENERAL' || formValues.postType === 'GIVEAWAY') && (
+                <View className="mb-4">
+                  <Controller
+                    control={control}
+                    name="tags"
+                    render={({ field: { onChange, value } }) => (
+                      <TagEditor
+                        tags={value || []}
+                        onTagsChange={onChange}
+                        category={formValues.category}
+                        condition={formValues.condition}
+                        description={formValues.description}
+                      />
+                    )}
+                  />
+                </View>
+              )}
+
+              <MediaField
+                name="images"
+                images={images}
+                onImagesChange={(newImages) => {
+                  setImages(newImages);
+                  setValue(
+                    'images',
+                    newImages.map((img) => img.uri),
+                  );
+                }}
+                maxImages={4}
+                onTagSuggestions={handleImageTagSuggestions}
+              />
+            </View>
+
+            {/* Details & Context Section */}
+            {(formValues.postType === 'GENERAL' || formValues.postType === 'GIVEAWAY') && (
+              <View className="rounded-xl border border-gray-200 bg-white p-4 mb-6">
+                <Text className="mb-4 text-lg font-bold text-gray-800">
+                  {t('postCreate.detailsContext')}
+                </Text>
+
+                <View className="mb-4">
+                  <Label required>{t('postCreate.category')}</Label>
+                  <Controller
+                    control={control}
+                    name="category"
+                    render={({ field: { onChange, value } }) => (
+                      <View className="flex-row flex-wrap gap-2">
+                        {categories.map((cat) => (
+                          <TouchableOpacity
+                            key={cat.value}
+                            className={`rounded-full border px-4 py-2.5 ${value === cat.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
+                            onPress={() => onChange(cat.value)}
+                            disabled={isLoading}
+                            accessible={true}
+                            accessibilityLabel={`${cat.label} category`}
+                            accessibilityRole="button"
+                          >
+                            <Text
+                              className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
+                            >
+                              {cat.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  />
+                  {errors.category && (
+                    <Text className="mt-1 text-[13px] text-red-500">{errors.category.message}</Text>
+                  )}
+                </View>
+
+                <View className="mb-4">
+                  <Label required>{t('postCreate.condition')}</Label>
+                  <Controller
+                    control={control}
+                    name="condition"
+                    render={({ field: { onChange, value } }) => (
+                      <View className="flex-row gap-2">
+                        {conditions.map((cond) => (
+                          <TouchableOpacity
+                            key={cond.value}
+                            className={`flex-1 items-center rounded-xl border py-3 ${value === cond.value ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-100'}`}
+                            onPress={() => onChange(cond.value)}
+                            disabled={isLoading}
+                            accessible={true}
+                            accessibilityLabel={`${cond.label} condition`}
+                            accessibilityRole="button"
+                          >
+                            <Text
+                              className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
+                            >
+                              {cond.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  />
+                  {errors.condition && (
+                    <Text className="mt-1 text-[13px] text-red-500">
+                      {errors.condition.message}
                     </Text>
-                  </TouchableOpacity>
+                  )}
+                </View>
 
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={value ? new Date(value as DateTime) : new Date()}
-                      mode="date"
-                      minimumDate={new Date()}
-                      onChange={(event, selectedDate) => {
-                        if (Platform.OS === 'android') {
-                          setShowDatePicker(false);
-                        }
-                        if (event.type === 'set' && selectedDate) {
-                          onChange(selectedDate);
-                        }
-                        if (Platform.OS === 'ios' && event.type === 'dismissed') {
-                          setShowDatePicker(false);
-                        }
-                      }}
+                {formValues.postType === 'GIVEAWAY' && (
+                  <DateTimeField
+                    name="pickupDate"
+                    label={`${t('postCreate.pickupDateOptional')} *`}
+                    placeholder="Select pickup date"
+                    minimumDate={new Date()}
+                    rules={{ required: 'Pickup date is required' }}
+                  />
+                )}
+              </View>
+            )}
+
+            {/* Event Details Section */}
+            {(formValues.postType === 'EVENT' || formValues.postType === 'MEETUP') && (
+              <View className="rounded-xl border border-gray-200 bg-white p-4 mb-6">
+                <Text className="mb-4 text-lg font-bold text-gray-800">
+                  {formValues.postType === 'EVENT' ? 'Event Details' : 'Meetup Details'}
+                </Text>
+
+                <LocationField
+                  name="location"
+                  label="Location"
+                  rules={{ required: 'Location is required for events' }}
+                />
+              </View>
+            )}
+
+            {/* Configuration Section */}
+            <View className="rounded-xl border border-gray-200 bg-white p-4 mb-20">
+              <Text className="mb-4 text-lg font-bold text-gray-800">
+                {t('postCreate.configuration')}
+              </Text>
+
+              <View className="flex-row items-center justify-between">
+                <Label className="mb-0">{t('postCreate.anonymous')}</Label>
+                <Controller
+                  control={control}
+                  name="anonymous"
+                  render={({ field: { onChange, value } }) => (
+                    <Switch
+                      value={value}
+                      onValueChange={onChange}
+                      trackColor={{ false: '#D1D5DB', true: '#3B82F6' }}
+                      thumbColor={value ? '#FFFFFF' : '#F9FAFB'}
                     />
                   )}
-                </>
-              )}
-            />
-          </View>
+                />
+              </View>
+            </View>
+          </FormProvider>
         </View>
-      </ScrollView>
-      <ModalPreview formValues={formValues} images={images} setScrollHandler={setScrollHandler} />
+      </View>
     </ScreenContainer>
   );
 };
@@ -484,10 +483,9 @@ export const PostCreateScreen: React.FC = () => {
 type ModalPreviewProps = {
   formValues: PostCreateFormData;
   images: MediaItem[];
-  setScrollHandler: (handler?: (event: any) => void) => void;
 };
 
-const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScrollHandler }) => {
+const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { user } = useAuth();
   const sheetRef = useRef<BottomSheet>(null);
@@ -509,11 +507,11 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
   return (
     <>
       <FabButton
-        setScrollHandler={setScrollHandler}
         hideOnScrollDown
-        className="absolute bottom-4 right-4"
+        className="absolute bottom-8 right-8"
         icon={() => <Ionicons name="eye" size={24} color="#FFFFFF" />}
-        onPress={handleOpen}>
+        onPress={handleOpen}
+      >
         {t('postCreate.preview')}
       </FabButton>
       <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={handleClose}>
@@ -537,7 +535,8 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
               />
             )}
             enablePanDownToClose
-            onClose={handleClose}>
+            onClose={handleClose}
+          >
             <View className="flex-1 bg-white">
               {/* Header */}
               <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3">
@@ -549,7 +548,8 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
                 </View>
                 <TouchableOpacity
                   className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
-                  onPress={handleClose}>
+                  onPress={handleClose}
+                >
                   <Ionicons name="close" size={20} color="#374151" />
                 </TouchableOpacity>
               </View>
@@ -557,7 +557,8 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images, setScro
               {/* Preview Card */}
               <BottomSheetScrollView
                 contentContainerStyle={{ paddingBottom: 20, padding: 16 }}
-                showsVerticalScrollIndicator={false}>
+                showsVerticalScrollIndicator={false}
+              >
                 <PostCard
                   isPreview
                   formData={formValues}

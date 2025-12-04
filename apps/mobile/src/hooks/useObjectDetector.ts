@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { detectObjects, ObjectDetectionResult, warmup } from './objectDetector';
+import { detectObjects, ObjectDetectionResult, warmup } from '~/ml/objectDetector';
 
 export function useObjectDetector() {
   const [ready, setReady] = useState(false);

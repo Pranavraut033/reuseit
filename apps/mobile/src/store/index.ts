@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
 import { SignInMutation } from '~/__generated__/graphql';
@@ -9,29 +10,56 @@ export type User = SignInMutation['signIn']['user'] & {
 };
 
 export interface AppState {
-  user: User | null;
+  loadState: () => Promise<void>;
+  loadToken: () => Promise<string | null>;
+  ready: boolean;
+  setToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
   token: string | null;
-  setToken: (token: string | null) => void;
-  loadToken: () => Promise<void>;
+  user: User | null;
 }
 
 export const useStore = create<AppState>((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
+  ready: false,
   token: null,
+  user: null,
+  setUser: (user) => {
+    if (!user) {
+      AsyncStorage.removeItem('auth.user');
+      set({ user: null });
+      return;
+    }
+
+    AsyncStorage.setItem('auth.user', JSON.stringify({ ...user, googleUser: undefined }));
+    set({ user });
+  },
   setToken: (token) => {
     if (!token?.trim()) {
-      AsyncStorage.removeItem('auth.token');
+      SecureStore.deleteItemAsync('auth.token');
       set({ token: null });
       return;
     }
 
-    AsyncStorage.setItem('auth.token', token);
+    SecureStore.setItemAsync('auth.token', token);
     set({ token });
   },
   loadToken: async () => {
-    const token = await AsyncStorage.getItem('auth.token');
+    const token = await SecureStore.getItemAsync('auth.token');
     set({ token: token || null });
+    return token || null;
+  },
+  loadState: async () => {
+    const [token, userJson] = await Promise.all([
+      SecureStore.getItemAsync('auth.token'),
+      AsyncStorage.getItem('auth.user'),
+    ]);
+
+    const user = userJson ? (JSON.parse(userJson) as User) : null;
+
+    set({
+      token: token || null,
+      user,
+      ready: true,
+    });
   },
 }));

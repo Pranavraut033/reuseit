@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-import Camera from '~/components/common/Camera';
+import Camera from '~/components/Camera';
 import ResultModal from '~/components/waste-analysis/ResultModal';
 import { useWasteAnalysis, WasteAnalysisProvider } from '~/context/WasteAnalysisProvider';
 
@@ -31,7 +31,8 @@ function WasteAnalysisContent() {
             <View className="absolute left-0 right-0 top-12 items-center">
               <TouchableOpacity
                 className="rounded-full bg-black/50 px-4 py-2"
-                onPress={() => setIsOffline(!isOffline)}>
+                onPress={() => setIsOffline(!isOffline)}
+              >
                 <Text className="text-sm font-medium text-white">
                   {isOffline ? '🔌 Offline' : '🌐 Online'}
                 </Text>

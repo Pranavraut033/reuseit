@@ -1,26 +1,30 @@
 import * as yup from 'yup';
 
-import { CreateLocationInput } from '~/__generated__/graphql';
-import { CreatePostInput } from '~/__generated__/types';
+import { CreatePostInput, PostType } from '~/__generated__/graphql';
 import { Flatten } from '~/gql/utils';
 
 import { t } from './i18n';
 
-export type PostCreateFormData = Flatten<CreatePostInput> & {
-  pickupDate?: Date | null;
-  location?: Flatten<CreateLocationInput> | null;
-  anonymous: boolean;
-};
+export type PostCreateFormData = Flatten<CreatePostInput>;
 
 export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object({
+  postType: yup
+    .string<PostType>()
+    .oneOf(
+      [PostType.General, PostType.Giveaway, PostType.Event, PostType.Meetup],
+      'Invalid post type',
+    )
+    .required(t('postCreate.postTypeRequired'))
+    .default(PostType.General),
+
   anonymous: yup.boolean().required().defined().default(false),
+
   title: yup
     .string()
     .required(t('postCreate.titleRequired'))
     .min(3, t('postCreate.titleMinLength'))
     .max(100, t('postCreate.titleMaxLength'))
-    .trim()
-    .defined(),
+    .trim(),
 
   description: yup
     .string()
@@ -28,21 +32,37 @@ export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object
     .max(1000, t('postCreate.descriptionMaxLength'))
     .trim(),
 
-  category: yup
-    .string()
-    .oneOf(
-      ['electronics', 'toys', 'homeGoods', 'clothing', 'furniture', 'books', 'sports', 'other'],
-      'Invalid category',
-    )
-    .defined(),
+  category: yup.string().when('postType', {
+    is: (postType: string) => postType === 'GENERAL' || postType === 'GIVEAWAY',
+    then: (schema) =>
+      schema
+        .oneOf(
+          ['electronics', 'toys', 'homeGoods', 'clothing', 'furniture', 'books', 'sports', 'other'],
+          'Invalid category',
+        )
+        .required(t('postCreate.categoryRequired')),
+    otherwise: (schema) => schema.optional(),
+  }),
 
-  condition: yup
-    .string()
-    .required(t('postCreate.conditionRequired'))
-    .oneOf(['new', 'likeNew', 'good', 'fair', 'used'], 'Invalid condition')
-    .defined(),
+  condition: yup.string().when('postType', {
+    is: (postType: string) => postType === 'GENERAL' || postType === 'GIVEAWAY',
+    then: (schema) =>
+      schema
+        .required(t('postCreate.conditionRequired'))
+        .oneOf(['new', 'likeNew', 'good', 'fair', 'used'], 'Invalid condition'),
+    otherwise: (schema) => schema.optional(),
+  }),
 
-  tags: yup.array().of(yup.string().required()).required().default([]).defined(),
+  tags: yup
+    .array()
+    .of(yup.string().required())
+    .when('postType', {
+      is: (postType: string) => postType === 'GENERAL' || postType === 'GIVEAWAY',
+      then: (schema) => schema.min(1, 'At least one tag is required').required(),
+      otherwise: (schema) => schema.optional(),
+    })
+    .default([])
+    .defined(),
 
   images: yup
     .array()
@@ -63,8 +83,11 @@ export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object
       coordinates: yup.tuple([yup.number().required(), yup.number().required()]).required(),
       googlePlaceId: yup.string().optional(),
     })
-    .nullable()
-    .optional()
+    .when('postType', {
+      is: (postType: string) => postType === 'EVENT' || postType === 'MEETUP',
+      then: (schema) => schema.required(),
+      otherwise: (schema) => schema.nullable().optional(),
+    })
     .default(null),
 
   locationId: yup.string().optional(),
@@ -73,9 +96,15 @@ export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object
 
   pickupDate: yup
     .date()
-    .nullable()
-    .optional()
-    .min(new Date(), 'Pickup date must be in the future')
+    .when('postType', {
+      is: 'GIVEAWAY',
+      then: (schema) =>
+        schema
+          .required('Pickup date is required for giveaways')
+          .min(new Date(), 'Pickup date must be in the future'),
+      otherwise: (schema) =>
+        schema.nullable().optional().min(new Date(), 'Pickup date must be in the future'),
+    })
     .default(null),
 });
 

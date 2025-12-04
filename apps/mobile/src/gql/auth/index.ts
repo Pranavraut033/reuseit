@@ -5,16 +5,17 @@ export const SIGN_IN_MUTATION = gql(`
     signIn(data: $data) {
       user {
         id
-        createdAt
-        updatedAt
-        lastLogin
         avatarUrl
+        createdAt
         email
         emailVerified
         googleId
+        lastLogin
         name
         phoneNumber
         phoneVerified
+        points
+        updatedAt
       }
       token
     }

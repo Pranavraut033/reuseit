@@ -25,12 +25,13 @@ const FeedsScreen = () => {
   });
 
   return (
-    <ScreenContainer padding={0}>
-      {/* Latest Posts */}
-      <View className="mb-4 flex-row items-center justify-between p-4">
-        <Text className="text-xl font-bold text-gray-800">Latest Posts</Text>
-      </View>
-
+    <ScreenContainer
+      header={
+        <View className="flex-row items-center justify-between p-4">
+          <Text className="text-xl font-bold text-gray-800">Latest Posts</Text>
+        </View>
+      }
+    >
       {!posts.length && loading && (
         <View className="items-center justify-center py-12">
           <ActivityIndicator size="large" color="#3B82F6" />
@@ -39,14 +40,16 @@ const FeedsScreen = () => {
       )}
 
       {error && (
-        <View className="rounded-xl bg-red-50 p-6">
+        <View className="rounded-xl flex flex-row items-center bg-red-50 p-6 mb-4">
           <Ionicons name="alert-circle" size={48} color="#EF4444" />
-          <Text className="mt-4 text-center text-lg font-medium text-red-700">
-            Oops! Something went wrong
-          </Text>
-          <Text className="mt-2 text-center text-sm text-red-600">
-            Failed to load posts. Please try again.
-          </Text>
+          <View className="ml-4">
+            <Text className="text-center text-lg font-medium text-red-700">
+              Oops! Something went wrong
+            </Text>
+            <Text className="mt-2 text-center text-sm text-red-600">
+              Failed to load posts. Please try again.
+            </Text>
+          </View>
         </View>
       )}
 

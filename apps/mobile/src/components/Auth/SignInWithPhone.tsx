@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Toast } from 'toastify-react-native';
 
+import { Button } from '~/components/common/Button';
+import Field from '~/components/form/Field';
+import PhoneInput, { Country } from '~/components/form/PhoneInput';
 import { useAppContext } from '~/context/AppContext';
 import { useAuth } from '~/context/AuthContext';
 
-import { Button } from '../common/Button';
-import Field from '../common/Field';
-import PhoneInput, { Country } from '../common/PhoneInput';
 import CodeModal from './CodeModal';
 
 function SignInWithPhone() {
@@ -82,7 +82,8 @@ function SignInWithPhone() {
               value: /^\d{9,14}$/,
               message: 'Please enter a valid phone number',
             },
-          }}>
+          }}
+        >
           {({ onChange, onBlur, value }) => (
             <PhoneInput
               value={value as string}
