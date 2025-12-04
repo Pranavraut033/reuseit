@@ -67,8 +67,6 @@ services:
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
       - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
-      # Internal URL for LLM service on the Docker network
-      - LLM_SERVICE_URL=http://llm-service:8000
       - REDIS_URL=redis://redis:6379
     depends_on:
       mongodb:
@@ -91,28 +89,9 @@ services:
       - OLLAMA_DEBUG=DEBUG
     volumes:
       - ollama_data:/root/.ollama
-      - ./apps/llm-service/pull-models.sh:/pull-models.sh
+      - ./pull-models.sh:/pull-models.sh
     entrypoint: ['sh']
     command: ['/pull-models.sh']
-    networks:
-      - reuseit-network
-
-  llm-service:
-    build:
-      context: ./apps/llm-service
-      dockerfile: Dockerfile
-    container_name: reuseit-llm
-    restart: unless-stopped
-    ports:
-      - '${LLM_PORT:-8000}:8000'
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - ollama
-      - redis
-    volumes:
-      - ./apps/llm-service/app/models:/app/models:ro
     networks:
       - reuseit-network
 

@@ -34,7 +34,6 @@
 | `apps/backend/` | NestJS GraphQL API server | `prisma/schema.prisma`, `src/modules/` |
 | `apps/mobile/` | Expo React Native app | `src/app/` (Expo Router), `src/components/` |
 | `apps/ml-training/` | Python ML model training | `train.py`, `waste_classifier_best_dynamic.tflite` |
-| `apps/llm-service/` | FastAPI LLM wrapper | `app/main.py`, `requirements.txt` |
 | `docs/` | Project documentation | `PROJECT_STATUS.md`, `02-requirements.md` |
 | `types/` | Shared TypeScript interfaces | `graphql.ts`, `models.ts` |
 
@@ -99,9 +98,9 @@
 ### Architecture Overview
 - **Frontend:** React Native (Expo) with NativeWind styling
 - **Backend:** NestJS with GraphQL, Prisma ORM, JWT auth
-- **ML Services:** Python training pipeline + FastAPI LLM service
+- **ML Services:** Python training pipeline + Ollama integration
 - **Database:** MongoDB Atlas with Redis caching
-- **Deployment:** Docker Compose with 6 services
+- **Deployment:** Docker Compose with multiple services
 
 ### Design Language
 Modern, clean, fun, user-friendly design:
@@ -157,6 +156,16 @@ cd apps/mobile && pnpm test
 pnpm lint && pnpm format
 ```
 
+### Running Python Code
+
+To run Python scripts in the ML training module:
+
+1. Navigate to the `apps/ml-training/` directory
+2. Activate the virtual environment: `source .venv/bin/activate`
+3. Run the Python file: `python object_detection/train.py` (replace with the desired script)
+
+**⚠️ CRITICAL FOR AGENTS:** Always activate the virtual environment before running any Python scripts. Do not use `python` or `python3` directly as they do not have the required libraries installed. Use the full command sequence in terminal: `cd apps/ml-training && source .venv/bin/activate && python <script.py>`
+
 ---
 
 ## 📂 FILE LOCATIONS REFERENCE
@@ -179,7 +188,6 @@ pnpm lint && pnpm format
 
 ### ML Services
 - `apps/ml-training/` - Python training scripts
-- `apps/llm-service/` - FastAPI LLM wrapper
 
 ### Configuration
 - `docker-compose.yml` - Service deployment (backend excluded from dev, use `--profile production` for deployment)

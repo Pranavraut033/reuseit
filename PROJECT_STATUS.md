@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** November 29, 2025 (AnalyzeWasteResult moved to local types - completed mobile codebase cleanup)
+**Last Updated:** December 3, 2025 (Lint and logging issues fixed for production readiness)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -10,10 +10,10 @@
 
 | Category | Progress | Status |
 |----------|----------|--------|
-| Core Features | 85% | 🟢 Excellent Progress |
+| Core Features | 90% | 🟢 Excellent Progress |
 | Documentation | 100% | 🟢 Complete |
 | Testing | 15% | 🟡 Partial |
-| Deployment | 10% | 🔴 Not Started |
+| Deployment | 25% | 🟡 In Progress |
 | Technical Debt | - | 🟡 Moderate |
 
 ---
@@ -26,6 +26,7 @@
 - ✅ Mobile app initialization (Expo + TypeScript)
 - ✅ MongoDB Atlas configuration
 - ✅ Authentication system (JWT + Firebase OAuth)
+- ✅ **Security Enhancements**: Secure token storage with expo-secure-store, token expiry validation, race condition prevention, and improved error handling
 - ✅ ESLint + Prettier configuration
 - ✅ GraphQL API setup
 
@@ -52,6 +53,7 @@
 
 ### Sprint 5: Events System (Completed - Full Stack)
 - ✅ Event creation with location
+- ✅ Event image upload functionality (up to 4 images)
 - ✅ Event CRUD operations (create, read, update, delete)
 - ✅ Event participant registration
 - ✅ Event location integration
@@ -71,11 +73,21 @@
 - ✅ User points display
 - ✅ Points query and mutations
 
-### Sprint 7: User Articles (Completed)
+### Sprint 8: User Articles (Completed)
 - ✅ User article CRUD operations
 - ✅ Article-to-post relationship
 - ✅ Article-to-user relationship
 - ✅ Image support for articles
+
+### Sprint 9: Post Type System (Completed)
+- ✅ Post type enum (GENERAL, GIVEAWAY, EVENT, MEETUP) added to Prisma schema
+- ✅ Conditional field validation based on post type
+- ✅ Post type selector in mobile UI
+- ✅ Category/condition required only for GENERAL/GIVEAWAY posts
+- ✅ Location required for EVENT/MEETUP posts
+- ✅ Pickup date required for GIVEAWAY posts
+- ✅ Tags optional for EVENT/MEETUP posts
+- ✅ Title field added back as required for all post types
 
 ### Sprint 8: ML & Recycling Analysis (Completed)
 - ✅ TensorFlow.js React Native integration
@@ -109,24 +121,20 @@
 - ✅ **Object Detection Model Regularization** - Enhanced object detection training with L2 regularization, increased dropout (0.4), label smoothing (0.1), progressive unfreezing, cosine learning rate scheduling, and improved data augmentation (rotation, zoom, shear, Gaussian noise)
 - ✅ **TensorFlow Graph Compatibility Fix** - Fixed AttributeError in augment_image function by removing conditional config attribute access that caused issues in TensorFlow graph mode, and corrected multi-output loss configuration
 - ✅ **Stable Data Augmentation** - Updated augmentation pipeline to use only stable transformations: horizontal flip, brightness, contrast, small saturation/hue changes, and light Gaussian noise; removed aggressive zoom, rotation, cropping, and padding for better training stability
+- ✅ **Sample weight alignment fix** - Ensured training dataset returns per-output masks so the bbox/class heads receive matching sample weights and avoid tensor shape conflicts
 - ✅ **Explore Page Type Safety** - Removed legacy Place type mapping and updated explore page to use GraphQL types directly for better type safety and maintainability
 - ✅ **Comprehensive Recycling Information Enhancement** - Expanded recycling knowledge base with detailed preparation steps, environmental benefits, reuse ideas, and common mistakes for all German waste categories; enhanced LLM service for structured responses; improved UI display with organized sections for recycling guidance
 - ✅ **AI-Enhanced Waste Processing Pipeline** - Restructured waste analysis to use on-device object detection first, then send only normalized categories to LLM for educational content generation; separated core recycling rules from AI-generated enhancements; created visually distinct UI section for AI insights with soft gradient background, friendly AI icon, and card-like layout
 - ✅ **LLM Integration Optimization** - qwen2.5:0.5b model available with timeout handling for production use; removed LLM access to recycling knowledge base; simplified prompt for edge compatibility; category facts moved to JSON structure
 - ✅ **Waste LLM Service Main.py Cleanup** - Completely simplified main.py to focus only on AI enhancements (facts, summary, motivation text); removed all unused functions including TensorFlow model loading, knowledge base functions, detection logic, and recycling plan generation; new API takes category + recycling info and returns only AI-generated content
+- ✅ **LLM Service Migration to Backend** - Removed separate LLM service and integrated Ollama JS client directly into NestJS backend for simplified architecture; moved prompts and logic to backend LLM module with Zod validation and structured output using zod-to-json-schema
 
-### Sprint 9: Status Page & Monitoring (Completed)
-- ✅ Statping Status Page integration
-- ✅ SQLite database for lightweight data storage
-- ✅ Docker-based deployment with unified docker-compose setup
-- ✅ Service monitoring configuration (backend, database, LLM services)
-- ✅ Real-time status updates and incident tracking
-- ✅ Logs and incident history display
-- ✅ **Redis Caching Integration** - Added Redis caching to llm-service for LLM responses and knowledge base
-- ✅ **Backend Docker Production-Only** - Modified docker-compose.yml to exclude backend from development builds, preventing unnecessary rebuilds during feature development
-- ✅ **Mobile TypeScript Errors Resolved** - Fixed all TypeScript compilation errors after GraphQL schema updates: corrected event ID parameter handling, updated router paths for waste analysis, removed invalid translation keys, and added typecheck script to mobile package.json
-- ✅ **Backend Codebase Cleanup** - Removed all deprecated and unused functions: eliminated analyzeWaste methods from llm.service.ts and recycling.service.ts, removed unused LlmService dependency, cleaned up GraphQL resolvers and DTOs, removed unused finalizeRecycling functionality, and updated mobile app imports
-- ✅ **Mobile Type System Cleanup** - Moved AnalyzeWasteResult and related types from generated GraphQL types to local type definitions in `~/types/wasteAnalysis.ts`, ensuring mobile app types are independent of deprecated GraphQL schema
+### Sprint 10: Production Readiness (Completed)
+- ✅ **Lint Issues Fixed** - Resolved all ESLint errors and warnings across backend and mobile apps
+- ✅ **Logging Standardization** - Replaced all console statements with proper NestJS Logger usage in backend services
+- ✅ **TypeScript Strict Mode** - Fixed all unsafe type assignments and unused variables
+- ✅ **Code Quality** - Ensured consistent code formatting with Prettier across the monorepo
+- ✅ **GraphQL Type Generation** - Regenerated types to fix mobile app type mismatches
 
 ## 🚧 In Progress
 
@@ -137,6 +145,7 @@
 - ✅ Real TFLite model integration (native inference implemented)
 - ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated
 - 🔄 Points awarding for waste classifications
+- ✅ **Post Type System Implementation** - Add post types (general, giveaway, event, meetup) with conditional field requirements
 
 **Recently Completed:**
 - ✅ **Waste Analysis Screen Logic/View Separation** - Extracted all business logic into useWasteAnalysis custom hook, improved code maintainability and testability
@@ -191,7 +200,7 @@
 | NFR5 | Usability | Intuitive UI | Basic UI working | 🟡 In progress |
 | NFR6 | Compatibility | iOS 13+, Android 8+ | Not tested | 🔴 Not validated |
 | NFR7 | Accessibility | WCAG 2.1 AA | Not implemented | 🔴 Not started |
-| NFR8 | Test Coverage | >80% | 15% | 🟡 Partial |
+| NFR8 | **Code Quality** | **ESLint + Prettier** | **✅ All issues resolved** | **🟢 Complete** |
 
 ---
 
@@ -219,6 +228,17 @@
 - **Effort:** 4 hours
 - **Issue:** Updated training script with 8-class system, stratified splitting, class weights, and preprocessing fixes; data pipeline and model building verified working; segmentation fault during training on M1 Mac due to TensorFlow/Metal compatibility
 - **Resolution:** Core pipeline improvements complete and functional; training works on compatible hardware (Linux/Windows with CUDA or CPU-only)
+
+**TD-10: YOLO Autolabel FD Exhaustion**
+- **Status:** ✅ Fixed
+- **Impact:** Autolabeling crashed on large datasets with OSError: Too many open files
+- **Resolution:** Stream predictions from input folder, set `workers=0`, `batch=1`; avoid passing massive path lists to `model.predict`
+
+**TD-11: DateTimePicker Android Dismiss Error**
+- **Status:** ✅ **Fixed**
+- **Impact:** App crashed on Android when dismissing DateTimePicker due to undefined mode in library dismiss function
+- **Issue:** @react-native-community/datetimepicker library had bug with global mode variable causing TypeError when dismissing picker
+- **Fix:** Replaced with react-native-date-picker library which uses proper modal implementation and doesn't rely on deprecated Android APIs
 
 **TD-02: Events Mobile UI Not Implemented**
 - **Status:** ✅ **Completed**
@@ -260,11 +280,22 @@
 - **Effort:** 8 hours
 - **Next Steps:** Add comprehensive error handling across app
 
+**TD-12: Production Logging Configuration**
+- **Status:** ✅ **Completed**
+- **Impact:** Backend now uses structured logging instead of console statements
+- **Effort:** 4 hours
+- **Resolution:** Replaced all console.log/warn/error with NestJS Logger in services, added proper error handling in main.ts
+
 ---
 
 ## 📈 Next Tasks (Priority Order)
 
-1. **Prisma Datasource URL Migration** (High Priority)
+1. **EAS Build Setup for Play Store Deployment** (High Priority)
+   - Set up Google Play Console service account key
+   - Configure EAS credentials for Android signing
+   - Update production environment variables
+   - Test production build and submission
+   - Deploy backend to production environment
    - Move connection URLs from `schema.prisma` to `prisma.config.ts`
    - Update PrismaClient constructor to use `adapter` or `accelerateUrl`
    - Test database connections after migration
