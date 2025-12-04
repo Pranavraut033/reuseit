@@ -21,8 +21,8 @@ import { UserModule } from '~/user/user.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { GoogleMapsModule } from './google-maps/google-maps.module';
 import { HealthController } from './health/health.controller';
-import { LocationModule } from './location/location.module';
 import { LlmModule } from './llm/llm.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -53,10 +53,10 @@ import { LlmModule } from './llm/llm.module';
       useFactory: () => {
         return {
           stores: [
+            new KeyvRedis(process.env.REDIS_URL || 'redis://localhost:6379'),
             new Keyv({
               store: new CacheableMemory({ ttl: 60000, lruSize: 5000 }),
             }),
-            new KeyvRedis(process.env.REDIS_URL || 'redis://localhost:6379'),
           ],
         };
       },

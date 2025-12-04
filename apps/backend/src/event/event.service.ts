@@ -56,7 +56,7 @@ export class EventService {
     return event as unknown as Event;
   }
 
-  async findAll(): Promise<Event[]> {
+  async findAll() {
     const events = await this.prisma.event.findMany({
       include: {
         creator: true,
@@ -69,7 +69,7 @@ export class EventService {
       },
     });
 
-    return events as unknown as Event[];
+    return events;
   }
 
   async findOne(id: string): Promise<Event> {
@@ -90,7 +90,7 @@ export class EventService {
     return event as unknown as Event;
   }
 
-  async findByCreator(creatorId: string): Promise<Event[]> {
+  async findByCreator(creatorId: string) {
     const events = await this.prisma.event.findMany({
       where: { creatorId },
       include: {
@@ -104,10 +104,10 @@ export class EventService {
       },
     });
 
-    return events as unknown as Event[];
+    return events;
   }
 
-  async findUpcoming(): Promise<Event[]> {
+  async findUpcoming() {
     const now = new Date();
     const events = await this.prisma.event.findMany({
       where: {
@@ -126,7 +126,7 @@ export class EventService {
       },
     });
 
-    return events as unknown as Event[];
+    return events;
   }
 
   async update(

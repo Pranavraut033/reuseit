@@ -3,7 +3,7 @@ import {
   Client,
   type GeocodingAddressComponentType,
 } from '@googlemaps/google-maps-services-js';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { NearbyPlace } from './entities/nearby-place.entity';
 import { PlaceAutocompletePrediction } from './entities/place-autocomplete-prediction.entity';
@@ -12,13 +12,14 @@ import { ReverseGeocodeResult } from './entities/reverse-geocode-result.entity';
 
 @Injectable()
 export class GoogleMapsService {
+  private readonly logger = new Logger(GoogleMapsService.name);
   private apiKey: string | undefined;
   private client: Client;
 
   constructor() {
     this.apiKey = process.env.GOOGLE_MAPS_API_KEY;
     if (!this.apiKey) {
-      console.warn('GOOGLE_MAPS_API_KEY not set for backend GoogleMapsService');
+      this.logger.warn('GOOGLE_MAPS_API_KEY not set for backend GoogleMapsService');
     }
     this.client = new Client({});
   }
@@ -63,7 +64,7 @@ export class GoogleMapsService {
       );
       return preds;
     } catch (e) {
-      console.warn('placesAutocomplete error', e);
+      this.logger.warn('placesAutocomplete error', e);
       return [];
     }
   }
@@ -104,7 +105,7 @@ export class GoogleMapsService {
       };
       return details;
     } catch (e) {
-      console.warn('placeDetails error', e);
+      this.logger.warn('placeDetails error', e);
       return null;
     }
   }
@@ -116,7 +117,6 @@ export class GoogleMapsService {
     keywords: string[],
   ): Promise<NearbyPlace[]> {
     if (!this.hasKey()) return [];
-    const locationStr = `${latitude},${longitude}`;
     const unique: Record<string, NearbyPlace> = {};
 
     for (const kw of keywords) {
@@ -158,7 +158,7 @@ export class GoogleMapsService {
           }
         }
       } catch (e) {
-        console.warn('nearbyPlaces error', e);
+        this.logger.warn('nearbyPlaces error', e);
         continue;
       }
     }
@@ -202,7 +202,7 @@ export class GoogleMapsService {
       };
       return value;
     } catch (e) {
-      console.error('reverseGeocode error', e);
+      this.logger.error('reverseGeocode error', e);
       return null;
     }
   }

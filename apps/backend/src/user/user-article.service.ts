@@ -5,7 +5,7 @@ import { UpdateUserArticleInput } from './dto/update-user-article.input';
 
 @Injectable()
 export class UserArticleService {
-  create(createUserArticleInput: CreateUserArticleInput) {
+  create(_createUserArticleInput: CreateUserArticleInput) {
     return 'This action adds a new userArticle';
   }
 
@@ -17,8 +17,8 @@ export class UserArticleService {
     return `This action returns a #${id} userArticle`;
   }
 
-  update(id: number, updateUserArticleInput: UpdateUserArticleInput) {
-    return `This action updates a #${id} userArticle`;
+  update(_id: number, _updateUserArticleInput: UpdateUserArticleInput) {
+    return `This action updates a #${_id} userArticle`;
   }
 
   remove(id: number) {

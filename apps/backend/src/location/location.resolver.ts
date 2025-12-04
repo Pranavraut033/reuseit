@@ -1,6 +1,6 @@
-import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
+import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import type { Cache } from 'cache-manager';
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';

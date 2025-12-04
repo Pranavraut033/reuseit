@@ -8,16 +8,12 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
-import { Comment } from './entities/comment.entity';
 
 @Injectable()
 export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    createCommentInput: CreateCommentInput,
-    userId: string | undefined,
-  ): Promise<Comment> {
+  async create(createCommentInput: CreateCommentInput, userId: string | undefined) {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to create a comment');
     }
@@ -43,10 +39,10 @@ export class CommentService {
       },
     });
 
-    return comment as any;
+    return comment;
   }
 
-  async findAll(): Promise<Comment[]> {
+  async findAll() {
     const comments = await this.prisma.comment.findMany({
       include: {
         author: true,
@@ -57,10 +53,10 @@ export class CommentService {
       },
     });
 
-    return comments as any;
+    return comments;
   }
 
-  async findOne(id: string): Promise<Comment> {
+  async findOne(id: string) {
     const comment = await this.prisma.comment.findUnique({
       where: { id },
       include: {
@@ -73,10 +69,10 @@ export class CommentService {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
 
-    return comment as any;
+    return comment;
   }
 
-  async findByPostId(postId: string): Promise<Comment[]> {
+  async findByPostId(postId: string) {
     const comments = await this.prisma.comment.findMany({
       where: { postId },
       include: {
@@ -88,14 +84,10 @@ export class CommentService {
       },
     });
 
-    return comments as any;
+    return comments;
   }
 
-  async update(
-    id: string,
-    updateCommentInput: UpdateCommentInput,
-    userId: string | undefined,
-  ): Promise<Comment> {
+  async update(id: string, updateCommentInput: UpdateCommentInput, userId: string | undefined) {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to update a comment');
     }
@@ -124,10 +116,10 @@ export class CommentService {
       },
     });
 
-    return comment as any;
+    return comment;
   }
 
-  async remove(id: string, userId: string | undefined): Promise<Comment> {
+  async remove(id: string, userId: string | undefined) {
     if (!userId) {
       throw new UnauthorizedException('User must be authenticated to delete a comment');
     }
@@ -153,6 +145,6 @@ export class CommentService {
       },
     });
 
-    return comment as any;
+    return comment;
   }
 }

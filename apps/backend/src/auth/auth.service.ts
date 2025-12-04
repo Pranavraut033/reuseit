@@ -40,7 +40,7 @@ export class AuthService {
     }
 
     const googleId = decoded.uid;
-    const name = ((decoded as any).name || '') as string;
+    const name = (decoded as unknown as { name?: string }).name || '';
     const emailRaw = (decoded.email || '').trim();
     const email = emailRaw || `${googleId}@auth.local`;
     const emailVerified = !!decoded.email_verified;

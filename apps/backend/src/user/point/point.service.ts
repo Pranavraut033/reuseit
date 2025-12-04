@@ -5,7 +5,7 @@ import { UpdatePointInput } from './dto/update-point.input';
 
 @Injectable()
 export class PointService {
-  create(createPointInput: CreatePointInput) {
+  create(_createPointInput: CreatePointInput) {
     return 'This action adds a new point';
   }
 
@@ -17,8 +17,8 @@ export class PointService {
     return `This action returns a #${id} point`;
   }
 
-  update(id: number, updatePointInput: UpdatePointInput) {
-    return `This action updates a #${id} point`;
+  update(_id: number, _updatePointInput: UpdatePointInput) {
+    return `This action updates a #${_id} point`;
   }
 
   remove(id: number) {

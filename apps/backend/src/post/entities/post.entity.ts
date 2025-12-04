@@ -7,6 +7,7 @@ import { UserArticle } from '~/user/entities/user-article.entity';
 
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
+import { PostType } from './post-type.entity';
 
 @ObjectType()
 export class Post {
@@ -78,4 +79,7 @@ export class Post {
 
   @Field(() => Boolean)
   anonymous: boolean;
+
+  @Field(() => PostType)
+  postType: PostType;
 }

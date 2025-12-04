@@ -1,6 +1,6 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import type { Cache } from 'cache-manager';
 
 import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';

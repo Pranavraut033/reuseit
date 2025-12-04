@@ -31,7 +31,11 @@ export class PostResolver {
   ) {}
 
   @Mutation(() => Post)
-  @InvalidateCache((result: Post) => [`posts`, `postsByAuthor:${result.authorId}`])
+  @InvalidateCache((result: Post) => [
+    `posts`,
+    `postsByAuthor:${result.authorId}`,
+    `user:${result.authorId}`,
+  ])
   createPost(
     @Args('createPostInput') createPostInput: CreatePostInput,
     @Context('req') req: { user?: User },

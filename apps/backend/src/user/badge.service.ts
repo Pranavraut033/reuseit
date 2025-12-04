@@ -5,7 +5,7 @@ import { UpdateBadgeInput } from './dto/update-badge.input';
 
 @Injectable()
 export class BadgeService {
-  create(createBadgeInput: CreateBadgeInput) {
+  create(_createBadgeInput: CreateBadgeInput) {
     return 'This action adds a new badge';
   }
 
@@ -17,8 +17,8 @@ export class BadgeService {
     return `This action returns a #${id} badge`;
   }
 
-  update(id: number, updateBadgeInput: UpdateBadgeInput) {
-    return `This action updates a #${id} badge`;
+  update(_id: number, _updateBadgeInput: UpdateBadgeInput) {
+    return `This action updates a #${_id} badge`;
   }
 
   remove(id: number) {

@@ -2,6 +2,7 @@
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 import shared from '../../eslint.shared.js';
 // cast to any to satisfy the tseslint.config TypeScript typing
@@ -21,7 +22,7 @@ export default tseslint.config(
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
     plugins: {
-      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
+      'simple-import-sort': simpleImportSort,
     },
   },
   {

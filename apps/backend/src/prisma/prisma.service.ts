@@ -1,10 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 import { ModelType, PrismaModel, PrismaModelName, SafeUpsertOptions } from './types/safeUpsert';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
+  private readonly logger = new Logger(PrismaService.name);
   private supportsTransactions: boolean | null = null;
 
   async onModuleInit() {
@@ -20,18 +21,19 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       // Try a simple transaction to test support
       await this.$transaction([]);
       this.supportsTransactions = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
       if (
-        error.code === 'P2010' ||
-        error.code === 'P2031' ||
-        error.message?.includes('Transactions are not supported')
+        err.code === 'P2010' ||
+        err.code === 'P2031' ||
+        err.message?.includes('Transactions are not supported')
       ) {
         this.supportsTransactions = false;
-        console.warn('⚠ Database does not support transactions. Using fallback upsert logic.');
+        this.logger.warn('⚠ Database does not support transactions. Using fallback upsert logic.');
       } else {
         // Unknown error, assume transactions work but log the error
         this.supportsTransactions = true;
-        console.warn('Transaction support check failed:', error.message);
+        this.logger.warn(`Transaction support check failed: ${err.message || 'Unknown error'}`);
       }
     }
   }
@@ -58,15 +60,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           create,
           update,
         })) as ModelType<T>;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If transaction error occurs, mark as unsupported and fall back
+        const err = error as { code?: string; message?: string };
         if (
-          error.code === 'P2010' ||
-          error.code === 'P2031' ||
-          error.message?.includes('Transactions are not supported')
+          err.code === 'P2010' ||
+          err.code === 'P2031' ||
+          err.message?.includes('Transactions are not supported')
         ) {
           this.supportsTransactions = false;
-          console.warn('⚠ Transaction error detected. Switching to manual upsert.');
+          this.logger.warn('⚠ Transaction error detected. Switching to manual upsert.');
           // Fall through to manual upsert
         } else {
           throw error;

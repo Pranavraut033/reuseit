@@ -6,7 +6,6 @@ import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
 import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
-
 import { Location } from '~/location/entities/location.entity';
 import { Post } from '~/post/entities/post.entity';
 
@@ -78,7 +77,7 @@ export class EventResolver {
   updateEvent(
     @Args('updateEventInput') updateEventInput: UpdateEventInput,
     @Context('req') req: { user?: User },
-  ) {
+  ): Promise<Event> {
     return this.eventService.update(updateEventInput.id, updateEventInput, req.user?.id);
   }
 
@@ -92,7 +91,7 @@ export class EventResolver {
   removeEvent(
     @Args('id', { type: () => String }) id: string,
     @Context('req') req: { user?: User },
-  ) {
+  ): Promise<Event> {
     return this.eventService.remove(id, req.user?.id);
   }
 
@@ -101,7 +100,7 @@ export class EventResolver {
   joinEvent(
     @Args('eventId', { type: () => String }) eventId: string,
     @Context('req') req: { user?: User },
-  ) {
+  ): Promise<Event> {
     return this.eventService.joinEvent(eventId, req.user?.id);
   }
 
@@ -110,7 +109,7 @@ export class EventResolver {
   leaveEvent(
     @Args('eventId', { type: () => String }) eventId: string,
     @Context('req') req: { user?: User },
-  ) {
+  ): Promise<Event> {
     return this.eventService.leaveEvent(eventId, req.user?.id);
   }
 

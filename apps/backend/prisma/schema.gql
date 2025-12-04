@@ -63,6 +63,14 @@ type Post {
   location: Location
   locationId: ID
   anonymous: Boolean!
+  postType: PostType!
+}
+
+enum PostType {
+  GENERAL
+  GIVEAWAY
+  EVENT
+  MEETUP
 }
 
 type Location {
@@ -157,6 +165,7 @@ type User {
   likes: [Like!]!
   posts: [Post!]!
   eventsCreated: [Event!]!
+  totalPoints: Float!
 }
 
 type BadgeAssignment {
@@ -486,6 +495,9 @@ input CreatePostInput {
 
   """Whether the post is created anonymously"""
   anonymous: Boolean!
+
+  """Type of the post"""
+  postType: PostType!
 }
 
 input UpdatePostInput {
@@ -521,6 +533,9 @@ input UpdatePostInput {
 
   """Whether the post is created anonymously"""
   anonymous: Boolean
+
+  """Type of the post"""
+  postType: PostType
   id: String!
 }
 

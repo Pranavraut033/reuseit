@@ -54,6 +54,7 @@
     "graphql-scalars": "^1.24.2",
     "keyv": "^5.5.4",
     "nestjs-dataloader": "^9.0.0",
+    "ollama": "^0.6.3",
     "passport": "^0.7.0",
     "passport-google-oidc": "^0.1.0",
     "passport-local": "^1.0.0",
@@ -61,7 +62,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^4.1.12",
-    "zod-prisma-types": "^3.2.4"
+    "zod-prisma-types": "^3.3.10",
+    "zod-to-json-schema": "^3.25.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

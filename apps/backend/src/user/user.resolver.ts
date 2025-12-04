@@ -6,7 +6,6 @@ import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
 import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
-
 import { Event } from '~/event/entities/event.entity';
 import { EvenParticipant } from '~/event/entities/event-participant.entity';
 import { PointsHistory } from '~/points/dto/point-history.entity';
@@ -124,5 +123,11 @@ export class UserResolver {
     @Loader(UserArticlesLoader) loader: DataLoader<string, UserArticle[]>,
   ): Promise<UserArticle[]> {
     return loader.load(user.id);
+  }
+
+  @ResolveField('totalPoints', () => Number)
+  async totalPoints(@Parent() user: User): Promise<number> {
+    const total = await this.userService.totalPointsOfUser(user.id);
+    return total;
   }
 }

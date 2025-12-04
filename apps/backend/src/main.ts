@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { json, urlencoded } from 'express';
 
@@ -19,4 +19,8 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 
-bootstrap().catch(console.error);
+bootstrap().catch((error) => {
+  const logger = new Logger('Bootstrap');
+  logger.error('Application failed to start', error);
+  process.exit(1);
+});

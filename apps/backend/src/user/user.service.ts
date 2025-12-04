@@ -9,7 +9,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 export class UserService {
   constructor(private prismaService: PrismaService) {}
 
-  create(createUserInput: CreateUserInput) {
+  create(_createUserInput: CreateUserInput) {
     // this.prismaService.user.create({
     //   data: createUserInput,
     // });
@@ -26,11 +26,22 @@ export class UserService {
     });
   }
 
-  update(id: string, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user`;
+  update(_id: string, _updateUserInput: UpdateUserInput) {
+    return `This action updates a #${_id} user`;
   }
 
   remove(id: string) {
     return `This action removes a #${id} user`;
+  }
+
+  async totalPointsOfUser(userId: string): Promise<number> {
+    const result = await this.prismaService.pointsHistory.aggregate({
+      where: { userId },
+      _sum: {
+        amount: true,
+      },
+    });
+
+    return result._sum.amount || 0;
   }
 }

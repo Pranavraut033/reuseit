@@ -72,6 +72,7 @@ model Post {
   likes        Like[]
   location     Location?     @relation(fields: [locationId], references: [id])
   pickupDate   DateTime?
+  postType     PostType      @default(GENERAL)
   tags         String[]
   title        String
   userArticles UserArticle[]
@@ -176,6 +177,13 @@ enum LocationType {
   USER_CHECKIN
   USER_LOCATION
   WAREHOUSE
+}
+
+enum PostType {
+  GENERAL
+  GIVEAWAY
+  EVENT
+  MEETUP
 }
 
 model PointsHistory {

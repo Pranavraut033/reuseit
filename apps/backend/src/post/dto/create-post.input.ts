@@ -2,6 +2,8 @@ import { Field, InputType } from '@nestjs/graphql';
 
 import { CreateLocationInput } from '~/location/dto/create-location.input';
 
+import { PostType } from '../entities/post-type.entity';
+
 @InputType()
 export class CreatePostInput {
   @Field(() => String, { description: 'Post title' })
@@ -35,4 +37,7 @@ export class CreatePostInput {
 
   @Field(() => Boolean, { description: 'Whether the post is created anonymously' })
   anonymous: boolean;
+
+  @Field(() => PostType, { description: 'Type of the post' })
+  postType: PostType;
 }
