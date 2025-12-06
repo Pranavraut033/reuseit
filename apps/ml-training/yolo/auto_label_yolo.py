@@ -86,7 +86,12 @@ def collect_image_paths(input_folder: str) -> List[str]:
 
 
 def convert_csv_to_yolo_txt(
-    csv_file: str, images_dir: str, output_labels_dir: str, confidence_threshold: float = 0.5
+    csv_file: str,
+    images_dir: str,
+    output_labels_dir: str,
+    confidence_threshold: float = 0.5,
+    max_images_per_class: Optional[int] = None,
+    balance_classes: bool = False,
 ) -> Dict[str, List[Dict]]:
     """
     Convert CSV annotations to YOLO .txt format files.
@@ -96,6 +101,8 @@ def convert_csv_to_yolo_txt(
         images_dir: Directory containing images
         output_labels_dir: Directory to save .txt label files
         confidence_threshold: Minimum confidence to include detection
+        max_images_per_class: Maximum images to include per class (randomly sampled)
+        balance_classes: If True, balance by limiting to min class count across classes
 
     Returns:
         Dictionary mapping image filenames to their annotations
@@ -141,6 +148,35 @@ def convert_csv_to_yolo_txt(
                     "confidence": confidence,
                 }
             )
+
+    # Group images by class and apply limiting/balancing
+    class_to_images = defaultdict(list)
+    for filename, anns in annotations.items():
+        if anns:
+            class_id = anns[0]["class_id"]  # Assumes all anns in image share class (per folder)
+            class_to_images[class_id].append(filename)
+
+    selected_images = set()
+    if balance_classes:
+        # Balance by undersampling to min class count
+        min_count = min(len(imgs) for imgs in class_to_images.values()) if class_to_images else 0
+        effective_max = min_count
+        print(f"Balancing classes: limiting to {min_count} images per class")
+    else:
+        effective_max = max_images_per_class
+
+    for class_id, imgs in class_to_images.items():
+        if effective_max:
+            selected = random.sample(imgs, min(effective_max, len(imgs)))
+        else:
+            selected = imgs
+        selected_images.update(selected)
+        print(f"Class {class_id}: selected {len(selected)}/{len(imgs)} images")
+
+    # Filter annotations to selected images
+    annotations = {
+        filename: anns for filename, anns in annotations.items() if filename in selected_images
+    }
 
     # Create .txt files for images that have annotations
     for filename, anns in annotations.items():
@@ -610,6 +646,16 @@ def main() -> None:
         action="store_true",
         help="Create balanced dataset by ensuring proportional class distribution in train/val/test splits",
     )
+    parser.add_argument(
+        "--max-images-per-class",
+        type=int,
+        help="Maximum images to include per class (randomly sampled)",
+    )
+    parser.add_argument(
+        "--balance-classes",
+        action="store_true",
+        help="Balance dataset by limiting to min class count across classes",
+    )
 
     args = parser.parse_args()
 
@@ -625,7 +671,12 @@ def main() -> None:
     if args.convert_csv:
         print(f"[cyan]Converting CSV {args.convert_csv} to YOLO format[/cyan]")
         annotations = convert_csv_to_yolo_txt(
-            args.convert_csv, args.input, f"{args.output_dataset}/labels", args.confidence_threshold
+            args.convert_csv,
+            args.input,
+            f"{args.output_dataset}/labels",
+            args.confidence_threshold,
+            args.max_images_per_class,
+            args.balance_classes,
         )
         split_dataset(
             args.input,
@@ -669,6 +720,8 @@ def main() -> None:
                     args.input,
                     f"{args.output_dataset}/labels",
                     args.confidence_threshold,
+                    args.max_images_per_class,
+                    args.balance_classes,
                 )
             split_dataset(
                 args.input,

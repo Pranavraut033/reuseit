@@ -10,6 +10,18 @@ import argparse
 import os
 import time
 
+# Class names for waste detection (from data.yaml)
+CLASS_NAMES = [
+    "paper_cardboard",
+    "glass",
+    "recyclables",
+    "bio_waste",
+    "textile_reuse",
+    "electronics",
+    "battery",
+    "residual_waste",
+]
+
 
 def nms(boxes, scores, iou_threshold=0.5):
     """Apply Non-Maximum Suppression to filter overlapping boxes"""
@@ -104,10 +116,13 @@ def postprocess_output(output, conf_threshold=0.25, input_shape=(640, 640), iou_
     """Postprocess YOLOv8 TFLite output to get detections"""
     detections = []
 
-    if output.shape[1] == 84 and len(output.shape) == 3:  # YOLOv8 format: [1, 84, 8400]
-        # Reshape to [8400, 84]
-        predictions = output[0].T  # Transpose to [8400, 84]
+    if (
+        output.shape[1] > 4 and len(output.shape) == 3
+    ):  # YOLOv8 format: [1, num_classes+4, num_anchors]
+        # Reshape to [num_anchors, num_classes+4]
+        predictions = output[0].T  # Transpose to [num_anchors, num_classes+4]
 
+        num_classes = output.shape[1] - 4  # Subtract 4 for bbox coordinates
         img_h, img_w = input_shape
 
         all_boxes = []
@@ -115,10 +130,10 @@ def postprocess_output(output, conf_threshold=0.25, input_shape=(640, 640), iou_
         all_classes = []
 
         for pred in predictions:
-            if len(pred) >= 84:  # 4 bbox + 80 classes
+            if len(pred) >= 4 + num_classes:  # 4 bbox + num_classes
                 # Extract bbox (center x, center y, width, height) - normalized
                 cx, cy, w, h = pred[0:4]
-                class_scores = pred[4:84]  # 80 COCO classes
+                class_scores = pred[4 : 4 + num_classes]  # num_classes scores
 
                 # Find best class
                 class_id = int(np.argmax(class_scores))
@@ -174,7 +189,8 @@ def draw_detections(frame, detections):
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
         # Draw label
-        label = f"Class {class_id}: {conf:.2f}"
+        class_name = CLASS_NAMES[class_id] if class_id < len(CLASS_NAMES) else f"Class {class_id}"
+        label = f"{class_name}: {conf:.2f}"
         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     return frame

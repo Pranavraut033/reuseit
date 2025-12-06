@@ -132,7 +132,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="yolo_training/yolo_training_results/waste_detector2/weights/best.pt",
+        default="yolo/training_results/waste_detector2/weights/best.pt",
         help="Path to trained model weights",
     )
     parser.add_argument(

@@ -15,7 +15,7 @@ def train_yolo_detector(
     epochs: int = 100,
     imgsz: int = 640,
     batch: int = 16,
-    project: str = "yolo_training_results",
+    project: str = "training_results",
     name: str = "waste_detector",
     save: bool = True,
     **kwargs,
@@ -256,7 +256,7 @@ def main():
     parser.add_argument(
         "--project",
         type=str,
-        default="yolo_training_results",
+        default="training_results",
         help="Project directory for saving results",
     )
     parser.add_argument(

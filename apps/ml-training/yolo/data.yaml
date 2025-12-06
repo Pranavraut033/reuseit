@@ -1,7 +1,7 @@
 path: .
-train: yolo_dataset/images/train
-val: yolo_dataset/images/val
-test: yolo_dataset/images/test
+train: dataset/images/train
+val: dataset/images/val
+test: dataset/images/test
 
 names:
   0: paper_cardboard

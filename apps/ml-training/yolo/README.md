@@ -6,13 +6,13 @@ This directory contains a complete pipeline for training YOLOv8 object detection
 
 ```bash
 # 1. Prepare dataset
-python auto_label_yolo.py --input ../merged_dataset --output-dataset yolo_dataset
+python auto_label_yolo.py --input ../merged_dataset --output-dataset dataset
 
 # 2. Train model
 python train_yolo_detector.py --epochs 100 --batch 16
 
 # 3. Export to TFLite
-python export_to_tflite.py --weights yolo_training_results/waste_detector/weights/best.pt
+python export_to_tflite.py --weights training_results/waste_detector/weights/best.pt
 ```
 
 ## 📁 Dataset Preparation
@@ -25,7 +25,7 @@ Generate bounding boxes automatically using a pre-trained YOLO model:
 python auto_label_yolo.py \
   --input ../merged_dataset \
   --output-csv yolo_labels.csv \
-  --output-dataset yolo_dataset \
+  --output-dataset dataset \
   --model yolov8n.pt \
   --confidence-threshold 0.5
 ```
@@ -46,13 +46,13 @@ If you have existing CSV or JSON annotations:
 python auto_label_yolo.py \
   --convert-csv existing_labels.csv \
   --input ../merged_dataset \
-  --output-dataset yolo_dataset
+  --output-dataset dataset
 
 # From JSON (COCO format)
 python auto_label_yolo.py \
   --convert-json annotations.json \
   --input ../merged_dataset \
-  --output-dataset yolo_dataset
+  --output-dataset dataset
 ```
 
 ### Option 3: Classification to Detection
@@ -62,7 +62,7 @@ Convert classification dataset to detection format (full-image bounding boxes):
 ```bash
 python -c "
 from dataset_utils_yolo import prepare_yolo_dataset
-prepare_yolo_dataset('../merged_dataset', 'yolo_dataset')
+prepare_yolo_dataset('../merged_dataset', 'dataset')
 "
 ```
 
@@ -91,7 +91,7 @@ python train_yolo_detector.py \
 ### Resume Training
 
 ```bash
-python train_yolo_detector.py --resume yolo_training_results/waste_detector/weights/last.pt
+python train_yolo_detector.py --resume training_results/waste_detector/weights/last.pt
 ```
 
 ## 📱 Export to TFLite
@@ -99,7 +99,7 @@ python train_yolo_detector.py --resume yolo_training_results/waste_detector/weig
 Export trained model for mobile deployment:
 
 ```bash
-python export_to_tflite.py --weights yolo_training_results/waste_detector/weights/best.pt
+python export_to_tflite.py --weights training_results/waste_detector/weights/best.pt
 ```
 
 ### Step-by-Step Export
