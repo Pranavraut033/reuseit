@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { detectObjects, ObjectDetectionResult, warmup } from '~/ml/objectDetector';
+import {
+  createFrameProcessor,
+  detectObjects,
+  getModel,
+  ObjectDetectionResult,
+  warmup,
+} from '~/ml/objectDetector';
 
 export function useObjectDetector() {
   const [ready, setReady] = useState(false);
@@ -35,5 +41,5 @@ export function useObjectDetector() {
     return r;
   }, []);
 
-  return { ready, loading, error, results, detect, reset };
+  return { ready, loading, error, results, detect, reset, model: getModel(), createFrameProcessor };
 }

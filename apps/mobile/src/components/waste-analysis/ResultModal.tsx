@@ -37,7 +37,8 @@ const ResultModal: React.FC = () => {
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
           }}
-          handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40, height: 4 }}>
+          handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40, height: 4 }}
+        >
           <BottomSheetScrollView contentContainerStyle={{ flexGrow: 1 }}>
             {/* Loading Overlay */}
             {pickedImage && isAnalyzing && (
@@ -61,14 +62,15 @@ const ResultModal: React.FC = () => {
                     <View className="rounded-lg bg-blue-500 px-6 py-3">
                       <Text
                         className="text-center font-semibold text-white"
-                        onPress={resetAnalysis}>
+                        onPress={resetAnalysis}
+                      >
                         Try Again
                       </Text>
                     </View>
                   </View>
                 </View>
               ) : (
-                <ResultContent result={result} pickedImage={pickedImage} onClose={resetAnalysis} />
+                <ResultContent />
               ))}
             {error && (
               <View className="absolute left-4 right-4 top-12 rounded-lg bg-red-500 p-4">

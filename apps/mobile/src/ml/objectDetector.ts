@@ -1,7 +1,8 @@
-import * as FileSystem from 'expo-file-system/legacy';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import jpeg from 'jpeg-js';
 import { loadTensorflowModel, TensorflowModel } from 'react-native-fast-tflite';
+import { type Frame } from 'react-native-vision-camera';
+import { makeShareable } from 'react-native-worklets';
 
 import { initTensorflow } from './tensorflow';
 
@@ -29,12 +30,39 @@ const _labels = [
 ];
 
 // Image preprocessing constants for object detection model
-export const IMAGE_SIZE = 224; // Model expects 224x224 input (matches training config)
-const MAX_BOXES = 10; // Maximum number of detections per image
+export const IMAGE_SIZE = 640; // Model expects 640x640 input for YOLO
 const NUM_CLASSES = 8; // Number of waste categories
 const CONFIDENCE_THRESHOLD = 0.3; // Minimum confidence to include detection
 
 let model: TensorflowModel | null = null;
+
+function preprocessFrame(frame: Frame): number[] {
+  const buffer = frame.toArrayBuffer();
+  const data = new Uint8Array(buffer);
+
+  // Frame dimensions
+  const frameWidth = frame.width;
+  const frameHeight = frame.height;
+
+  // Scale factors for downsampling
+  const scaleX = frameWidth / IMAGE_SIZE;
+  const scaleY = frameHeight / IMAGE_SIZE;
+
+  // Convert RGBA to RGB and normalize, with downsampling
+  const input: number[] = [];
+  for (let i = 0; i < IMAGE_SIZE * IMAGE_SIZE; i++) {
+    const x = Math.floor((i % IMAGE_SIZE) * scaleX);
+    const y = Math.floor((i / IMAGE_SIZE) * scaleY);
+    const idx = (y * frameWidth + x) * 4;
+    if (idx + 2 < data.length) {
+      input.push(data[idx] / 255.0); // R
+      input.push(data[idx + 1] / 255.0); // G
+      input.push(data[idx + 2] / 255.0); // B
+    }
+  }
+
+  return input;
+}
 
 async function loadModel() {
   if (model) return model;
@@ -44,10 +72,12 @@ async function loadModel() {
   try {
     // Load the object detection TFLite model from assets
     // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment
-    const modelSource = require('@/assets/model/waste_object_detector_model.tflite');
+    const modelSource = require('@/assets/model/best_float16.tflite');
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     model = await loadTensorflowModel(modelSource);
+    // Make model shareable for worklets
+    model = makeShareable(model);
     if (__DEV__) console.warn('Object detection TFLite model loaded successfully');
   } catch (error) {
     console.error('Failed to load object detection TFLite model:', error);
@@ -59,17 +89,18 @@ async function loadModel() {
 
 async function preprocessImage(imageUri: string): Promise<Float32Array> {
   try {
-    // Resize image to 320x320 using expo-image-manipulator
-    const result = await manipulateAsync(
-      imageUri,
-      [{ resize: { width: IMAGE_SIZE, height: IMAGE_SIZE } }],
-      { format: SaveFormat.JPEG, compress: 1.0 },
-    );
+    const result = await ImageManipulator.manipulate(imageUri)
+      .resize({ width: IMAGE_SIZE, height: IMAGE_SIZE })
+      .renderAsync();
+
+    const savedImage = await result.saveAsync({
+      format: SaveFormat.JPEG,
+      compress: 1.0,
+      base64: true,
+    });
 
     // Read the resized image as base64
-    const base64 = await FileSystem.readAsStringAsync(result.uri, {
-      encoding: 'base64',
-    });
+    const base64 = savedImage.base64;
 
     if (__DEV__) console.warn('Preprocessed image base64 length:', base64?.length);
     if (!base64) {
@@ -115,6 +146,130 @@ async function preprocessImage(imageUri: string): Promise<Float32Array> {
   }
 }
 
+interface Detection {
+  bbox: [number, number, number, number];
+  confidence: number;
+  classId: number;
+}
+
+function postprocessOutput(
+  output: number[][][],
+  confThreshold = 0.25,
+  iouThreshold = 0.5,
+): Detection[] {
+  const detections: Detection[] = [];
+
+  if (output.length === 0 || output[0].length < 5) return detections;
+
+  // YOLOv8 format: [1, num_classes+4, num_anchors]
+  const predictions = output[0]; // [num_classes+4, num_anchors]
+
+  // Transpose to [num_anchors, num_classes+4]
+  const numAnchors = predictions[0].length;
+  const numClasses = predictions.length - 4;
+
+  const transposed = Array.from({ length: numAnchors }, () =>
+    Array.from({ length: numClasses + 4 }, () => 0),
+  );
+
+  for (let i = 0; i < predictions.length; i++) {
+    for (let j = 0; j < numAnchors; j++) {
+      transposed[j][i] = predictions[i][j];
+    }
+  }
+
+  const allBoxes: number[][] = [];
+  const allScores: number[] = [];
+  const allClasses: number[] = [];
+
+  for (const pred of transposed) {
+    if (pred.length < 4 + numClasses) continue;
+
+    // Extract bbox (center x, center y, width, height) - normalized
+    const cx = pred[0];
+    const cy = pred[1];
+    const w = pred[2];
+    const h = pred[3];
+    const classScores = pred.slice(4, 4 + numClasses);
+
+    // Find best class
+    const classId = classScores.indexOf(Math.max(...classScores));
+    const confidence = classScores[classId];
+
+    if (confidence > confThreshold) {
+      // Convert bbox to x1,y1,x2,y2
+      const x1 = (cx - w / 2) * IMAGE_SIZE;
+      const y1 = (cy - h / 2) * IMAGE_SIZE;
+      const x2 = (cx + w / 2) * IMAGE_SIZE;
+      const y2 = (cy + h / 2) * IMAGE_SIZE;
+
+      // Clip to image bounds
+      const clippedX1 = Math.max(0, Math.min(x1, IMAGE_SIZE));
+      const clippedY1 = Math.max(0, Math.min(y1, IMAGE_SIZE));
+      const clippedX2 = Math.max(0, Math.min(x2, IMAGE_SIZE));
+      const clippedY2 = Math.max(0, Math.min(y2, IMAGE_SIZE));
+
+      allBoxes.push([clippedX1, clippedY1, clippedX2, clippedY2]);
+      allScores.push(confidence);
+      allClasses.push(classId);
+    }
+  }
+
+  // Apply NMS
+  if (allBoxes.length > 0) {
+    const keepIndices = nms(allBoxes, allScores, iouThreshold);
+    for (const idx of keepIndices) {
+      detections.push({
+        bbox: allBoxes[idx] as [number, number, number, number],
+        confidence: allScores[idx],
+        classId: allClasses[idx],
+      });
+    }
+  }
+
+  return detections;
+}
+
+function nms(boxes: number[][], scores: number[], iouThreshold = 0.5): number[] {
+  if (boxes.length === 0) return [];
+
+  const order = scores.map((_, i) => i).sort((a, b) => scores[b] - scores[a]);
+  const keep: number[] = [];
+
+  while (order.length > 0) {
+    const i = order.shift()!;
+    keep.push(i);
+
+    const remaining: number[] = [];
+    for (const j of order) {
+      const iou = calculateIoU(boxes[i], boxes[j]);
+      if (iou <= iouThreshold) {
+        remaining.push(j);
+      }
+    }
+    order.length = 0;
+    order.push(...remaining);
+  }
+
+  return keep;
+}
+
+function calculateIoU(box1: number[], box2: number[]): number {
+  const [x1, y1, x2, y2] = box1;
+  const [x1b, y1b, x2b, y2b] = box2;
+
+  const interX1 = Math.max(x1, x1b);
+  const interY1 = Math.max(y1, y1b);
+  const interX2 = Math.min(x2, x2b);
+  const interY2 = Math.min(y2, y2b);
+
+  const interArea = Math.max(0, interX2 - interX1) * Math.max(0, interY2 - interY1);
+  const box1Area = (x2 - x1) * (y2 - y1);
+  const box2Area = (x2b - x1b) * (y2b - y1b);
+
+  return interArea / (box1Area + box2Area - interArea);
+}
+
 export async function detectObjects(uri: string): Promise<ObjectDetectionResult> {
   const loadedModel = await loadModel();
 
@@ -126,7 +281,8 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     // Preprocess image
     const inputData = await preprocessImage(uri);
 
-    if (__DEV__) console.warn('Input data shape:', inputData.length, 'Expected:', IMAGE_SIZE * IMAGE_SIZE * 3);
+    if (__DEV__)
+      console.warn('Input data shape:', inputData.length, 'Expected:', IMAGE_SIZE * IMAGE_SIZE * 3);
     if (__DEV__) console.warn('Input data first 10:', Array.from(inputData.slice(0, 10)));
 
     // Check if image is almost all black (or white) to avoid meaningless detections
@@ -138,61 +294,44 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
     // Run inference
     const outputs = await loadedModel.run([inputData]);
 
-    // The model outputs two tensors: bbox, class
-    // bbox: [MAX_BOXES, 4], class: [MAX_BOXES, NUM_CLASSES]
-    if (outputs.length !== 2) {
-      throw new Error(`Expected 2 outputs, got ${outputs.length}`);
+    // YOLOv8 format: [1, num_classes+4, num_anchors]
+    if (outputs.length !== 1) {
+      throw new Error(`Expected 1 output, got ${outputs.length}`);
     }
 
-    const bboxOutput = outputs[0]; // Bounding boxes
-    const classOutput = outputs[1]; // Class probabilities
+    const outputArray = outputs[0] as Float32Array;
+    const numClasses = NUM_CLASSES;
+    const numAnchors = outputArray.length / (numClasses + 4);
 
-    if (__DEV__) console.warn('bbox output length:', bboxOutput.length);
-    if (__DEV__) console.warn('class output length:', classOutput.length);
-
-    // Convert outputs to arrays
-    const bboxArray: number[] = Array.from(bboxOutput as unknown as ArrayLike<number>);
-    const classArray: number[] = Array.from(classOutput as unknown as ArrayLike<number>);
-
-    if (__DEV__) console.warn('bbox values (first 10):', bboxArray.slice(0, 10));
-    if (__DEV__) console.warn('class probabilities (first 10):', classArray.slice(0, 10));
-
-    // Parse multiple detections
-    const detections: DetectionResult[] = [];
-    let maxConfidence = 0;
-
-    for (let i = 0; i < MAX_BOXES; i++) {
-      const bboxStart = i * 4;
-      const classStart = i * NUM_CLASSES;
-
-      // Extract bbox [x1, y1, x2, y2]
-      const bbox = bboxArray.slice(bboxStart, bboxStart + 4);
-
-      // Extract class probabilities
-      const classProbs = classArray.slice(classStart, classStart + NUM_CLASSES);
-
-      // Calculate confidence as max class probability
-      const confidence = Math.max(...classProbs);
-
-      // Only include detections above confidence threshold
-      if (confidence >= CONFIDENCE_THRESHOLD) {
-        detections.push({
-          bbox,
-          class: classProbs,
-        });
-
-        if (confidence > maxConfidence) {
-          maxConfidence = confidence;
-        }
+    // Reshape to [1, num_classes+4, num_anchors]
+    const output: number[][][] = [[]];
+    for (let i = 0; i < numClasses + 4; i++) {
+      output[0][i] = [];
+      for (let j = 0; j < numAnchors; j++) {
+        output[0][i][j] = outputArray[i * numAnchors + j];
       }
     }
 
+    // Postprocess
+    const detections = postprocessOutput(output, CONFIDENCE_THRESHOLD);
+
+    const maxConfidence =
+      detections.length > 0 ? Math.max(...detections.map((d) => d.confidence)) : 0;
+
     const result: ObjectDetectionResult = {
-      detections,
+      detections: detections.map((d) => ({
+        bbox: d.bbox,
+        class: Array(NUM_CLASSES)
+          .fill(0)
+          .map((_, i) => (i === d.classId ? d.confidence : 0)),
+      })),
       confidence: maxConfidence,
     };
 
-    if (__DEV__) console.warn(`Parsed ${detections.length} detections above threshold ${CONFIDENCE_THRESHOLD}`);
+    if (__DEV__)
+      console.warn(
+        `Parsed ${detections.length} detections above threshold ${CONFIDENCE_THRESHOLD}`,
+      );
 
     return result;
   } catch (error) {
@@ -201,6 +340,46 @@ export async function detectObjects(uri: string): Promise<ObjectDetectionResult>
   }
 }
 
+export function createFrameProcessor(onDetections?: (detections: Detection[]) => void) {
+  return (frame: Frame) => {
+    'worklet';
+    if (!model) return;
+
+    // Preprocess frame
+    const input = preprocessFrame(frame);
+
+    // Run inference
+    const typedInput = new Float32Array(input);
+    const outputs = model.runSync([typedInput]);
+
+    // Convert output
+    const outputArray = outputs[0] as Float32Array;
+    const numClasses = NUM_CLASSES;
+    const numAnchors = outputArray.length / (numClasses + 4);
+
+    const output: number[][][] = [[]];
+    for (let i = 0; i < numClasses + 4; i++) {
+      output[0][i] = [];
+      for (let j = 0; j < numAnchors; j++) {
+        output[0][i][j] = outputArray[i * numAnchors + j];
+      }
+    }
+
+    // Postprocess
+    const detections = postprocessOutput(output, CONFIDENCE_THRESHOLD);
+    console.log({ detections });
+
+    // Call callback if provided
+    if (onDetections) {
+      onDetections(detections);
+    }
+  };
+}
+
 export async function warmup() {
   await loadModel();
+}
+
+export function getModel(): TensorflowModel | null {
+  return model;
 }

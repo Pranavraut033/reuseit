@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** December 4, 2025 (YOLOv8 training completed successfully)
+**Last Updated:** December 5, 2025 (Live TFLite object detection integrated)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -128,8 +128,8 @@
 - ✅ **LLM Integration Optimization** - qwen2.5:0.5b model available with timeout handling for production use; removed LLM access to recycling knowledge base; simplified prompt for edge compatibility; category facts moved to JSON structure
 - ✅ **Waste LLM Service Main.py Cleanup** - Completely simplified main.py to focus only on AI enhancements (facts, summary, motivation text); removed all unused functions including TensorFlow model loading, knowledge base functions, detection logic, and recycling plan generation; new API takes category + recycling info and returns only AI-generated content
 - ✅ **LLM Service Migration to Backend** - Removed separate LLM service and integrated Ollama JS client directly into NestJS backend for simplified architecture; moved prompts and logic to backend LLM module with Zod validation and structured output using zod-to-json-schema
-- ✅ **YOLOv8 Object Detection Training Pipeline** - Created complete YOLOv8 training pipeline in `apps/ml-training/yolo_training/` with dataset preparation, auto-labeling, training, and TFLite export for mobile deployment
-- ✅ **YOLOv8 Training Execution** - Successfully trained YOLOv8n model on 8 waste classes (197 train, 71 val images) with proper folder-based class mapping; model weights saved (best.pt, last.pt ~6.2MB each); ready for TFLite export and mobile deployment
+- ✅ **YOLOv8 Object Detection Training Pipeline** - Created complete YOLOv8 training pipeline in `apps/ml-training/yolo/` with dataset preparation, auto-labeling, training, and TFLite export for mobile deployment
+- ✅ **Live TFLite Object Detection Integration** - Switched to VisionCamera for real-time frame processing, integrated YOLOv8 TFLite model with live bounding box overlay, added preprocessing/postprocessing from Python script, and maintained capture button for recycling info modal
 
 ### Sprint 10: Production Readiness (Completed)
 - ✅ **Lint Issues Fixed** - Resolved all ESLint errors and warnings across backend and mobile apps

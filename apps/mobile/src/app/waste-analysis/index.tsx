@@ -1,12 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import Camera from '~/components/Camera';
 import ResultModal from '~/components/waste-analysis/ResultModal';
 import { useWasteAnalysis, WasteAnalysisProvider } from '~/context/WasteAnalysisProvider';
+import { Detection } from '~/utils/wasteAnalysis';
 
 function WasteAnalysisContent() {
   const { setPickedImage, pickedImage, isOffline, setIsOffline } = useWasteAnalysis();
+  const [detections, setDetections] = useState<Detection[]>([]);
+
+  const handleDetections = (newDetections: Detection[]) => {
+    setDetections(newDetections);
+  };
 
   return (
     <>
@@ -25,7 +32,24 @@ function WasteAnalysisContent() {
           </View>
         ) : (
           <>
-            <Camera onImageClick={setPickedImage} />
+            <Camera onImageClick={setPickedImage} onDetections={handleDetections} />
+
+            {/* Bounding Boxes */}
+            {detections.map((det, index) => (
+              <View
+                key={index}
+                className="absolute border-2 border-green-500"
+                style={{
+                  left: det.bbox[0],
+                  top: det.bbox[1],
+                  width: det.bbox[2] - det.bbox[0],
+                  height: det.bbox[3] - det.bbox[1],
+                }}>
+                <Text className="absolute -top-6 left-0 bg-green-500 px-1 text-xs text-white">
+                  {det.confidence.toFixed(2)}
+                </Text>
+              </View>
+            ))}
 
             {/* Offline Toggle */}
             <View className="absolute left-0 right-0 top-12 items-center">

@@ -38,11 +38,16 @@ module.exports = {
       [
         'expo-build-properties',
         {
+          android: {
+            minSdkVersion: 26,
+          },
           ios: {
             useFrameworks: 'static',
           },
         },
       ],
+      'expo-secure-store',
+      'react-native-vision-camera',
     ],
     experiments: {
       typedRoutes: true,
@@ -70,6 +75,7 @@ module.exports = {
       },
     },
     android: {
+      minSdkVersion: 26,
       edgeToEdgeEnabled: true,
       adaptiveIcon: {
         foregroundImage: './assets/icon.png',

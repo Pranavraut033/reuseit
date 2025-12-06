@@ -135,20 +135,19 @@ export const WasteAnalysisProvider: React.FC<WasteAnalysisProviderProps> = ({ ch
           // Online mode: run local detection first, then get AI enhancements
 
           if (result && result.detections.length > 0) {
-            const resultHash = stringHashCode(JSON.stringify(result));
-            const detection = result.detections[0];
-            const maxProbIndex = detection.class.indexOf(Math.max(...detection.class));
-            const category = WASTE_LABELS[maxProbIndex];
+            // const resultHash = stringHashCode(JSON.stringify(result));
+            // const detection = result.detections[0];
+            // const maxProbIndex = detection.class.indexOf(Math.max(...detection.class));
+            // const category = WASTE_LABELS[maxProbIndex];
             // const recyclingInfo = getRecyclingInfo(category.replace(/_/g, ' '));
-
-            getAIInsights({
-              variables: {
-                input: {
-                  category,
-                  resultHash,
-                },
-              },
-            });
+            // getAIInsights({
+            //   variables: {
+            //     input: {
+            //       category,
+            //       resultHash,
+            //     },
+            //   },
+            // });
           }
         }
       } catch (err) {
@@ -196,12 +195,12 @@ export const useWasteAnalysis = (): WasteAnalysisContextType => {
   return context;
 };
 
-const stringHashCode = (str: string): string => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash.toString();
-};
+// const stringHashCode = (str: string): string => {
+//   let hash = 0;
+//   for (let i = 0; i < str.length; i++) {
+//     const char = str.charCodeAt(i);
+//     hash = (hash << 5) - hash + char;
+//     hash |= 0; // Convert to 32bit integer
+//   }
+//   return hash.toString();
+// };

@@ -185,8 +185,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.imagesScrollContent}
-          >
+            contentContainerStyle={styles.imagesScrollContent}>
             {images.map((item) => (
               <View key={item.id} style={styles.imageContainer}>
                 <Image source={{ uri: item.uri }} style={styles.image} resizeMode="cover" />
@@ -197,8 +196,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
                   onPress={() => removeImage(item.id)}
                   accessible={true}
                   accessibilityLabel={t('accessibility.removePhotoButton')}
-                  accessibilityRole="button"
-                >
+                  accessibilityRole="button">
                   <Ionicons name="close-circle" size={24} color="#EF4444" />
                 </TouchableOpacity>
               </View>
@@ -215,8 +213,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({
           disabled={isProcessing}
           accessible={true}
           accessibilityLabel={t('accessibility.addPhotoButton')}
-          accessibilityRole="button"
-        >
+          accessibilityRole="button">
           {isProcessing ? (
             <ActivityIndicator color="#3B82F6" size="small" />
           ) : (
