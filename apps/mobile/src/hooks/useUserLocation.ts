@@ -1,8 +1,9 @@
 import * as Location from 'expo-location';
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 import { Region } from 'react-native-maps';
 import { Toast } from 'toastify-react-native';
+
+import { useLocationPermission } from './useLocationPermission';
 
 export interface UseUserLocationReturn {
   location: Region | undefined;
@@ -17,6 +18,8 @@ export function useUserLocation(): UseUserLocationReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { requestPermission } = useLocationPermission();
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -26,14 +29,13 @@ export function useUserLocation(): UseUserLocationReturn {
     setError(null);
 
     try {
-      // Request permissions
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      // Request permissions using the hook
+      await requestPermission();
 
+      // Check if permission was granted (the hook handles the alert if not)
+      const { status } = await Location.getForegroundPermissionsAsync();
       if (status !== 'granted') {
-        const errorMsg = 'Permission to access location was denied';
-        setError(errorMsg);
-        Alert.alert('Permission Required', errorMsg);
-        return;
+        return; // Hook already showed alert
       }
 
       // Get current position with timeout handling
@@ -65,7 +67,7 @@ export function useUserLocation(): UseUserLocationReturn {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [requestPermission]);
 
   return {
     location,

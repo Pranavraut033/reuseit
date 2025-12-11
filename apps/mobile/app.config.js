@@ -48,6 +48,8 @@ module.exports = {
       ],
       'expo-secure-store',
       'react-native-vision-camera',
+      ['expo-notifications'],
+      '@react-native-firebase/messaging',
     ],
     experiments: {
       typedRoutes: true,

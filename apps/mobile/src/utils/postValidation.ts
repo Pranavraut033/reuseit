@@ -10,12 +10,9 @@ export type PostCreateFormData = Flatten<CreatePostInput>;
 export const postCreateSchema: yup.ObjectSchema<PostCreateFormData> = yup.object({
   postType: yup
     .string<PostType>()
-    .oneOf(
-      [PostType.General, PostType.Giveaway, PostType.Event, PostType.Meetup],
-      'Invalid post type',
-    )
+    .oneOf([PostType.Giveaway, PostType.Requests], 'Invalid post type')
     .required(t('postCreate.postTypeRequired'))
-    .default(PostType.General),
+    .default(PostType.Giveaway),
 
   anonymous: yup.boolean().required().defined().default(false),
 

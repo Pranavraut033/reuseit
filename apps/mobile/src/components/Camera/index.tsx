@@ -47,7 +47,7 @@ const Camera: React.FC<Props> = ({ onImageClick }) => {
 
 // Request permission when the component mounts
 const RequestPermissionModal: React.FC = () => {
-  const { hasPermission, requestCameraPermission } = useCameraPermission();
+  const { hasPermission, requestPermission } = useCameraPermission();
 
   return (
     <Modal visible={!hasPermission} transparent animationType="fade">
@@ -55,7 +55,7 @@ const RequestPermissionModal: React.FC = () => {
         <Text className="mb-4 text-center text-lg text-white">
           {`Camera permission is required to use the camera.`}
         </Text>
-        <Button onPress={requestCameraPermission}>
+        <Button onPress={requestPermission}>
           <Text className="font-semibold text-white">Grant Permission</Text>
         </Button>
       </View>

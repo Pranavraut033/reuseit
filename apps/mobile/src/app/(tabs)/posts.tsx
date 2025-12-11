@@ -1,21 +1,78 @@
 import { useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback } from 'react';
-import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { getFragmentData } from '~/__generated__';
-import { GetPostsQuery } from '~/__generated__/graphql';
+import { GetPostsQuery, PostFilterInput, PostFilterType } from '~/__generated__/graphql';
 import ScreenContainer from '~/components/common/ScreenContainer';
 import PostList from '~/components/post/PostList';
 import { LOCATION_FIELDS, POST_FIELDS } from '~/gql/fragments';
 import { GET_POSTS } from '~/gql/posts';
+import { useUserLocation } from '~/hooks/useUserLocation';
+import { t } from '~/utils/i18n';
+
+const filters = [
+  { key: PostFilterType.All, label: t('posts.filters.all') },
+  { key: PostFilterType.Giveaway, label: t('posts.filters.giveAway') },
+  { key: PostFilterType.Requests, label: t('posts.filters.requests') },
+  { key: PostFilterType.Nearby, label: t('posts.filters.nearby') },
+];
 
 const FeedsScreen = () => {
-  const { data, loading, error, refetch } = useQuery<GetPostsQuery>(GET_POSTS);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [postFilterType, setPostFilterType] = useState<PostFilterType>(PostFilterType.All);
+  const [offset, setOffset] = useState(0);
+  const limit = 10;
+
+  const { location: userLocation } = useUserLocation();
+
+  // Create post filter object based on selected type
+  const postFilter = useMemo(
+    (): PostFilterInput => ({
+      type: postFilterType,
+      ...(postFilterType === PostFilterType.Nearby &&
+        userLocation && {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          radiusInKm: 10, // 10km radius for nearby posts
+        }),
+    }),
+    [postFilterType, userLocation],
+  );
+
+  const { data, loading, error, refetch, fetchMore } = useQuery<GetPostsQuery>(GET_POSTS, {
+    variables: { limit, offset: 0, postFilter },
+  });
 
   const onRefresh = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    setOffset(0);
+    await refetch({ limit, offset: 0, postFilter });
+  }, [refetch, postFilter]);
+
+  const loadMore = useCallback(async () => {
+    if (loading) return;
+    const newOffset = offset + limit;
+    setOffset(newOffset);
+    await fetchMore({
+      variables: { limit, offset: newOffset, postFilter },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          ...prev,
+          posts: [...(prev.posts || []), ...(fetchMoreResult.posts || [])],
+        };
+      },
+    });
+  }, [loading, offset, fetchMore, postFilter]);
+
   const posts = (data?.posts ?? []).map((_post) => {
     let post = getFragmentData(POST_FIELDS, _post);
     return {
@@ -27,14 +84,51 @@ const FeedsScreen = () => {
   return (
     <ScreenContainer
       header={
-        <View className="flex-row items-center justify-between p-4">
-          <Text className="text-xl font-bold text-gray-800">Latest Posts</Text>
+        <View className="p-4">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-xl font-bold text-gray-800">{t('posts.latest')}</Text>
+          </View>
+          <View className="flex-row items-center mb-4">
+            <View className="flex-1 flex-row items-center rounded-full bg-gray-100 px-4 py-2 mr-2">
+              <Ionicons name="search" size={20} color="#6B7280" />
+              <TextInput
+                className="flex-1 ml-2 text-gray-700"
+                placeholder={t('posts.searchPlaceholder')}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                accessibilityLabel="Search posts"
+              />
+            </View>
+          </View>
+          <View className="flex-row gap-2">
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter.key}
+                onPress={() => {
+                  setPostFilterType(filter.key);
+                  setOffset(0); // Reset pagination when changing filters
+                }}
+                className={`rounded-full px-4 py-2 ${
+                  postFilterType === filter.key ? 'bg-green-500' : 'bg-gray-200'
+                }`}
+              >
+                <Text
+                  className={`text-sm font-medium ${
+                    postFilterType === filter.key ? 'text-white' : 'text-gray-700'
+                  }`}
+                >
+                  {filter.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      }>
+      }
+    >
       {!posts.length && loading && (
         <View className="items-center justify-center py-12">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="mt-4 text-gray-600">Loading posts...</Text>
+          <ActivityIndicator size="large" color="#10B981" />
+          <Text className="mt-4 text-gray-600">{t('posts.loading')}</Text>
         </View>
       )}
 
@@ -57,13 +151,14 @@ const FeedsScreen = () => {
           posts={posts}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}
           onSwipeRefresh={() => refetch()}
+          onEndReached={loadMore}
         />
       ) : (
         !loading &&
         !error && (
           <View className="items-center justify-center py-12">
             <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
-            <Text className="mt-4 text-gray-600">No posts available.</Text>
+            <Text className="mt-4 text-gray-600">{t('posts.noPosts')}</Text>
           </View>
         )
       )}

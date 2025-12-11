@@ -1,8 +1,8 @@
 import { gql } from '~/__generated__';
 
 export const GET_POSTS = gql(`
-  query GetPosts {
-    posts {
+  query GetPosts($limit: Int, $offset: Int, $postFilter: PostFilterInput) {
+    posts(limit: $limit, offset: $offset, postFilter: $postFilter) {
       ...PostFields
     }
   }

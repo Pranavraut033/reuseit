@@ -1,5 +1,5 @@
 import { PortalHost } from '@rn-primitives/portal';
-import { Redirect, usePathname } from 'expo-router';
+import { Redirect, router, usePathname } from 'expo-router';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -48,7 +48,11 @@ export default function Login() {
           <Text className="mb-2 mt-4 text-center text-sm text-gray-500">
             By continuing, you agree to our{' '}
             <Text className="text-green-600 underline">Terms of Service</Text> and{' '}
-            <Text className="text-green-600 underline">Privacy Policy</Text>
+            <Text
+              className="text-green-600 underline"
+              onPress={() => router.push('/privacy-policy')}>
+              Privacy Policy
+            </Text>
           </Text>
         </View>
       </ScrollView>

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import { SignInMutation } from '~/__generated__/graphql';
 
@@ -10,56 +11,71 @@ export type User = SignInMutation['signIn']['user'] & {
 };
 
 export interface AppState {
-  loadState: () => Promise<void>;
-  loadToken: () => Promise<string | null>;
+  onboardingCompleted: boolean;
   ready: boolean;
+  setOnboardingCompleted: (completed: boolean) => void;
   setToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
   token: string | null;
   user: User | null;
 }
 
-export const useStore = create<AppState>((set) => ({
-  ready: false,
-  token: null,
-  user: null,
-  setUser: (user) => {
-    if (!user) {
-      AsyncStorage.removeItem('auth.user');
-      set({ user: null });
-      return;
-    }
-
-    AsyncStorage.setItem('auth.user', JSON.stringify({ ...user, googleUser: undefined }));
-    set({ user });
-  },
-  setToken: (token) => {
-    if (!token?.trim()) {
-      SecureStore.deleteItemAsync('auth.token');
-      set({ token: null });
-      return;
-    }
-
-    SecureStore.setItemAsync('auth.token', token);
-    set({ token });
-  },
-  loadToken: async () => {
-    const token = await SecureStore.getItemAsync('auth.token');
-    set({ token: token || null });
-    return token || null;
-  },
-  loadState: async () => {
-    const [token, userJson] = await Promise.all([
-      SecureStore.getItemAsync('auth.token'),
-      AsyncStorage.getItem('auth.user'),
-    ]);
-
-    const user = userJson ? (JSON.parse(userJson) as User) : null;
-
-    set({
-      token: token || null,
-      user,
-      ready: true,
-    });
-  },
-}));
+export const useStore = create<AppState>()(
+  devtools(
+    persist(
+      (set) => ({
+        onboardingCompleted: false,
+        ready: false,
+        token: null,
+        user: null,
+        setUser: (user) => {
+          try {
+            set({ user });
+          } catch (e) {
+            console.error('Error setting user:', e);
+          }
+        },
+        setOnboardingCompleted: (completed) => {
+          try {
+            set({ onboardingCompleted: completed });
+          } catch (e) {
+            console.error('Error setting onboarding:', e);
+          }
+        },
+        setToken: async (token) => {
+          try {
+            if (!token?.trim()) {
+              await SecureStore.deleteItemAsync('auth.token');
+              set({ token: null });
+              return;
+            }
+            await SecureStore.setItemAsync('auth.token', token);
+            set({ token });
+          } catch (e) {
+            console.error('Error setting token:', e);
+          }
+        },
+      }),
+      {
+        name: 'app-storage',
+        storage: createJSONStorage(() => AsyncStorage),
+        partialize: (state) => ({
+          user: state.user,
+          onboardingCompleted: state.onboardingCompleted,
+        }),
+        onRehydrateStorage: () => async (state) => {
+          if (state) {
+            try {
+              const token = await SecureStore.getItemAsync('auth.token');
+              state.token = token || null;
+            } catch (e) {
+              console.error('Error loading token on rehydrate:', e);
+            }
+            state.ready = true;
+          }
+        },
+      },
+    ),
+    { name: 'app-store' },
+  ),
+);

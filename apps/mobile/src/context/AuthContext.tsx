@@ -69,7 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isLoadingRef = useRef(false);
   const isSigningInRef = useRef(false);
   const isHandlingAuthStateRef = useRef(false);
-  const loadState = useStore((state) => state.loadState);
   const setToken = useStore((state) => state.setToken);
   const setUser = useStore((state) => state.setUser);
   const stateLoaded = useStore((state) => state.ready);
@@ -226,10 +225,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token, stateLoaded, user, handleUserSignIn, fUser, signOut]);
 
   useEffect(() => onAuthStateChanged(getAuth(), setFUser), []);
-
-  useEffect(() => {
-    loadState();
-  }, [loadState]);
 
   const context = {
     error,

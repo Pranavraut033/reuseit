@@ -1,12 +1,13 @@
 import { useQuery } from '@apollo/client/react';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toast } from 'toastify-react-native';
 
+import { NearbyPlace } from '~/__generated__/types';
 import { Button } from '~/components/common/Button';
 import { FabButton } from '~/components/common/FabButton';
 import ScreenContainer from '~/components/common/ScreenContainer';
@@ -16,18 +17,6 @@ import { NEARBY_PLACES_QUERY } from '~/gql/google-maps';
 import useStatusBarHeight from '~/hooks/useStatusBarHeight';
 import { useUserLocation } from '~/hooks/useUserLocation';
 import { t } from '~/utils/i18n';
-
-// GraphQL type for nearby places
-type NearbyPlace = {
-  __typename?: 'NearbyPlace';
-  placeId: string;
-  name?: string | null;
-  vicinity?: string | null;
-  types?: string[] | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  photoUrl?: string | null;
-};
 const INITIAL_REGION: Region = {
   // Berlin as default center
   latitude: 52.52,
@@ -37,6 +26,8 @@ const INITIAL_REGION: Region = {
 };
 export default function ExplorePage() {
   const mapRef = useRef<MapView | null>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['25%', '50%'], []);
   const [selectedPlace, setSelectedPlace] = useState<NearbyPlace | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey | 'all'>('general');
 
@@ -130,9 +121,15 @@ export default function ExplorePage() {
       })
       .catch((err) => console.error('An error occurred', err));
   }, []);
+
   useEffect(() => {
-    setSelectedPlace(null);
-  }, [places]);
+    if (selectedPlace) {
+      bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [selectedPlace]);
+
   const showCurrentLocation = useMemo(() => {
     if (!userRegion) return true;
 
@@ -244,52 +241,79 @@ export default function ExplorePage() {
             />
           </TooltipWrapper>
         )}
-        {selectedPlace && (
-          <View className="mt-4 w-full overflow-hidden rounded-2xl">
-            <LinearGradient
-              colors={['#34A853', '#5cd67c']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              className="w-full  flex-row p-4 shadow-lg">
-              <View className="mr-4 h-28 w-28 overflow-hidden rounded-xl border-2 border-white shadow-md">
-                <PlacePhoto place={selectedPlace} />
-              </View>
-              <View className="flex-1 justify-center">
-                <Text numberOfLines={2} className="text-lg font-bold text-white">
-                  {selectedPlace.name}
-                </Text>
-                <Text numberOfLines={3} className="mt-1 text-sm text-white/80">
-                  {selectedPlace.vicinity}
-                </Text>
+      </View>
 
-                <View className="mt-4 flex-row">
-                  <Button
-                    type="neutral"
-                    size="small"
-                    className="mr-4 rounded-full bg-white"
-                    icon={({ size }) => (
-                      <MaterialIcons name="directions" size={size} color="#34A853" />
-                    )}
-                    textClassName="text-primary"
-                    onPress={() => {
-                      openInMaps(selectedPlace);
-                    }}>
-                    {t('explore.directions')}
-                  </Button>
-
-                  <Button
-                    size="small"
-                    type="neutral"
-                    className="rounded-full"
-                    onPress={() => setSelectedPlace(null)}>
-                    <Text className="text-sm font-semibold text-white">{t('explore.close')}</Text>
-                  </Button>
+      <BottomSheet
+        ref={bottomSheetRef}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        onClose={() => setSelectedPlace(null)}
+        index={-1} // Start closed
+        containerStyle={{ zIndex: 999999 }}>
+        <BottomSheetView style={{ flex: 1, padding: 16, zIndex: 99999 }}>
+          {selectedPlace && (
+            <View className="flex-1">
+              <View className="mb-4 flex-row">
+                <View className="mr-4 h-20 w-20 overflow-hidden rounded-xl border-2 border-gray-200">
+                  <PlacePhoto place={selectedPlace} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xl font-bold text-gray-800">{selectedPlace.name}</Text>
+                  <Text className="mt-1 text-sm text-gray-600">{selectedPlace.vicinity}</Text>
+                  {selectedPlace.category && (
+                    <Text className="mt-1 text-sm font-semibold text-green-600">
+                      {selectedPlace.category}
+                    </Text>
+                  )}
                 </View>
               </View>
-            </LinearGradient>
-          </View>
-        )}
-      </View>
+
+              {selectedPlace.hours && (
+                <View className="mb-4">
+                  <Text className="mb-2 text-lg font-semibold text-gray-800">Hours</Text>
+                  <Text className="text-sm text-gray-600">{selectedPlace.hours}</Text>
+                </View>
+              )}
+
+              {selectedPlace.acceptedMaterials && selectedPlace.acceptedMaterials.length > 0 && (
+                <View className="mb-4">
+                  <Text className="mb-2 text-lg font-semibold text-gray-800">
+                    Accepted Materials
+                  </Text>
+                  <View className="flex-row flex-wrap">
+                    {selectedPlace.acceptedMaterials.map((material, index) => (
+                      <View key={index} className="mb-2 mr-2 rounded-full bg-green-100 px-3 py-1">
+                        <Text className="text-sm text-green-800">{material}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              <View className="mt-4 flex-row">
+                <Button
+                  type="primary"
+                  size="medium"
+                  className="mr-4 flex-1"
+                  icon={({ size }) => <MaterialIcons name="directions" size={size} color="white" />}
+                  onPress={() => {
+                    openInMaps(selectedPlace);
+                  }}>
+                  {t('explore.navigate')}
+                </Button>
+
+                <Button
+                  size="medium"
+                  type="neutral"
+                  className="flex-1"
+                  onPress={() => setSelectedPlace(null)}>
+                  {t('explore.close')}
+                </Button>
+              </View>
+            </View>
+          )}
+        </BottomSheetView>
+      </BottomSheet>
     </ScreenContainer>
   );
 }

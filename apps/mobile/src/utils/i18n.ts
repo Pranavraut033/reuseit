@@ -10,25 +10,41 @@ export const getCurrentLanguage = (): Language => {
 
 const translations_en = {
   explore: {
-    title: 'Explore Nearby',
-    subtitle: 'Discover local recycling centers and resources.',
-    loading: 'Loading nearby places...',
-    directions: 'Directions',
     close: 'Close',
+    directions: 'Directions',
     filterAll: 'All',
+    loading: 'Loading nearby places...',
+    navigate: 'Navigate',
+    subtitle: 'Discover local recycling centers and resources.',
+    title: 'Explore Nearby',
     tooltipCurrentLocation: 'Go to Current Location',
     tooltipLoadArea: 'Load places for this area',
     categories: {
-      general: 'General',
-      glass: 'Glass',
-      paper: 'Paper',
-      plastic: 'Plastic',
+      batteries: 'Batteries',
+      bulkyWaste: 'Bulky Waste',
       clothes: 'Clothes',
       electronics: 'Electronics',
-      batteries: 'Batteries',
+      general: 'General',
+      glass: 'Glass',
       metal: 'Metal',
-      bulkyWaste: 'Bulky Waste',
+      paper: 'Paper',
+      plastic: 'Plastic',
     },
+  },
+  posts: {
+    filters: {
+      all: 'All',
+      giveAway: 'Give Away',
+      nearby: 'Nearby',
+      requests: 'Requests',
+    },
+    categories: 'Categories',
+    comment: 'Comment',
+    latest: 'Latest Posts',
+    loading: 'Loading posts...',
+    noPosts: 'No posts available.',
+    request: 'Request',
+    searchPlaceholder: 'Search posts...',
   },
   postCreate: {
     addPhotos: 'Add Photos',
@@ -56,8 +72,8 @@ const translations_en = {
     error: 'Failed to publish post',
     keepEditing: 'Keep Editing',
     location: 'Location',
-    locationErrorTitle: 'Location Error',
     locationErrorMessage: 'Unable to get your current location. Please try again.',
+    locationErrorTitle: 'Location Error',
     locationOptional: 'Location (optional)',
     notAnonymous: 'Not Anonymous',
     offline: 'Post saved offline. Will publish when online.',
@@ -87,16 +103,16 @@ const translations_en = {
     useCurrentLocation: 'Use Current Location',
   },
   eventCreate: {
-    titleRequired: 'Title is required',
-    titleMinLength: 'Title must be at least 3 characters',
-    titleMaxLength: 'Title must be less than 100 characters',
     descriptionMaxLength: 'Description must be less than 1000 characters',
-    startTimeRequired: 'Start time is required',
-    startTimeFuture: 'Start time must be in the future',
     endTimeAfterStart: 'End time must be after start time',
+    locationCountryRequired: 'Country is required',
     locationRequired: 'Location is required',
     locationStreetRequired: 'Street is required',
-    locationCountryRequired: 'Country is required',
+    startTimeFuture: 'Start time must be in the future',
+    startTimeRequired: 'Start time is required',
+    titleMaxLength: 'Title must be less than 100 characters',
+    titleMinLength: 'Title must be at least 3 characters',
+    titleRequired: 'Title is required',
   },
   categories: {
     books: 'Books',
@@ -116,10 +132,11 @@ const translations_en = {
     used: 'Used',
   },
   postTypes: {
+    event: 'Event',
     general: 'General Post',
     giveaway: 'Giveaway',
-    event: 'Event',
     meetup: 'Meetup',
+    requests: 'Requests',
   },
   berlinTags: {
     circular: 'Circular Economy',
@@ -149,6 +166,50 @@ const translations_en = {
     tagInput: 'Tag input',
     titleInput: 'Item title input',
   },
+  onboarding: {
+    welcome: {
+      title: 'Welcome to ReUseIt!',
+      subtitle: 'Your journey to sustainable living starts here',
+      description:
+        'Join our community of eco-conscious individuals making a difference one recycled item at a time.',
+    },
+    features: {
+      title: 'Discover Amazing Features',
+      wasteId: {
+        title: 'AI Waste Identification',
+        description:
+          'Use your camera to identify recyclable materials with our advanced AI technology.',
+      },
+      community: {
+        title: 'Community Marketplace',
+        description: 'Buy, sell, and give away items in our sustainable marketplace.',
+      },
+      events: {
+        title: 'Local Events',
+        description: 'Join recycling events and meetups in your area.',
+      },
+    },
+    permissions: {
+      title: 'Enable Permissions',
+      subtitle: 'To provide the best experience',
+      camera: {
+        title: 'Camera Access',
+        description: 'Take photos of waste items for identification',
+      },
+      location: {
+        title: 'Location Services',
+        description: 'Find nearby recycling centers and events',
+      },
+      notifications: {
+        title: 'Push Notifications',
+        description: 'Get updates on events and community activities',
+      },
+      request: 'Request Permissions',
+    },
+    getStarted: 'Get Started',
+    next: 'Next',
+    skip: 'Skip',
+  },
 } as const;
 
 type Widen<T> = {
@@ -167,25 +228,41 @@ export const translations: Record<string, TranslationObject> = {
   en: translations_en,
   de: {
     explore: {
-      title: 'In der Nähe erkunden',
-      subtitle: 'Entdecken Sie lokale Recyclingzentren und Ressourcen.',
-      loading: 'Lade Orte in deiner Nähe...',
-      directions: 'Route',
       close: 'Schließen',
+      directions: 'Route',
       filterAll: 'Alle',
+      loading: 'Lade Orte in deiner Nähe...',
+      navigate: 'Navigieren',
+      subtitle: 'Entdecken Sie lokale Recyclingzentren und Ressourcen.',
+      title: 'In der Nähe erkunden',
       tooltipCurrentLocation: 'Zum aktuellen Standort gehen',
       tooltipLoadArea: 'Orte für diesen Bereich laden',
       categories: {
-        general: 'Allgemein',
-        glass: 'Glas',
-        paper: 'Papier',
-        plastic: 'Plastik',
+        batteries: 'Batterien',
+        bulkyWaste: 'Sperrmüll',
         clothes: 'Kleidung',
         electronics: 'Elektronik',
-        batteries: 'Batterien',
+        general: 'Allgemein',
+        glass: 'Glas',
         metal: 'Metall',
-        bulkyWaste: 'Sperrmüll',
+        paper: 'Papier',
+        plastic: 'Plastik',
       },
+    },
+    posts: {
+      filters: {
+        all: 'Alle',
+        giveAway: 'Verschenken',
+        nearby: 'In der Nähe',
+        requests: 'Anfragen',
+      },
+      categories: 'Kategorien',
+      comment: 'Kommentieren',
+      latest: 'Neueste Beiträge',
+      loading: 'Beiträge laden...',
+      noPosts: 'Keine Beiträge verfügbar.',
+      request: 'Anfragen',
+      searchPlaceholder: 'Beiträge suchen...',
     },
     postCreate: {
       addPhotos: 'Fotos hinzufügen',
@@ -245,16 +322,16 @@ export const translations: Record<string, TranslationObject> = {
       useCurrentLocation: 'Aktuellen Standort verwenden',
     },
     eventCreate: {
-      titleRequired: 'Titel ist erforderlich',
-      titleMinLength: 'Titel muss mindestens 3 Zeichen lang sein',
-      titleMaxLength: 'Titel muss weniger als 100 Zeichen lang sein',
       descriptionMaxLength: 'Beschreibung muss weniger als 1000 Zeichen lang sein',
-      startTimeRequired: 'Startzeit ist erforderlich',
-      startTimeFuture: 'Startzeit muss in der Zukunft liegen',
       endTimeAfterStart: 'Endzeit muss nach der Startzeit liegen',
+      locationCountryRequired: 'Land ist erforderlich',
       locationRequired: 'Standort ist erforderlich',
       locationStreetRequired: 'Straße ist erforderlich',
-      locationCountryRequired: 'Land ist erforderlich',
+      startTimeFuture: 'Startzeit muss in der Zukunft liegen',
+      startTimeRequired: 'Startzeit ist erforderlich',
+      titleMaxLength: 'Titel muss weniger als 100 Zeichen lang sein',
+      titleMinLength: 'Titel muss mindestens 3 Zeichen lang sein',
+      titleRequired: 'Titel ist erforderlich',
     },
     categories: {
       books: 'Bücher',
@@ -274,10 +351,11 @@ export const translations: Record<string, TranslationObject> = {
       used: 'Gebraucht',
     },
     postTypes: {
+      event: 'Veranstaltung',
       general: 'Allgemeiner Beitrag',
       giveaway: 'Verlosung',
-      event: 'Veranstaltung',
       meetup: 'Treffen',
+      requests: 'Anfragen',
     },
     berlinTags: {
       circular: 'Kreislaufwirtschaft',
@@ -306,6 +384,51 @@ export const translations: Record<string, TranslationObject> = {
       removePhotoButton: 'Foto entfernen Schaltfläche',
       tagInput: 'Tag-Eingabe',
       titleInput: 'Artikeltitel-Eingabe',
+    },
+    onboarding: {
+      welcome: {
+        title: 'Willkommen bei ReUseIt!',
+        subtitle: 'Ihre Reise zu nachhaltigem Leben beginnt hier',
+        description:
+          'Treten Sie unserer Gemeinschaft von umweltbewussten Menschen bei, die einen Unterschied machen, einen recycelten Gegenstand nach dem anderen.',
+      },
+      features: {
+        title: 'Entdecken Sie tolle Funktionen',
+        wasteId: {
+          title: 'KI-Abfallidentifikation',
+          description:
+            'Verwenden Sie Ihre Kamera, um recycelbare Materialien mit unserer fortschrittlichen KI-Technologie zu identifizieren.',
+        },
+        community: {
+          title: 'Gemeinschafts-Marktplatz',
+          description:
+            'Kaufen, verkaufen und verschenken Sie Artikel in unserem nachhaltigen Marktplatz.',
+        },
+        events: {
+          title: 'Lokale Events',
+          description: 'Nehmen Sie an Recycling-Events und Treffen in Ihrer Nähe teil.',
+        },
+      },
+      permissions: {
+        title: 'Berechtigungen aktivieren',
+        subtitle: 'Für das beste Erlebnis',
+        camera: {
+          title: 'Kamerazugriff',
+          description: 'Machen Sie Fotos von Abfallgegenständen zur Identifizierung',
+        },
+        location: {
+          title: 'Standortdienste',
+          description: 'Finden Sie nahegelegene Recyclingzentren und Events',
+        },
+        notifications: {
+          title: 'Push-Benachrichtigungen',
+          description: 'Erhalten Sie Updates zu Events und Community-Aktivitäten',
+        },
+        request: 'Berechtigungen anfordern',
+      },
+      getStarted: 'Loslegen',
+      next: 'Weiter',
+      skip: 'Überspringen',
     },
   },
 };

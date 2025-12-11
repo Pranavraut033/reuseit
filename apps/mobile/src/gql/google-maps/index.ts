@@ -61,6 +61,9 @@ export const NEARBY_PLACES_QUERY = gql(`
       latitude
       longitude
       photoUrl
+      category
+      hours
+      acceptedMaterials
     }
   }
 `);

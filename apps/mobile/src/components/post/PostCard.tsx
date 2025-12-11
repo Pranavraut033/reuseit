@@ -41,8 +41,17 @@ export const PostCard: React.FC<PostCardProps> = ({
   isPreview = false,
   disableLink = false,
 }) => {
-  const { title, description, category, condition, tags, location, pickupDate, anonymous } =
-    (isPreview ? formData : post) || {};
+  const {
+    title,
+    description,
+    category,
+    condition,
+    tags,
+    location,
+    pickupDate,
+    anonymous,
+    postType,
+  } = (isPreview ? formData : post) || {};
 
   const user = post?.author;
   const userName = user?.name || _u;
@@ -74,11 +83,11 @@ export const PostCard: React.FC<PostCardProps> = ({
       <View className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg">
         {/* User Info */}
         <View className="flex-row items-center gap-3 p-3">
-          <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-blue-50">
+          <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-green-50">
             {userAvatar && !anonymous ? (
               <Image source={{ uri: userAvatar }} className="h-full w-full" />
             ) : (
-              <Ionicons name="person" size={24} color="#3B82F6" />
+              <Ionicons name="leaf" size={24} color="#10B981" />
             )}
           </View>
           <View className="flex-1">
@@ -91,6 +100,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                 : 'Just now'}
             </Text>
           </View>
+          {/* Eco Badge */}
+          {user && (
+            <View className="flex-row items-center gap-1 rounded-full bg-green-100 px-2 py-1">
+              <Ionicons name="leaf" size={12} color="#059669" />
+              <Text className="text-xs font-medium text-green-700">Eco User</Text>
+            </View>
+          )}
         </View>
 
         {/* Images Preview */}
@@ -151,10 +167,11 @@ export const PostCard: React.FC<PostCardProps> = ({
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-1.5 py-1 mb-3">
+              contentContainerClassName="gap-1.5 py-1 mb-3"
+            >
               {tags.map((tag, index) => (
-                <View key={index} className="rounded-xl bg-blue-50 px-2.5 py-1">
-                  <Text className="text-xs font-medium text-blue-600">#{tag}</Text>
+                <View key={index} className="rounded-xl bg-green-50 px-2.5 py-1">
+                  <Text className="text-xs font-medium text-green-600">#{tag}</Text>
                 </View>
               ))}
             </ScrollView>
@@ -167,7 +184,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <View className="flex-row items-center gap-1.5">
                   <Ionicons name="location-outline" size={16} color="#6B7280" />
                   <Text className="flex-1 text-[13px] text-gray-500" numberOfLines={1}>
-                    {location.street || 'Location set'}
+                    {location.street || 'Location set'} • Nearby
                   </Text>
                 </View>
               )}
@@ -185,13 +202,17 @@ export const PostCard: React.FC<PostCardProps> = ({
         </View>
 
         {/* Engagement Preview */}
-        {isPreview ? <EngagementPreviewSkeleton /> : <EngagementPreview post={post!} />}
+        {isPreview ? (
+          <EngagementPreviewSkeleton />
+        ) : (
+          <EngagementPreview post={post!} postType={postType} />
+        )}
       </View>
     </RootComponent>
   );
 };
 
-const EngagementPreview: React.FC<{ post: Post }> = ({ post }) => {
+const EngagementPreview: React.FC<{ post: Post; postType?: string }> = ({ post, postType }) => {
   const [liked, setLiked] = useState(!!post.likedByCurrentUser);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [toggleLikePost, { loading }] = useMutation(TOGGLE_LIKE_POST, {
@@ -220,6 +241,7 @@ const EngagementPreview: React.FC<{ post: Post }> = ({ post }) => {
       }}
       onCommentPress={onCommentPress}
       isLiking={loading}
+      postType={postType}
     />
   );
 };
@@ -231,6 +253,7 @@ const EngagementPreviewSkeleton: React.FC<{
   onLikePress?: () => void;
   isLiking?: boolean;
   onCommentPress?: () => void;
+  postType?: string;
 }> = ({
   likeCount = 0,
   commentCount = 0,
@@ -238,22 +261,48 @@ const EngagementPreviewSkeleton: React.FC<{
   onLikePress,
   isLiking,
   onCommentPress,
+  postType,
 }) => {
+  const isGiveaway = postType === 'GIVEAWAY';
+
   return (
     <View className="flex-row items-center gap-5 border-t border-gray-100 p-3">
-      <TouchableOpacity onPress={onLikePress} disabled={isLiking}>
-        <View className="flex-row items-center gap-1.5">
-          <Ionicons
-            name={liked ? 'heart' : 'heart-outline'}
-            size={20}
-            color={liked ? '#34A853' : '#6B7280'}
-          />
-          <Text className="text-sm" style={{ color: liked ? '#34A853' : '#4B5563' }}>
-            {Math.floor(likeCount)}
-          </Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onCommentPress}>
+      {isGiveaway ? (
+        <TouchableOpacity
+          onPress={onLikePress}
+          disabled={isLiking}
+          accessibilityLabel="Request this item"
+          accessibilityRole="button"
+        >
+          <View className="flex-row items-center gap-1.5 rounded-full bg-green-500 px-4 py-2">
+            <Ionicons name="hand-left" size={16} color="#FFF" />
+            <Text className="text-sm font-medium text-white">Request</Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          onPress={onLikePress}
+          disabled={isLiking}
+          accessibilityLabel={liked ? 'Unlike this post' : 'Like this post'}
+          accessibilityRole="button"
+        >
+          <View className="flex-row items-center gap-1.5">
+            <Ionicons
+              name={liked ? 'heart' : 'heart-outline'}
+              size={20}
+              color={liked ? '#10B981' : '#6B7280'}
+            />
+            <Text className="text-sm" style={{ color: liked ? '#10B981' : '#4B5563' }}>
+              {Math.floor(likeCount)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      )}
+      <TouchableOpacity
+        onPress={onCommentPress}
+        accessibilityLabel="View comments"
+        accessibilityRole="button"
+      >
         <View className="flex-row items-center gap-1.5">
           <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
           <Text className="text-sm text-gray-600">{commentCount}</Text>

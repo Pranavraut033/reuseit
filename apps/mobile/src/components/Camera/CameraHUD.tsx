@@ -87,15 +87,13 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
           <TouchableOpacity
             onPress={toggleFlash}
             className="rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-4 shadow-xl"
-            style={{ backdropFilter: 'blur(20px)' }}
-          >
+            style={{ backdropFilter: 'blur(20px)' }}>
             <MaterialIcons name={FLASH_OPTION_ICONS[flash]} size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={toggleCameraFacing}
             className="mt-4 rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-4 shadow-xl"
-            style={{ backdropFilter: 'blur(20px)' }}
-          >
+            style={{ backdropFilter: 'blur(20px)' }}>
             <Ionicons name="camera-reverse" size={24} color="white" />
           </TouchableOpacity>
           {moreOptions}
@@ -107,8 +105,7 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
           <TouchableOpacity
             onPress={handlePickImage}
             className="mx-8 rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-5 shadow-xl"
-            style={{ backdropFilter: 'blur(20px)' }}
-          >
+            style={{ backdropFilter: 'blur(20px)' }}>
             <MaterialIcons name="photo-library" size={28} color="white" />
           </TouchableOpacity>
           {/* Capture Button */}
@@ -123,8 +120,7 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
               shadowOpacity: 0.4,
               shadowRadius: 12,
               elevation: 12,
-            }}
-          >
+            }}>
             <View
               className="items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-lg"
               style={{
@@ -133,16 +129,14 @@ export const CameraHUD: React.FC<CameraHUDProps> = ({
                 shadowColor: '#fff',
                 shadowOpacity: 0.3,
                 shadowRadius: 8,
-              }}
-            >
+              }}>
               <Feather name="camera" size={32} color="#1f2937" />
             </View>
           </TouchableOpacity>
           {/* History Button */}
           <TouchableOpacity
             className="mx-8 rounded-2xl border border-white/20 bg-gradient-to-br from-white/20 to-white/10 p-5 shadow-xl"
-            style={{ backdropFilter: 'blur(20px)' }}
-          >
+            style={{ backdropFilter: 'blur(20px)' }}>
             <FontAwesome6 solid name="clock-rotate-left" size={28} color="white" />
           </TouchableOpacity>
         </View>

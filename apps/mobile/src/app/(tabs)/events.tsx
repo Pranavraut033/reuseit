@@ -15,7 +15,8 @@ const EventListItem = ({ event }: { event: Event }) => {
   return (
     <TouchableOpacity
       className="mb-4 rounded-lg bg-white p-4 shadow-sm"
-      onPress={() => (router.push as any)(`/events/${event.id}`)}>
+      onPress={() => (router.push as any)(`/events/${event.id}`)}
+    >
       <Text className="text-lg font-semibold text-gray-900">{event.title}</Text>
       <Text className="mt-1 text-sm text-gray-600">{event.description}</Text>
       <View className="mt-2 flex-row items-center">
@@ -51,7 +52,8 @@ export default function EventsScreen() {
         <Text className="text-center text-red-500">Error loading events</Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => refetch()}>
+          onPress={() => refetch()}
+        >
           <Text className="text-white">Retry</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -73,7 +75,8 @@ export default function EventsScreen() {
         <Text className="text-2xl font-bold text-gray-900">Upcoming Events</Text>
         <TouchableOpacity
           className="rounded-lg bg-green-500 px-4 py-2"
-          onPress={() => (router.push as any)('/events/create')}>
+          onPress={() => (router.push as any)('/events/create')}
+        >
           <Text className="text-white">Create Event</Text>
         </TouchableOpacity>
       </View>
@@ -83,7 +86,8 @@ export default function EventsScreen() {
           <Text className="text-center text-gray-500">No upcoming events</Text>
           <TouchableOpacity
             className="mt-4 rounded-lg bg-green-500 px-4 py-2"
-            onPress={() => (router.push as any)('/events/create')}>
+            onPress={() => (router.push as any)('/events/create')}
+          >
             <Text className="text-white">Create First Event</Text>
           </TouchableOpacity>
         </View>

@@ -12,6 +12,7 @@ export const POST_FIELDS = gql(`
     likeCount
     likedByCurrentUser
     pickupDate
+    postType
     tags
     title
     updatedAt

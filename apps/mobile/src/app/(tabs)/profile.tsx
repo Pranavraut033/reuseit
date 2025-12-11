@@ -33,9 +33,9 @@ export default function Home() {
         <Text className="mt-2 text-base text-gray-600">{user.email || 'N/A'}</Text>
       </View>
 
-      {/* Settings Section */}
+      {/* Settings & Privacy Section */}
       <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-xl font-bold text-gray-800">Settings</Text>
+        <Text className="text-xl font-bold text-gray-800">Settings & Privacy</Text>
         <Ionicons name="settings-sharp" size={20} color="#6B7280" />
       </View>
 
@@ -53,48 +53,49 @@ export default function Home() {
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
 
+        {/* Data Export */}
         <Pressable
           className="flex-row items-center border-b border-gray-100 px-5 py-4 active:bg-gray-50"
           onPress={() => {
-            /* TODO: navigate to account */
+            /* TODO: Call backend exportUserData mutation and download data */
           }}
           accessible={true}
-          accessibilityLabel="Account Settings"
+          accessibilityLabel="Export My Data"
           accessibilityRole="button">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-            <Ionicons name="settings-outline" size={20} color="#7C3AED" />
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-yellow-100">
+            <Ionicons name="download-outline" size={20} color="#F59E42" />
           </View>
-          <Text className="ml-4 flex-1 text-base font-medium text-gray-800">Account Settings</Text>
+          <Text className="ml-4 flex-1 text-base font-medium text-gray-800">Export My Data</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
 
+        {/* Delete Account */}
         <Pressable
           className="flex-row items-center border-b border-gray-100 px-5 py-4 active:bg-gray-50"
           onPress={() => {
-            /* TODO: navigate to notifications */
+            /* TODO: Call backend removeUser mutation and sign out */
           }}
           accessible={true}
-          accessibilityLabel="Notifications"
+          accessibilityLabel="Delete My Account"
           accessibilityRole="button">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-            <Ionicons name="notifications-outline" size={20} color="#3B82F6" />
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-red-100">
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </View>
-          <Text className="ml-4 flex-1 text-base font-medium text-gray-800">Notifications</Text>
+          <Text className="ml-4 flex-1 text-base font-medium text-red-600">Delete My Account</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
 
+        {/* Privacy Policy */}
         <Pressable
           className="flex-row items-center px-5 py-4 active:bg-gray-50"
-          onPress={() => {
-            /* TODO: navigate to help */
-          }}
+          onPress={() => router.push('/privacy-policy')}
           accessible={true}
-          accessibilityLabel="Help & Support"
+          accessibilityLabel="Privacy Policy"
           accessibilityRole="button">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-green-100">
-            <Ionicons name="help-circle-outline" size={20} color="#10B981" />
+            <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
           </View>
-          <Text className="ml-4 flex-1 text-base font-medium text-gray-800">Help & Support</Text>
+          <Text className="ml-4 flex-1 text-base font-medium text-gray-800">Privacy Policy</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
       </View>

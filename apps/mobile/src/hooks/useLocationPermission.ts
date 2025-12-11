@@ -1,12 +1,12 @@
-import { useCameraPermissions } from 'expo-camera';
+import * as Location from 'expo-location';
 import { useCallback, useState } from 'react';
 import { Alert, Linking, Platform } from 'react-native';
 import { Toast } from 'toastify-react-native';
 
 import { UsePermissionReturn } from '~/types/permissions';
 
-export function useCameraPermission(): UsePermissionReturn {
-  const [status, rp] = useCameraPermissions();
+export function useLocationPermission(): UsePermissionReturn {
+  const [status, rp] = Location.useForegroundPermissions();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,20 +21,20 @@ export function useCameraPermission(): UsePermissionReturn {
     try {
       const result = await rp();
 
-      if (result.status === 'granted') {
+      if (result?.status === 'granted') {
         // Permission granted
       } else {
-        const errorMsg = 'Camera permission was denied';
+        const errorMsg = 'Location permission was denied';
         setError(errorMsg);
         Alert.alert('Permission Required', errorMsg);
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to request camera permission';
+      const errorMsg = err instanceof Error ? err.message : 'Failed to request location permission';
       setError(errorMsg);
 
       Toast.show({
         type: 'error',
-        text1: 'Camera Permission Error',
+        text1: 'Location Permission Error',
         text2: errorMsg,
       });
     } finally {
@@ -45,8 +45,8 @@ export function useCameraPermission(): UsePermissionReturn {
   const openAppSettings = useCallback(async () => {
     if (Platform.OS === 'ios') {
       Alert.alert(
-        'Camera Permission Required',
-        'Please enable camera permission in your app settings',
+        'Location Permission Required',
+        'Please enable location permission in your app settings',
         [
           { text: 'Cancel', style: 'cancel' },
           {
@@ -61,8 +61,8 @@ export function useCameraPermission(): UsePermissionReturn {
       );
     } else {
       Alert.alert(
-        'Camera Permission Required',
-        'Please enable camera permission in your app settings',
+        'Location Permission Required',
+        'Please enable location permission in your app settings',
         [
           { text: 'Cancel', style: 'cancel' },
           {
