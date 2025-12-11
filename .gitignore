@@ -7,3 +7,4 @@ mongo-keyfile
 .env
 model.old/
 apps/ml-training/yolo/calibration_image_sample_data_20x128x128x3_float32.npy
+keys
