@@ -1,6 +1,15 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
-import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import type { Cache } from 'cache-manager';
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
@@ -12,6 +21,7 @@ import { User } from '../user/entities/user.entity';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
 import { Post } from './entities/post.entity';
+import { PostFilterInput } from './entities/post-type.entity';
 import {
   PostAuthorLoader,
   PostCommentCountLoader,
@@ -45,8 +55,13 @@ export class PostResolver {
 
   @Query(() => [Post], { name: 'posts' })
   @CacheQuery(() => 'posts', 300)
-  async findAll() {
-    return this.postService.findAll();
+  async findAll(
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('postFilter', { type: () => PostFilterInput, nullable: true })
+    postFilter?: PostFilterInput,
+  ) {
+    return this.postService.findAll(limit, offset, postFilter);
   }
 
   @Query(() => [Post], { name: 'postsByAuthor' })

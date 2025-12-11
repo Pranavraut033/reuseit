@@ -30,6 +30,14 @@ import { UserService } from './user.service';
 
 @Resolver(() => User)
 export class UserResolver {
+  @Mutation(() => Boolean, { description: 'Export all user data for GDPR compliance' })
+  async exportUserData(@Args('id', { type: () => String }) id: string) {
+    // Returns user data as JSON (could be a download endpoint in production)
+    const data = await this.userService.exportUserData(id);
+    // In a real app, you might return a download link or file
+    // Here, just return true if data exists
+    return !!data.user;
+  }
   constructor(
     private readonly userService: UserService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,

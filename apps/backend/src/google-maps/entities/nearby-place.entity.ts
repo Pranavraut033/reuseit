@@ -22,4 +22,13 @@ export class NearbyPlace {
 
   @Field({ nullable: true })
   photoUrl?: string;
+
+  @Field({ nullable: true })
+  category?: string;
+
+  @Field({ nullable: true })
+  hours?: string;
+
+  @Field(() => [String], { nullable: true })
+  acceptedMaterials?: string[];
 }

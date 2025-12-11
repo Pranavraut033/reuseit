@@ -67,10 +67,8 @@ type Post {
 }
 
 enum PostType {
-  GENERAL
   GIVEAWAY
-  EVENT
-  MEETUP
+  REQUESTS
 }
 
 type Location {
@@ -204,6 +202,9 @@ type NearbyPlace {
   latitude: Float
   longitude: Float
   photoUrl: String
+  category: String
+  hours: String
+  acceptedMaterials: [String!]
 }
 
 type PlaceAutocompletePrediction {
@@ -249,13 +250,13 @@ type Query {
   point(id: Int!): Point!
   badge(id: Int!): Badge!
   userArticle(id: Int!): UserArticle!
-  events: [Event!]!
+  events(eventFilter: EventFilterInput): [Event!]!
   event(id: String!): Event!
   eventsByCreator(creatorId: String!): [Event!]!
   upcomingEvents: [Event!]!
   locations: [Location!]!
   location(id: String!): Location!
-  posts: [Post!]!
+  posts(limit: Int, offset: Int, postFilter: PostFilterInput): [Post!]!
   postsByAuthor(authorId: String!): [Post!]!
   postsByIds(ids: [String!]!): [Post!]!
   post(id: String!): Post!
@@ -270,6 +271,33 @@ type Query {
   generatePlacesSessionToken: String!
 }
 
+input EventFilterInput {
+  type: EventFilterType
+  latitude: Float
+  longitude: Float
+  radiusInKm: Float
+}
+
+enum EventFilterType {
+  All
+  Nearby
+  Upcoming
+}
+
+input PostFilterInput {
+  type: PostFilterType
+  latitude: Float
+  longitude: Float
+  radiusInKm: Float
+}
+
+enum PostFilterType {
+  All
+  Nearby
+  Giveaway
+  Requests
+}
+
 input AIInsightsInput {
   category: String!
   recyclingInfo: String
@@ -278,6 +306,9 @@ input AIInsightsInput {
 
 type Mutation {
   signIn(data: SignInInput!): AuthResponse!
+
+  """Export all user data for GDPR compliance"""
+  exportUserData(id: String!): Boolean!
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!): User!
   removeUser(id: String!): User!
@@ -298,6 +329,15 @@ type Mutation {
   createLocation(createLocationInput: CreateLocationInput!): Location!
   updateLocation(updateLocationInput: UpdateLocationInput!): Location!
   removeLocation(id: String!): Location!
+
+  """Register device FCM token for push notifications"""
+  registerDeviceToken(token: String!, userId: String!): Boolean!
+
+  """Send test push notification to device"""
+  sendTestNotification(token: String!, title: String!, body: String!): Boolean!
+
+  """Send push notification to a user by their ID"""
+  sendNotificationToUser(userId: String!, title: String!, body: String!): Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: String!): Post!

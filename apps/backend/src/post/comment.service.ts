@@ -5,13 +5,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import { NotificationService } from '~/notification/notification.service';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
 
 @Injectable()
 export class CommentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createCommentInput: CreateCommentInput, userId: string | undefined) {
     if (!userId) {
@@ -33,24 +38,24 @@ export class CommentService {
         postId: createCommentInput.postId,
         authorId: userId,
       },
-      include: {
-        author: true,
-        post: true,
-      },
     });
+
+    // Notify post author if not the commenter
+    if (post.authorId && post.authorId !== userId) {
+      await this.notificationService.sendNotificationToUser(
+        post.authorId,
+        'New Comment',
+        `Your post received a new comment: "${createCommentInput.content.slice(0, 50)}"`,
+        { postId: post.id, commentId: comment.id },
+      );
+    }
 
     return comment;
   }
 
   async findAll() {
     const comments = await this.prisma.comment.findMany({
-      include: {
-        author: true,
-        post: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
     return comments;
@@ -59,10 +64,6 @@ export class CommentService {
   async findOne(id: string) {
     const comment = await this.prisma.comment.findUnique({
       where: { id },
-      include: {
-        author: true,
-        post: true,
-      },
     });
 
     if (!comment) {
@@ -75,13 +76,7 @@ export class CommentService {
   async findByPostId(postId: string) {
     const comments = await this.prisma.comment.findMany({
       where: { postId },
-      include: {
-        author: true,
-        post: true,
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
+      orderBy: { createdAt: 'asc' },
     });
 
     return comments;
@@ -107,13 +102,7 @@ export class CommentService {
 
     const comment = await this.prisma.comment.update({
       where: { id },
-      data: {
-        content: updateCommentInput.content,
-      },
-      include: {
-        author: true,
-        post: true,
-      },
+      data: { content: updateCommentInput.content },
     });
 
     return comment;
@@ -139,10 +128,6 @@ export class CommentService {
 
     const comment = await this.prisma.comment.delete({
       where: { id },
-      include: {
-        author: true,
-        post: true,
-      },
     });
 
     return comment;

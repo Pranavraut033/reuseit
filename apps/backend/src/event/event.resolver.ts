@@ -14,6 +14,7 @@ import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
 import { Event } from './entities/event.entity';
 import { EvenParticipant } from './entities/event-participant.entity';
+import { EventFilterInput } from './entities/event-filter.entity';
 import {
   EventCreatorLoader,
   EventLocationLoader,
@@ -45,8 +46,11 @@ export class EventResolver {
 
   @Query(() => [Event], { name: 'events' })
   @CacheQuery(() => 'events', 300)
-  findAll() {
-    return this.eventService.findAll();
+  findAll(
+    @Args('eventFilter', { type: () => EventFilterInput, nullable: true })
+    eventFilter?: EventFilterInput,
+  ) {
+    return this.eventService.findAll(eventFilter);
   }
 
   @Query(() => Event, { name: 'event' })

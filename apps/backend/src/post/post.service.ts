@@ -8,9 +8,11 @@ import {
 import { LocationService } from '~/location/location.service';
 import { PointsService } from '~/points/points.service';
 
+import { NotificationService } from '../notification/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
+import { PostFilterInput, PostFilterType, PostType } from './entities/post-type.entity';
 
 @Injectable()
 export class PostService {
@@ -18,6 +20,7 @@ export class PostService {
     private readonly prisma: PrismaService,
     private readonly locationService: LocationService,
     private readonly pointsService: PointsService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(createPostInput: CreatePostInput, userId: string | undefined) {
@@ -47,6 +50,14 @@ export class PostService {
     });
 
     await this.pointsService.addPoints(userId, 'CREATE_POST');
+
+    await this.notificationService.sendNotificationToUser(
+      userId,
+      'Post Created',
+      `Your post "${post.title}" was created successfully!`,
+      { postId: post.id },
+    );
+
     return post;
   }
 
@@ -62,22 +73,50 @@ export class PostService {
     if (!userId) return false;
 
     const existingLike = await this.prisma.like.findUnique({
-      where: {
-        userId_postId: {
-          userId,
-          postId,
-        },
-      },
+      where: { userId_postId: { userId, postId } },
     });
 
     return !!existingLike;
   }
 
-  async findAll() {
+  async findAll(limit?: number, offset?: number, postFilter?: PostFilterInput) {
+    let postType: PostType | undefined;
+    let locationIds: string[] | undefined;
+
+    if (postFilter?.type === PostFilterType.Giveaway) {
+      postType = PostType.GIVEAWAY;
+    } else if (postFilter?.type === PostFilterType.Requests) {
+      postType = PostType.REQUESTS;
+    } else if (postFilter?.type === PostFilterType.All) {
+      postType = undefined;
+    }
+
+    // Handle nearby filter
+    if (postFilter?.type === PostFilterType.Nearby && postFilter.latitude && postFilter.longitude) {
+      const radiusInKm = postFilter.radiusInKm || 5; // Default 5km radius
+      const nearbyLocations = await this.locationService.findNearBy(
+        postFilter.latitude,
+        postFilter.longitude,
+        radiusInKm,
+      );
+      if (nearbyLocations && Array.isArray(nearbyLocations)) {
+        locationIds = nearbyLocations.map((loc: any) => loc._id);
+      }
+    }
+
+    const whereClause: any = {};
+    if (postType) {
+      whereClause.postType = postType;
+    }
+    if (locationIds) {
+      whereClause.locationId = { in: locationIds };
+    }
+
     const posts = await this.prisma.post.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
     });
 
     return posts;
@@ -86,18 +125,14 @@ export class PostService {
   async findByAuthor(authorId: string) {
     const posts = await this.prisma.post.findMany({
       where: { authorId },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
     return posts;
   }
 
   async findOne(id: string) {
-    const post = await this.prisma.post.findUnique({
-      where: { id },
-    });
+    const post = await this.prisma.post.findUnique({ where: { id } });
 
     if (!post) {
       throw new NotFoundException(`Post with ID ${id} not found`);
@@ -112,9 +147,7 @@ export class PostService {
     }
 
     // Check if post exists and belongs to user
-    const existingPost = await this.prisma.post.findUnique({
-      where: { id },
-    });
+    const existingPost = await this.prisma.post.findUnique({ where: { id } });
 
     if (!existingPost) {
       throw new NotFoundException(`Post with ID ${id} not found`);
@@ -143,9 +176,7 @@ export class PostService {
     }
 
     // Check if post exists and belongs to user
-    const existingPost = await this.prisma.post.findUnique({
-      where: { id },
-    });
+    const existingPost = await this.prisma.post.findUnique({ where: { id } });
 
     if (!existingPost) {
       throw new NotFoundException(`Post with ID ${id} not found`);
@@ -168,9 +199,7 @@ export class PostService {
     }
 
     // Check post exists
-    const existingPost = await this.prisma.post.findUnique({
-      where: { id: postId },
-    });
+    const existingPost = await this.prisma.post.findUnique({ where: { id: postId } });
     if (!existingPost) {
       throw new NotFoundException(`Post with ID ${postId} not found`);
     }
@@ -179,10 +208,7 @@ export class PostService {
     const existingLike = await this.prisma.like.findUnique({
       where: {
         // prisma auto-generates the compound unique field name as userId_postId
-        userId_postId: {
-          userId,
-          postId,
-        },
+        userId_postId: { userId, postId },
       },
     });
 

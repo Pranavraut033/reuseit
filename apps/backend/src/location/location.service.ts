@@ -71,8 +71,10 @@ export class LocationService {
     createLocationInput: CreateLocationInput | undefined,
     optional: boolean = false,
   ): Promise<string | undefined> {
-    if (id) {
-      await this.prismaService.location.findFirstOrThrow({ where: { id } });
+    if (id || createLocationInput?.googlePlaceId) {
+      await this.prismaService.location.findFirstOrThrow({
+        where: { id, googlePlaceId: createLocationInput?.googlePlaceId },
+      });
       return id;
     }
 

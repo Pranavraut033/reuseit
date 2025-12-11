@@ -152,6 +152,9 @@ export class GoogleMapsService {
               latitude: typeof lat === 'number' ? lat : undefined,
               longitude: typeof lng === 'number' ? lng : undefined,
               photoUrl,
+              category: this.deriveCategory(r.types || []),
+              hours: undefined, // TODO: Fetch from place details API
+              acceptedMaterials: this.deriveAcceptedMaterials(r.types || []),
             };
             unique[r.place_id] = place;
             places.push(place);
@@ -163,6 +166,32 @@ export class GoogleMapsService {
       }
     }
     return Object.values(unique);
+  }
+
+  private deriveCategory(types: string[]): string | undefined {
+    if (types.includes('recycling_center') || types.includes('waste_management')) {
+      return 'Recycling Center';
+    }
+    if (types.includes('store') || types.includes('supermarket')) {
+      return 'Store';
+    }
+    if (types.includes('park') || types.includes('garden')) {
+      return 'Public Space';
+    }
+    return 'Other';
+  }
+
+  private deriveAcceptedMaterials(types: string[]): string[] | undefined {
+    if (types.includes('recycling_center')) {
+      return ['Plastic', 'Paper', 'Glass', 'Metal'];
+    }
+    if (types.includes('electronics_store')) {
+      return ['Electronics'];
+    }
+    if (types.includes('clothing_store')) {
+      return ['Clothes'];
+    }
+    return undefined;
   }
 
   async reverseGeocode(latitude: number, longitude: number): Promise<ReverseGeocodeResult | null> {

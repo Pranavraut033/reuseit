@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { LocationModule } from '~/location/location.module';
+import { NotificationModule } from '~/notification/notification.module';
 
 import { PrismaModule } from '../prisma/prisma.module';
 import {
@@ -21,6 +22,6 @@ import { EventService } from './event.service';
     EventPostsLoader,
     EventParticipantsLoader,
   ],
-  imports: [PrismaModule, LocationModule],
+  imports: [PrismaModule, LocationModule, NotificationModule],
 })
 export class EventModule {}

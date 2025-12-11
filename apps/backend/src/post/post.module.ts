@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { LocationModule } from '~/location/location.module';
+import { NotificationModule } from '~/notification/notification.module';
 import { PointsModule } from '~/points/points.module';
 
 import { PrismaModule } from '../prisma/prisma.module';
@@ -22,20 +23,20 @@ import { PostService } from './post.service';
 
 @Module({
   providers: [
-    PostResolver,
-    PostService,
-    PostLoader,
-    PostAuthorLoader,
-    PostCommentsLoader,
-    PostLocationLoader,
-    PostEventLoader,
-    PostUserArticlesLoader,
-    PostLikeCountLoader,
-    PostCommentCountLoader,
-    PostLikedByUserLoader,
     CommentAuthorLoader,
     CommentPostLoader,
+    PostAuthorLoader,
+    PostCommentCountLoader,
+    PostCommentsLoader,
+    PostEventLoader,
+    PostLikeCountLoader,
+    PostLikedByUserLoader,
+    PostLoader,
+    PostLocationLoader,
+    PostResolver,
+    PostService,
+    PostUserArticlesLoader,
   ],
-  imports: [CommentModule, PrismaModule, LocationModule, PointsModule],
+  imports: [CommentModule, PrismaModule, LocationModule, PointsModule, NotificationModule],
 })
 export class PostModule {}

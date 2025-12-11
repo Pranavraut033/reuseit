@@ -4,7 +4,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { GraphQLModule } from '@nestjs/graphql';
+import { GraphQLISODateTime, GraphQLModule } from '@nestjs/graphql';
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
 import { DataLoaderInterceptor } from 'nestjs-dataloader';
@@ -23,6 +23,7 @@ import { GoogleMapsModule } from './google-maps/google-maps.module';
 import { HealthController } from './health/health.controller';
 import { LlmModule } from './llm/llm.module';
 import { LocationModule } from './location/location.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -37,10 +38,12 @@ import { LocationModule } from './location/location.module';
         res,
       }),
       autoSchemaFile: join(process.cwd(), 'prisma/schema.gql'),
+      resolvers: { DateTime: GraphQLISODateTime },
     }),
     AuthModule,
     EventModule,
     FirebaseModule,
+    NotificationModule,
     LocationModule,
     PointsModule,
     PostModule,

@@ -5,19 +5,23 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { LocationService } from '~/location/location.service';
+import { NotificationService } from '~/notification/notification.service';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
 import { Event } from './entities/event.entity';
+import { EventFilterInput, EventFilterType } from './entities/event-filter.entity';
 
 @Injectable()
 export class EventService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly locationService: LocationService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(createEventInput: CreateEventInput, creatorId?: string): Promise<Event> {
@@ -45,28 +49,53 @@ export class EventService {
         creatorId,
         locationId,
       },
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
     });
+
+    await this.notificationService.sendNotificationToUser(
+      event.creatorId,
+      'Event Created',
+      `Your event "${event.title}" was created successfully!`,
+      { eventId: event.id },
+    );
 
     return event as unknown as Event;
   }
 
-  async findAll() {
+  async findAll(eventFilter?: EventFilterInput) {
+    let locationIds: string[] | undefined;
+    let startTimeFilter: any = {};
+
+    // Handle nearby filter
+    if (
+      eventFilter?.type === EventFilterType.Nearby &&
+      eventFilter.latitude &&
+      eventFilter.longitude
+    ) {
+      const radiusInKm = eventFilter.radiusInKm || 5; // Default 5km radius
+      const nearbyLocations = await this.locationService.findNearBy(
+        eventFilter.latitude,
+        eventFilter.longitude,
+        radiusInKm,
+      );
+      if (nearbyLocations && Array.isArray(nearbyLocations)) {
+        locationIds = nearbyLocations.map((loc) => loc._id);
+      }
+    }
+
+    // Handle upcoming filter
+    if (eventFilter?.type === EventFilterType.Upcoming) {
+      const now = new Date();
+      startTimeFilter = { startTime: { gte: now } };
+    }
+
+    const whereClause: Prisma.EventWhereInput = { ...startTimeFilter };
+    if (locationIds) {
+      whereClause.locationId = { in: locationIds };
+    }
+
     const events = await this.prisma.event.findMany({
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
-      orderBy: {
-        startTime: 'asc',
-      },
+      where: whereClause,
+      orderBy: { startTime: 'asc' },
     });
 
     return events;
@@ -75,12 +104,6 @@ export class EventService {
   async findOne(id: string): Promise<Event> {
     const event = await this.prisma.event.findUnique({
       where: { id },
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
     });
 
     if (!event) {
@@ -93,15 +116,7 @@ export class EventService {
   async findByCreator(creatorId: string) {
     const events = await this.prisma.event.findMany({
       where: { creatorId },
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
-      orderBy: {
-        startTime: 'asc',
-      },
+      orderBy: { startTime: 'asc' },
     });
 
     return events;
@@ -110,20 +125,8 @@ export class EventService {
   async findUpcoming() {
     const now = new Date();
     const events = await this.prisma.event.findMany({
-      where: {
-        startTime: {
-          gte: now,
-        },
-      },
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
-      orderBy: {
-        startTime: 'asc',
-      },
+      where: { startTime: { gte: now } },
+      orderBy: { startTime: 'asc' },
     });
 
     return events;
@@ -181,12 +184,6 @@ export class EventService {
         endTime: updateEventInput.endTime,
         locationId: updateEventInput.locationId,
       },
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
     });
 
     return event as unknown as Event;
@@ -212,12 +209,6 @@ export class EventService {
 
     const event = await this.prisma.event.delete({
       where: { id },
-      include: {
-        creator: true,
-        location: true,
-        posts: true,
-        participants: true,
-      },
     });
 
     return event as unknown as Event;
