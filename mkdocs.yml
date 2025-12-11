@@ -6,6 +6,8 @@ site_url: https://pranavraut033.github.io/reuseit/
 repo_name: Pranavraut033/reuseit
 repo_url: https://github.com/Pranavraut033/reuseit
 
+docs_dir: docs
+
 theme:
   name: material
   palette:
