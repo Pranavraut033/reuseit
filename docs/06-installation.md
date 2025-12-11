@@ -597,6 +597,80 @@ eas build --platform android
 
 The Docker setup can be used for production with some additional considerations.
 
+### Server Setup
+
+Before deploying to a remote server, ensure the following files are properly configured:
+
+#### 1. Upload Firebase Admin SDK Key
+
+Upload the Firebase service account key to the server:
+
+```bash
+scp apps/backend/reuseit-a37ea-firebase-adminsdk-fbsvc-ed8913ca21.json root@91.98.231.10:/root/apps/reuseit/apps/backend/
+```
+
+**Set proper permissions for Docker access:**
+
+```bash
+# Ensure parent folders are accessible
+chmod 755 /root/apps/reuseit/apps
+chmod 755 /root/apps/reuseit/apps/backend
+
+# Ensure the file is readable (Docker only needs read access to mount a file)
+chmod 644 /root/apps/reuseit/apps/backend/reuseit-a37ea-firebase-adminsdk-fbsvc-ed8913ca21.json
+```
+
+#### 2. Create MongoDB Keyfile
+
+Create a proper 32-byte keyfile for MongoDB replica set authentication:
+
+```bash
+# Generate keyfile
+openssl rand -base64 32 > /root/apps/reuseit/mongo-keyfile
+
+# Set permissions (owner read-only)
+chmod 400 /root/apps/reuseit/mongo-keyfile
+
+# Set ownership to match MongoDB container (UID/GID 999)
+chown 999:999 /root/apps/reuseit/mongo-keyfile
+
+# Verify the file
+ls -l /root/apps/reuseit/mongo-keyfile
+cat /root/apps/reuseit/mongo-keyfile
+```
+
+**Note:** The keyfile should be ~44 characters (32 bytes base64 encoded).
+
+#### 3. Restart MongoDB Service
+
+After configuring the keyfile:
+
+```bash
+# Stop all services
+docker compose down
+
+# Start MongoDB
+docker compose up -d mongodb
+
+# Check logs
+docker compose logs -f mongodb
+```
+
+The MongoDB service should start without mount or keyfile errors, and the healthcheck should pass.
+
+#### 4. Fix Prisma Permissions (if needed)
+
+If you encounter permission issues with Prisma migrations or generated files:
+
+**Option 1: Fix permissions on host folder**
+
+```bash
+# On your server, allow write access for all users (100% safe for development)
+chmod -R 777 /root/apps/reuseit/apps/backend/prisma
+```
+
+**Note:** This grants full permissions to the Prisma directory. For production, consider using UID 1000 (common Node.js user in containers) instead.
+
 ### Security Hardening
 
 1. **Change Default Passwords:**
@@ -613,6 +687,62 @@ The Docker setup can be used for production with some additional considerations.
    - Don't expose MongoDB/Redis ports publicly
    - Use reverse proxy (nginx) for SSL termination
    - Configure firewall rules
+
+#### NGINX Reverse Proxy Setup (IP Access)
+
+For IP-only access without domain names:
+
+**1. Edit NGINX config**
+
+```bash
+sudo nano /etc/nginx/sites-available/reuseit
+```
+
+Replace content with:
+
+```nginx
+server {
+    listen 80;
+    server_name _;  # catch-all for your IP
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;  # backend container port
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+**2. Enable site and restart NGINX**
+
+```bash
+# Create symlink (ignore if already exists)
+sudo ln -s /etc/nginx/sites-available/reuseit /etc/nginx/sites-enabled/ 2>/dev/null
+
+# Test configuration
+sudo nginx -t
+
+# Restart NGINX
+sudo systemctl restart nginx
+```
+
+**3. Test**
+
+Open browser to: `http://91.98.231.10/`
+
+Requests should now go through NGINX → backend (port 3000).
+
+**Optional: Remove default NGINX page**
+
+```bash
+sudo rm /etc/nginx/sites-enabled/default
+sudo systemctl restart nginx
+```
+
+This ensures only your reverse proxy is active.
 
 ### Scaling Considerations
 

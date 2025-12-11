@@ -119,9 +119,9 @@ This project is submitted as academic coursework for IU International University
 
 ## 📮 Need Help?
 
-- Check [Quick Reference](./QUICK_REFERENCE.md) for common commands
-- Review [Quick Start Guide](./QUICK_START.md) for setup issues
-- See [VS Code Integration Guide](./VSCODE_GUIDE.md) for editor problems
+- Check [Quick Reference](./legacy/QUICK_REFERENCE.md) for common commands
+- Review [Quick Start Guide](./legacy/QUICK_START.md) for setup issues
+- See [VS Code Integration Guide](./legacy/VSCODE_GUIDE.md) for editor problems
 
 ---
 
