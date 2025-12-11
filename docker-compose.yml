@@ -3,8 +3,6 @@ services:
     image: mongo:7.0
     container_name: reuseit-mongodb
     restart: unless-stopped
-    ports:
-      - '${MONGO_PORT:-27017}:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-admin123}
@@ -35,8 +33,6 @@ services:
     image: redis:7-alpine
     container_name: reuseit-redis
     restart: unless-stopped
-    ports:
-      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -68,6 +64,7 @@ services:
       - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
       - REDIS_URL=redis://redis:6379
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
     depends_on:
       mongodb:
         condition: service_healthy

@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** December 5, 2025 (Live TFLite object detection integrated)
+**Last Updated:** December 8, 2025 (Added one-time onboarding page)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -35,9 +35,10 @@
 - ✅ User authentication flow (login/signup)
 - ✅ Basic user profile management
 - ✅ GraphQL queries and mutations setup
+- ✅ **Firebase Push Notifications**: Complete Firebase Cloud Messaging integration with FCM token registration, foreground/background message handling, and backend notification service
 
 ### Sprint 3: Community & Location (Completed)
-- ✅ Explore page implementation (with location-based place discovery, category filtering, and manual area loading)
+- ✅ Explore page implementation (with location-based place discovery, category filtering, manual area loading, and sliding bottom sheet for place details)
 - ✅ Recycling places display on map
 - ✅ Google Maps integration
 - ✅ Post creation functionality (basic)
@@ -52,6 +53,13 @@
 - ✅ "Liked by current user" status
 
 ### Sprint 5: Events System (Completed - Full Stack)
+
+### Sprint 6: GDPR & Data Privacy Compliance (Completed)
+- ✅ Implemented GDPR-compliant user deletion (backend)
+- ✅ Added user data export endpoint (backend)
+- ✅ Added privacy controls (data export, delete account, privacy policy) to mobile app
+- ✅ Created in-app and documentation privacy policy
+- ✅ Updated login and profile screens for explicit privacy consent and controls
 - ✅ Event creation with location
 - ✅ Event image upload functionality (up to 4 images)
 - ✅ Event CRUD operations (create, read, update, delete)
@@ -137,6 +145,9 @@
 - ✅ **TypeScript Strict Mode** - Fixed all unsafe type assignments and unused variables
 - ✅ **Code Quality** - Ensured consistent code formatting with Prettier across the monorepo
 - ✅ **GraphQL Type Generation** - Regenerated types to fix mobile app type mismatches
+
+### Sprint 11: User Experience Enhancements (Completed)
+- ✅ **One-Time Onboarding Page** - Added multi-step onboarding flow that guides new users through app features, shown only once after first login using Zustand store persistence
 
 ## 🚧 In Progress
 
@@ -242,6 +253,12 @@
 - **Issue:** @react-native-community/datetimepicker library had bug with global mode variable causing TypeError when dismissing picker
 - **Fix:** Replaced with react-native-date-picker library which uses proper modal implementation and doesn't rely on deprecated Android APIs
 
+**TD-12: GraphQL DateTime Serialization Error**
+- **Status:** ✅ **Fixed**
+- **Impact:** GraphQL queries failed with "Expected DateTime.serialize to return non-nullable value, returned: null"
+- **Issue:** DateTime scalar from Prisma schema not properly registered in NestJS GraphQL module
+- **Fix:** Added DateTime resolver mapping in GraphQLModule configuration using GraphQLISODateTime from @nestjs/graphql
+
 **TD-02: Events Mobile UI Not Implemented**
 - **Status:** ✅ **Completed**
 - **Impact:** Full event management UI implemented with RSVP functionality and creator dashboard
@@ -292,7 +309,20 @@
 
 ## 📈 Next Tasks (Priority Order)
 
-1. **EAS Build Setup for Play Store Deployment** (High Priority)
+1. **Add One-Time Onboarding Page** (Completed ✅)
+   - ✅ Create onboarding screen with app introduction
+   - ✅ Add onboarding completion flag to Zustand store
+   - ✅ Integrate with navigation to show only once after login
+   - ✅ Test on fresh installs
+
+2. **Feed Screen UI Redesign** (Completed ✅)
+   - ✅ Added pagination to posts GraphQL query (limit/offset)
+   - ✅ Enhanced PostCard with eco-friendly themes, micro-interactions, accessibility
+   - ✅ Integrated search bar, filter chips, infinite scroll in posts.tsx
+   - ✅ Implemented i18n for all text
+   - ✅ Tested and validated changes
+
+3. **EAS Build Setup for Play Store Deployment** (High Priority)
    - Set up Google Play Console service account key
    - Configure EAS credentials for Android signing
    - Update production environment variables
