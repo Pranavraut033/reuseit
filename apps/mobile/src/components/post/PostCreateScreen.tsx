@@ -151,10 +151,10 @@ export const PostCreateScreen: React.FC = () => {
         __typename: 'Post',
         ...createPostInput,
         id: `temp-id ${Math.random()}`,
-        commentCount: 0,
+        chatCount: 0,
         images: imageUrls,
         description: createPostInput.description,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
         author: {
           __typename: 'User',
           id: user?.id || '',
@@ -164,13 +164,13 @@ export const PostCreateScreen: React.FC = () => {
         event: null,
         likeCount: 0,
         likedByCurrentUser: false,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
         location: createPostInput.location
           ? {
               __typename: 'Location',
               id: 'temp-location-id',
               ...createPostInput.location,
-              createdAt: new Date().toISOString(),
+              createdAt: new Date(),
               type: LocationType.UserLocation,
             }
           : null,
@@ -472,7 +472,6 @@ type ModalPreviewProps = {
 
 const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { user } = useAuth();
   const sheetRef = useRef<BottomSheet>(null);
 
   const handleOpen = () => {
@@ -544,13 +543,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
                 contentContainerStyle={{ paddingBottom: 20, padding: 16 }}
                 showsVerticalScrollIndicator={false}
               >
-                <PostCard
-                  isPreview
-                  formData={formValues}
-                  images={images.map((img) => img.uri)}
-                  userName={user?.name}
-                  userAvatar={user?.avatarUrl || undefined}
-                />
+                <PostCard isPreview formData={formValues} images={images.map((img) => img.uri)} />
               </BottomSheetScrollView>
             </View>
           </BottomSheet>

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import * as SecureStore from 'expo-secure-store';
+import { Region } from 'react-native-maps';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
@@ -18,6 +19,8 @@ export interface AppState {
   setUser: (user: User | null) => void;
   token: string | null;
   user: User | null;
+  location: Region | null;
+  setLocation: (location: Region | null) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -28,6 +31,7 @@ export const useStore = create<AppState>()(
         ready: false,
         token: null,
         user: null,
+        location: null,
         setUser: (user) => {
           try {
             set({ user });
@@ -53,6 +57,13 @@ export const useStore = create<AppState>()(
             set({ token });
           } catch (e) {
             console.error('Error setting token:', e);
+          }
+        },
+        setLocation: (location) => {
+          try {
+            set({ location });
+          } catch (e) {
+            console.error('Error setting location:', e);
           }
         },
       }),

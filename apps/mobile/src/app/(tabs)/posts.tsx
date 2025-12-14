@@ -12,6 +12,7 @@ import {
 
 import { getFragmentData } from '~/__generated__';
 import { GetPostsQuery, PostFilterInput, PostFilterType } from '~/__generated__/graphql';
+import { Button } from '~/components/common/Button';
 import ScreenContainer from '~/components/common/ScreenContainer';
 import PostList from '~/components/post/PostList';
 import { LOCATION_FIELDS, POST_FIELDS } from '~/gql/fragments';
@@ -132,20 +133,6 @@ const FeedsScreen = () => {
         </View>
       )}
 
-      {error && (
-        <View className="mb-4 flex flex-row items-center rounded-xl bg-red-50 p-6">
-          <Ionicons name="alert-circle" size={48} color="#EF4444" />
-          <View className="ml-4">
-            <Text className="text-center text-lg font-medium text-red-700">
-              Oops! Something went wrong
-            </Text>
-            <Text className="mt-2 text-center text-sm text-red-600">
-              Failed to load posts. Please try again.
-            </Text>
-          </View>
-        </View>
-      )}
-
       {posts.length ? (
         <PostList
           posts={posts}
@@ -161,6 +148,27 @@ const FeedsScreen = () => {
             <Text className="mt-4 text-gray-600">{t('posts.noPosts')}</Text>
           </View>
         )
+      )}
+
+      {error && (
+        <>
+          <View className="mb-4 flex flex-row items-center rounded-xl bg-red-50 p-6">
+            <Ionicons name="alert-circle" size={48} color="#EF4444" />
+            <View className="ml-4">
+              <Text className="text-center text-lg font-medium text-red-700">
+                Oops! Something went wrong
+              </Text>
+              <Text className="mt-2 text-center text-sm text-red-600">
+                Failed to load posts. Please try again.
+              </Text>
+            </View>
+          </View>
+          <Button onPress={() => refetch()} className="mb-4 mx-auto bg-red-600 px-12 rounded-full">
+            <Text className="text-white" onPress={() => refetch()}>
+              Retry
+            </Text>
+          </Button>
+        </>
       )}
     </ScreenContainer>
   );

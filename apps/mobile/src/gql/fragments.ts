@@ -4,10 +4,11 @@ export const POST_FIELDS = gql(`
   fragment PostFields on Post {
     id
     category
-    commentCount
+    chatCount
     condition
     description
     createdAt
+    hasChatWithCurrentUser
     images
     likeCount
     likedByCurrentUser

@@ -2,17 +2,21 @@ import { useMutation } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { router } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import AvatarIcon from '~/components/common/AvatarIcon';
 import { Post } from '~/gql/fragments';
 import { DateTime } from '~/gql/helper.types';
-import { TOGGLE_LIKE_POST } from '~/gql/posts';
+import { CREATE_CHAT, TOGGLE_LIKE_POST } from '~/gql/posts';
+import useMounted from '~/hooks/useMounted';
+import { useUserLocation } from '~/hooks/useUserLocation';
+import { useStore } from '~/store';
+import { computeGeographicalDistance } from '~/utils';
 import { PostCreateFormData } from '~/utils/postValidation';
 
 type BasePostCardProps = {
   userName?: string;
-  userAvatar?: string;
   disableLink?: boolean;
 };
 
@@ -37,7 +41,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   post,
   images,
   userName: _u = 'User',
-  userAvatar,
   isPreview = false,
   disableLink = false,
 }) => {
@@ -53,11 +56,30 @@ export const PostCard: React.FC<PostCardProps> = ({
     postType,
   } = (isPreview ? formData : post) || {};
 
-  const user = post?.author;
+  const { location: userLocation, fetchUserLocation } = useUserLocation();
+  const signInUser = useStore((state) => state.user);
+  const user = post?.author ?? signInUser;
   const userName = user?.name || _u;
   const imagesList = images ?? post?.images ?? [];
 
   const hasContent = description || imagesList.length > 0;
+
+  useMounted(() => {
+    fetchUserLocation(true);
+  });
+
+  const distance = useMemo(() => {
+    if (!location?.coordinates || !userLocation?.latitude || !userLocation?.longitude) return '';
+
+    const distance = computeGeographicalDistance(
+      location.coordinates[1],
+      location.coordinates[0],
+      userLocation.latitude,
+      userLocation.longitude,
+    );
+
+    return distance < 0.5 ? 'Nearby' : `${Math.round(distance * 1000)} m away`;
+  }, [location?.coordinates, userLocation?.latitude, userLocation?.longitude]);
 
   const onPostPress = useCallback(() => {
     if (post) {
@@ -83,13 +105,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       <View className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg">
         {/* User Info */}
         <View className="flex-row items-center gap-3 p-3">
-          <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-green-50">
-            {userAvatar && !anonymous ? (
-              <Image source={{ uri: userAvatar }} className="h-full w-full" />
-            ) : (
-              <Ionicons name="leaf" size={24} color="#10B981" />
-            )}
-          </View>
+          <AvatarIcon user={user} size={40} anonymous={anonymous} />
           <View className="flex-1">
             <Text className="text-[15px] font-semibold text-gray-800">
               {anonymous ? 'Anonymous' : userName}
@@ -101,12 +117,12 @@ export const PostCard: React.FC<PostCardProps> = ({
             </Text>
           </View>
           {/* Eco Badge */}
-          {user && (
+          {/* {user && (
             <View className="flex-row items-center gap-1 rounded-full bg-green-100 px-2 py-1">
               <Ionicons name="leaf" size={12} color="#059669" />
               <Text className="text-xs font-medium text-green-700">Eco User</Text>
             </View>
-          )}
+          )} */}
         </View>
 
         {/* Images Preview */}
@@ -184,7 +200,8 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <View className="flex-row items-center gap-1.5">
                   <Ionicons name="location-outline" size={16} color="#6B7280" />
                   <Text className="flex-1 text-[13px] text-gray-500" numberOfLines={1}>
-                    {location.street || 'Location set'} • Nearby
+                    {location.street || 'Location set'}
+                    {distance ? ' • ' + distance : ''}
                   </Text>
                 </View>
               )}
@@ -213,6 +230,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 };
 
 const EngagementPreview: React.FC<{ post: Post; postType?: string }> = ({ post, postType }) => {
+  const signInUser = useStore((state) => state.user);
   const [liked, setLiked] = useState(!!post.likedByCurrentUser);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [toggleLikePost, { loading }] = useMutation(TOGGLE_LIKE_POST, {
@@ -225,15 +243,18 @@ const EngagementPreview: React.FC<{ post: Post; postType?: string }> = ({ post, 
   });
 
   const onCommentPress = useCallback(() => {
-    // Navigate to comments section
+    // Navigate to chat section
     router.navigate(`/posts/${post.id}`);
   }, [post.id]);
+
+  const isAuthor = signInUser?.id === post.author?.id;
 
   return (
     <EngagementPreviewSkeleton
       likeCount={likeCount}
-      commentCount={post.commentCount}
+      chatCount={post.chatCount}
       liked={!!liked}
+      hasChat={!!post.hasChatWithCurrentUser}
       onLikePress={() => {
         if (!loading) {
           toggleLikePost();
@@ -242,72 +263,131 @@ const EngagementPreview: React.FC<{ post: Post; postType?: string }> = ({ post, 
       onCommentPress={onCommentPress}
       isLiking={loading}
       postType={postType}
+      postId={post.id}
+      isAuthor={isAuthor}
     />
   );
 };
 
 const EngagementPreviewSkeleton: React.FC<{
   likeCount?: number;
-  commentCount?: number;
+  chatCount?: number;
   liked?: boolean;
+  hasChat?: boolean;
   onLikePress?: () => void;
   isLiking?: boolean;
   onCommentPress?: () => void;
   postType?: string;
+  postId?: string;
+  isAuthor?: boolean;
 }> = ({
   likeCount = 0,
-  commentCount = 0,
+  chatCount = 0,
   liked = false,
+  hasChat = false,
   onLikePress,
   isLiking,
   onCommentPress,
   postType,
+  postId,
+  isAuthor = false,
 }) => {
   const isGiveaway = postType === 'GIVEAWAY';
+  const isRequest = postType === 'REQUESTS';
+
+  const [createChat, { loading: creatingChat }] = useMutation(CREATE_CHAT, {
+    variables: { createChatInput: { postId: postId! } },
+    onCompleted: () => {
+      // Navigate to post detail to see the chat
+      router.navigate(`/posts/${postId}`);
+    },
+  });
+
+  const handleRequestPress = useCallback(() => {
+    if (hasChat) {
+      // Navigate to existing chat
+      router.navigate(`/posts/${postId}`);
+    } else {
+      // Create new chat
+      createChat();
+    }
+  }, [hasChat, postId, createChat]);
 
   return (
     <View className="flex-row items-center gap-5 border-t border-gray-100 p-3">
-      {isGiveaway ? (
-        <TouchableOpacity
-          onPress={onLikePress}
-          disabled={isLiking}
-          accessibilityLabel="Request this item"
-          accessibilityRole="button"
-        >
-          <View className="flex-row items-center gap-1.5 rounded-full bg-green-500 px-4 py-2">
-            <Ionicons name="hand-left" size={16} color="#FFF" />
-            <Text className="text-sm font-medium text-white">Request</Text>
-          </View>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-          onPress={onLikePress}
-          disabled={isLiking}
-          accessibilityLabel={liked ? 'Unlike this post' : 'Like this post'}
-          accessibilityRole="button"
-        >
-          <View className="flex-row items-center gap-1.5">
-            <Ionicons
-              name={liked ? 'heart' : 'heart-outline'}
-              size={20}
-              color={liked ? '#10B981' : '#6B7280'}
-            />
-            <Text className="text-sm" style={{ color: liked ? '#10B981' : '#4B5563' }}>
-              {Math.floor(likeCount)}
-            </Text>
-          </View>
-        </TouchableOpacity>
+      {!isAuthor && (
+        <>
+          {isGiveaway ? (
+            <TouchableOpacity
+              onPress={handleRequestPress}
+              disabled={creatingChat}
+              accessibilityLabel={hasChat ? 'View request' : 'Request this item'}
+              accessibilityRole="button"
+            >
+              <View
+                className={`flex-row items-center gap-1.5 rounded-full px-4 py-2 ${
+                  hasChat ? 'bg-gray-500' : 'bg-green-500'
+                }`}
+              >
+                <Ionicons name="hand-left" size={16} color="#FFF" />
+                <Text className="text-sm font-medium text-white">
+                  {hasChat ? 'Requested' : 'Request'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ) : isRequest ? (
+            <TouchableOpacity
+              onPress={handleRequestPress}
+              disabled={creatingChat}
+              accessibilityLabel={hasChat ? 'View offer' : 'Offer this item'}
+              accessibilityRole="button"
+            >
+              <View
+                className={`flex-row items-center gap-1.5 rounded-full px-4 py-2 ${
+                  hasChat ? 'bg-gray-500' : 'bg-blue-500'
+                }`}
+              >
+                <Ionicons name="hand-right" size={16} color="#FFF" />
+                <Text className="text-sm font-medium text-white">
+                  {hasChat ? 'Offered' : 'Offer'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={onLikePress}
+              disabled={isLiking}
+              accessibilityLabel={liked ? 'Unlike this post' : 'Like this post'}
+              accessibilityRole="button"
+            >
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons
+                  name={liked ? 'heart' : 'heart-outline'}
+                  size={20}
+                  color={liked ? '#10B981' : '#6B7280'}
+                />
+                <Text className="text-sm" style={{ color: liked ? '#10B981' : '#4B5563' }}>
+                  {Math.floor(likeCount)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={onCommentPress}
+            accessibilityLabel="View chat"
+            accessibilityRole="button"
+          >
+            <View className="flex-row items-center gap-1.5">
+              <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
+              <Text className="text-sm text-gray-600">
+                {chatCount > 0
+                  ? `${chatCount} ${isRequest ? 'offer' : 'request'}${chatCount > 1 ? 's' : ''}`
+                  : 'Chat'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </>
       )}
-      <TouchableOpacity
-        onPress={onCommentPress}
-        accessibilityLabel="View comments"
-        accessibilityRole="button"
-      >
-        <View className="flex-row items-center gap-1.5">
-          <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
-          <Text className="text-sm text-gray-600">{commentCount}</Text>
-        </View>
-      </TouchableOpacity>
     </View>
   );
 };

@@ -45,8 +45,8 @@ export default function EditEventScreen() {
 
   useEffect(() => {
     if (event) {
-      const startDate = new Date(event.startTime as string);
-      const endDate = event.endTime ? new Date(event.endTime as string) : null;
+      const startDate = new Date(event.startTime);
+      const endDate = event.endTime ? new Date(event.endTime) : null;
 
       reset({
         title: event.title,
@@ -85,7 +85,8 @@ export default function EditEventScreen() {
         <Text className="text-center text-red-500">Event not found</Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => router.back()}>
+          onPress={() => router.back()}
+        >
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -100,7 +101,8 @@ export default function EditEventScreen() {
         </Text>
         <TouchableOpacity
           className="mt-4 rounded-lg bg-blue-500 px-4 py-2"
-          onPress={() => router.back()}>
+          onPress={() => router.back()}
+        >
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -131,8 +133,8 @@ export default function EditEventScreen() {
           id: event.id,
           title: formData.title,
           description: formData.description,
-          startTime: startTime.toISOString(),
-          endTime: endTime?.toISOString(),
+          startTime: startTime,
+          endTime: endTime,
           location: {
             street: formData.location.street,
             city: formData.location.city,
@@ -152,7 +154,8 @@ export default function EditEventScreen() {
         <View className="mb-6 flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+          >
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-900">Edit Event</Text>

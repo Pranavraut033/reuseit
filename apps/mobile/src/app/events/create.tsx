@@ -1,28 +1,47 @@
-import { useMutation } from '@apollo/client/react';
-import { Ionicons } from '@expo/vector-icons';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { FormProvider, useForm, useWatch } from 'react-hook-form';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { Toast } from 'toastify-react-native';
+// import { useMutation } from '@apollo/client/react';
+// import { Ionicons } from '@expo/vector-icons';
+// import { yupResolver } from '@hookform/resolvers/yup';
+// import { router } from 'expo-router';
+// import { useState } from 'react';
+// import { FormProvider, useForm, useWatch } from 'react-hook-form';
+// import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+// import { Toast } from 'toastify-react-native';
+import { Text, View } from 'react-native';
 
 import ScreenContainer from '~/components/common/ScreenContainer';
-import {
-  DateTimeField,
-  LocationField,
-  MediaField,
-  MediaItem,
-  SubmitButton,
-  TextField,
-} from '~/components/form';
-import { useAuth } from '~/context/AuthContext';
-import { CREATE_EVENT } from '~/gql/events';
-import { EventCreateFormData, eventCreateSchema } from '~/utils/eventValidation';
-import { compressImages } from '~/utils/imageCompression';
-import { uploadImages } from '~/utils/storage';
+// import {
+//   DateTimeField,
+//   LocationField,
+//   MediaField,
+//   MediaItem,
+//   SubmitButton,
+//   TextField,
+// } from '~/components/form';
+// import { useAuth } from '~/context/AuthContext';
+// import { CREATE_EVENT } from '~/gql/events';
+// import { EventCreateFormData, eventCreateSchema } from '~/utils/eventValidation';
+// import { compressImages } from '~/utils/imageCompression';
+// import { uploadImages } from '~/utils/storage';
 
 export default function CreateEventScreen() {
+  // COPILOT_HIDE_EVENTS_START - Remove this block to re-enable event creation
+  return (
+    <ScreenContainer>
+      <View className="flex-1 items-center justify-center px-6">
+        <View className="items-center">
+          <Text className="mb-4 text-6xl">📅</Text>
+          <Text className="mb-2 text-2xl font-bold text-gray-900">Create Event</Text>
+          <Text className="text-center text-lg text-gray-600">
+            Coming Soon! Event creation will be available here.
+          </Text>
+        </View>
+      </View>
+    </ScreenContainer>
+  );
+  // COPILOT_HIDE_EVENTS_END
+
+  // Original create event code below - uncomment to restore
+  /*
   const { user } = useAuth();
   const [creating, setCreating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -124,7 +143,6 @@ export default function CreateEventScreen() {
   return (
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View className="mb-6 flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -134,7 +152,6 @@ export default function CreateEventScreen() {
           <Text className="text-2xl font-bold text-gray-900">Create Event</Text>
         </View>
 
-        {/* Form */}
         <FormProvider {...methods}>
           <View className="space-y-4">
             <TextField name="title" label="Event Title *" placeholder="Enter event title" />
@@ -182,4 +199,5 @@ export default function CreateEventScreen() {
       </ScrollView>
     </ScreenContainer>
   );
+  */
 }

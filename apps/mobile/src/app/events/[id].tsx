@@ -1,31 +1,51 @@
-import { useMutation, useQuery } from '@apollo/client/react';
-import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { Toast } from 'toastify-react-native';
+// import { useMutation, useQuery } from '@apollo/client/react';
+// import { Ionicons } from '@expo/vector-icons';
+// import { router, useLocalSearchParams } from 'expo-router';
+// import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+// import { Toast } from 'toastify-react-native';
+
+import { Text, View } from 'react-native';
 
 import ScreenContainer from '~/components/common/ScreenContainer';
-import { useAuth } from '~/context/AuthContext';
-import { GET_EVENT } from '~/gql/events';
-import { JOIN_EVENT, LEAVE_EVENT } from '~/gql/events/mutations';
-import { Event } from '~/gql/fragments';
+// import { useAuth } from '~/context/AuthContext';
+// import { GET_EVENT } from '~/gql/events';
+// import { JOIN_EVENT, LEAVE_EVENT } from '~/gql/events/mutations';
+// import { Event } from '~/gql/fragments';
 
-type EventDetail = Omit<Event, 'posts'> & {
-  posts?: {
-    id: string;
-    title: string;
-    description: string;
-    images: string[];
-    createdAt: string;
-    author: {
-      id: string;
-      name: string;
-      avatarUrl?: string;
-    };
-  }[];
-};
+// type EventDetail = Omit<Event, 'posts'> & {
+//   posts?: {
+//     id: string;
+//     title: string;
+//     description: string;
+//     images: string[];
+//     createdAt: string;
+//     author: {
+//       id: string;
+//       name: string;
+//       avatarUrl?: string;
+//     };
+//   }[];
+// };
 
 export default function EventDetailScreen() {
+  // COPILOT_HIDE_EVENTS_START - Remove this block to re-enable event details
+  return (
+    <ScreenContainer>
+      <View className="flex-1 items-center justify-center px-6">
+        <View className="items-center">
+          <Text className="mb-4 text-6xl">📅</Text>
+          <Text className="mb-2 text-2xl font-bold text-gray-900">Event Details</Text>
+          <Text className="text-center text-lg text-gray-600">
+            Coming Soon! Event details will be available here.
+          </Text>
+        </View>
+      </View>
+    </ScreenContainer>
+  );
+  // COPILOT_HIDE_EVENTS_END
+
+  // Original event detail code below - uncomment to restore
+  /*
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
 
@@ -97,7 +117,6 @@ export default function EventDetailScreen() {
   return (
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View className="mb-6 flex-row items-center justify-between">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -113,21 +132,16 @@ export default function EventDetailScreen() {
           )}
         </View>
 
-        {/* Event Image */}
         {event.imageUrl?.[0] && (
           <View className="mb-4 h-48 rounded-lg bg-gray-200">
-            {/* Placeholder for image */}
             <Text className="text-center text-gray-500">Event Image</Text>
           </View>
         )}
 
-        {/* Event Title */}
         <Text className="mb-2 text-2xl font-bold text-gray-900">{event.title}</Text>
 
-        {/* Event Description */}
         {event.description && <Text className="mb-4 text-gray-600">{event.description}</Text>}
 
-        {/* Event Details */}
         <View className="mb-6 rounded-lg bg-gray-50 p-4">
           <View className="mb-3 flex-row items-center">
             <Ionicons name="calendar" size={20} color="#6B7280" />
@@ -154,7 +168,6 @@ export default function EventDetailScreen() {
           </View>
         </View>
 
-        {/* Participants */}
         <View className="mb-6">
           <Text className="mb-3 text-lg font-semibold text-gray-900">
             Participants ({event.participants?.length || 0})
@@ -177,7 +190,6 @@ export default function EventDetailScreen() {
           )}
         </View>
 
-        {/* RSVP Button */}
         {!isCreator && (
           <TouchableOpacity
             className={`mb-6 rounded-lg px-6 py-3 ${isParticipant ? 'bg-red-500' : 'bg-green-500'}`}
@@ -189,7 +201,6 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Related Posts */}
         {event.posts && event.posts.length > 0 && (
           <View>
             <Text className="mb-3 text-lg font-semibold text-gray-900">
@@ -214,4 +225,5 @@ export default function EventDetailScreen() {
       </ScrollView>
     </ScreenContainer>
   );
+  */
 }

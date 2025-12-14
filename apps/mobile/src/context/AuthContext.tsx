@@ -47,6 +47,7 @@ export type AuthContextType = {
   signInWithGoogle: (onSuccess?: () => void) => Promise<void>;
   signInWithPhoneNumber: (phoneNumber: string, onSuccess?: () => void) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (user: User) => void;
   user: User | null;
   verifyCode: (code: string, onSuccess?: () => void) => Promise<void>;
 };
@@ -234,6 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle,
     signInWithPhoneNumber,
     signOut,
+    updateUser: setUser,
     user,
     verifyCode: verifyOtp,
   };

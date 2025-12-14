@@ -12,6 +12,11 @@ const config: CodegenConfig = {
         gqlTagName: 'gql',
         fragmentMasking: { unmaskFunctionName: 'getFragmentData' },
       },
+      config: {
+        scalars: {
+          DateTime: 'Date',
+        },
+      },
     },
     './src/__generated__/types.ts': {
       plugins: ['typescript', 'typescript-operations'],

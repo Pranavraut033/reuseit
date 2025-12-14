@@ -37,6 +37,24 @@ const EventListItem = ({ event }: { event: Event }) => {
 };
 
 export default function EventsScreen() {
+  // COPILOT_HIDE_EVENTS_START - Remove this block to re-enable events feature
+  return (
+    <ScreenContainer>
+      <View className="flex-1 items-center justify-center px-6">
+        <View className="items-center">
+          <Text className="mb-4 text-6xl">📅</Text>
+          <Text className="mb-2 text-2xl font-bold text-gray-900">Events</Text>
+          <Text className="text-center text-lg text-gray-600">
+            Coming Soon! We're working on bringing you exciting community events.
+          </Text>
+        </View>
+      </View>
+    </ScreenContainer>
+  );
+  // COPILOT_HIDE_EVENTS_END
+
+  // Original events code below - uncomment to restore
+  /*
   const { data, loading, error, refetch } = useQuery(GET_UPCOMING_EVENTS);
   if (loading) {
     return (
@@ -101,4 +119,5 @@ export default function EventsScreen() {
       )}
     </ScreenContainer>
   );
+  */
 }

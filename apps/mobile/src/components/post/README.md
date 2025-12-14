@@ -112,7 +112,6 @@ src/
 - `formData`: Partial PostCreateFormData
 - `images`: Array of image URIs
 - `userName`: User display name
-- `userAvatar`: User avatar URL
 
 **Features:**
 - Live preview of post appearance

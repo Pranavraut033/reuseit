@@ -20,16 +20,23 @@ import { PostCard } from '~/components/post';
 import { useAuth } from '~/context/AuthContext';
 import { LOCATION_FIELDS, POST_FIELDS } from '~/gql/fragments';
 import { DateTime } from '~/gql/helper.types';
-import { CREATE_COMMENT, GET_COMMENTS_BY_POST, GET_POST_BY_ID } from '~/gql/posts';
+import {
+  CREATE_CHAT,
+  CREATE_CHAT_MESSAGE,
+  GET_CHAT_BY_POST_AND_USER,
+  GET_POST_BY_ID,
+} from '~/gql/posts';
 
 export default function PostDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // Get post ID from route params
+  const { id: postId } = useLocalSearchParams<{ id: string }>();
+
   const { user } = useAuth();
-  const [commentText, setCommentText] = useState('');
+  const [messageText, setMessageText] = useState('');
 
   // Find the post from the posts query
   const { data, loading: postsLoading } = useQuery(GET_POST_BY_ID, {
-    variables: { id: id },
+    variables: { id: postId },
   });
 
   let a = getFragmentData(POST_FIELDS, data?.post);
@@ -41,34 +48,52 @@ export default function PostDetail() {
       }
     : null;
 
-  // Get comments for this post
+  // Get chat for this post and current user
   const {
-    data: commentsData,
-    loading: commentsLoading,
-    refetch: refetchComments,
-  } = useQuery(GET_COMMENTS_BY_POST, {
-    variables: { postId: id as string },
-    skip: !id,
+    data: chatData,
+    loading: chatLoading,
+    refetch: refetchChat,
+  } = useQuery(GET_CHAT_BY_POST_AND_USER, {
+    variables: { postId: postId },
+    skip: !postId || !user,
   });
 
-  const [createComment, { loading: creatingComment }] = useMutation(CREATE_COMMENT);
+  const [createChat, { loading: creatingChat }] = useMutation(CREATE_CHAT);
+  const [createChatMessage, { loading: creatingMessage }] = useMutation(CREATE_CHAT_MESSAGE);
 
-  const handleCreateComment = async () => {
-    if (!commentText.trim() || !id) return;
+  const handleCreateChat = async () => {
+    if (!postId) return;
 
     try {
-      await createComment({
+      await createChat({
         variables: {
-          createCommentInput: {
-            content: commentText.trim(),
-            postId: id as string,
+          createChatInput: {
+            postId: postId,
           },
         },
       });
-      setCommentText('');
-      refetchComments();
+      refetchChat();
     } catch (error) {
-      console.error('Error creating comment:', error);
+      console.error('Error creating chat:', error);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !chatData?.getChatByPostAndUser?.id) return;
+
+    try {
+      await createChatMessage({
+        variables: {
+          createChatMessageInput: {
+            chatId: chatData.getChatByPostAndUser.id,
+            content: messageText.trim(),
+          },
+        },
+      });
+      setMessageText('');
+      refetchChat();
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
   };
 
@@ -93,18 +118,22 @@ export default function PostDetail() {
     );
   }
 
-  const comments = commentsData?.commentsByPost || [];
+  const chat = chatData?.getChatByPostAndUser;
+  const messages = chat?.messages || [];
+  const isAuthor = user && post.author?.id === user.id;
 
   return (
     <ScreenContainer padding={0}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1">
+        className="flex-1"
+      >
         {/* Header */}
         <View className="mb-4 flex-row items-center justify-between border-b border-gray-200 pb-4">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+            className="h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+          >
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <Text className="flex-1 text-center text-xl font-bold text-gray-800">Post</Text>
@@ -115,69 +144,126 @@ export default function PostDetail() {
           {/* Post Content */}
           <PostCard post={post} disableLink />
 
-          {/* Comments Section */}
-          <View className="mb-20 mt-6">
-            <Text className="mb-4 text-lg font-semibold text-gray-800">Comments</Text>
+          {/* Chat Section */}
+          {isAuthor ? (
+            <View className="mb-20 mt-6">
+              <TouchableOpacity
+                onPress={() => router.navigate('/chat-requests')}
+                className="flex-row items-center justify-center py-4"
+              >
+                <Ionicons name="chatbubble-outline" size={24} color="#3B82F6" />
+                <Text className="ml-2 text-lg font-semibold text-blue-600">View Chat Requests</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View className="mb-20 mt-6">
+              <Text className="mb-4 text-lg font-semibold text-gray-800">Chat</Text>
 
-            {commentsLoading ? (
-              <View className="items-center py-8">
-                <ActivityIndicator size="small" color="#3B82F6" />
-                <Text className="mt-2 text-gray-600">Loading comments...</Text>
-              </View>
-            ) : comments.length === 0 ? (
-              <View className="items-center py-12">
-                <Ionicons name="chatbubble-outline" size={48} color="#D1D5DB" />
-                <Text className="mt-4 text-gray-500">No comments yet</Text>
-                <Text className="mt-1 text-center text-sm text-gray-400">
-                  Be the first to share your thoughts!
-                </Text>
-              </View>
-            ) : (
-              comments.map((comment) => (
-                <View key={comment.id} className="mb-3 rounded-xl bg-gray-50 p-3">
-                  <View className="mb-2 flex-row items-center">
-                    {comment.author?.avatarUrl && (
-                      <Image
-                        source={{ uri: comment.author.avatarUrl }}
-                        className="mr-2 h-8 w-8 rounded-full"
-                      />
-                    )}
-                    <Text className="text-sm font-medium text-gray-900">
-                      {comment.author?.name || 'Anonymous'}
-                    </Text>
-                    <Text className="ml-2 text-xs text-gray-500">
-                      {new Date(comment.createdAt as DateTime).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+              {chatLoading ? (
+                <View className="items-center py-8">
+                  <ActivityIndicator size="small" color="#3B82F6" />
+                  <Text className="mt-2 text-gray-600">Loading chat...</Text>
+                </View>
+              ) : !chat ? (
+                <View className="items-center py-12">
+                  <Ionicons name="chatbubble-outline" size={48} color="#D1D5DB" />
+                  <Text className="mt-4 text-gray-500">No chat yet</Text>
+                  <Text className="mt-1 text-center text-sm text-gray-400 mb-4">
+                    Start a private conversation with the post author
+                  </Text>
+                  {user && post.author?.id !== user.id && (
+                    <TouchableOpacity
+                      onPress={handleCreateChat}
+                      disabled={creatingChat}
+                      className="bg-blue-500 px-6 py-3 rounded-full"
+                    >
+                      {creatingChat ? (
+                        <ActivityIndicator size="small" color="white" />
+                      ) : (
+                        <Text className="text-white font-semibold">Start Chat</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : (
+                <>
+                  {/* Warning Message */}
+                  <View className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <Text className="text-sm text-yellow-800 text-center">
+                      ⚠️ Avoid sharing phone numbers, emails, or personal contact details.
                     </Text>
                   </View>
-                  <Text className="text-sm leading-5 text-gray-700">{comment.content}</Text>
-                </View>
-              ))
-            )}
-          </View>
+
+                  {/* Messages */}
+                  {messages.map((message) => (
+                    <View
+                      key={message.id}
+                      className={`mb-3 rounded-xl p-3 ${
+                        message.sender.id === user?.id ? 'bg-blue-500 ml-12' : 'bg-gray-100 mr-12'
+                      }`}
+                    >
+                      <View className="mb-2 flex-row items-center">
+                        {message.sender.avatarUrl && (
+                          <Image
+                            source={{ uri: message.sender.avatarUrl }}
+                            className="mr-2 h-6 w-6 rounded-full"
+                          />
+                        )}
+                        <Text
+                          className={`text-sm font-medium ${
+                            message.sender.id === user?.id ? 'text-white' : 'text-gray-900'
+                          }`}
+                        >
+                          {message.sender.name}
+                        </Text>
+                        <Text
+                          className={`ml-2 text-xs ${
+                            message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-500'
+                          }`}
+                        >
+                          {new Date(message.createdAt as DateTime).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+                      <Text
+                        className={`text-sm leading-5 ${
+                          message.sender.id === user?.id ? 'text-white' : 'text-gray-700'
+                        }`}
+                      >
+                        {message.content}
+                      </Text>
+                    </View>
+                  ))}
+                </>
+              )}
+            </View>
+          )}
         </ScrollView>
 
-        {/* Comment Input */}
-        {user && (
+        {/* Message Input */}
+        {user && chat && (
           <View className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4">
             <View className="flex-row items-center space-x-3">
               <TextInput
-                value={commentText}
-                onChangeText={setCommentText}
-                placeholder="Write a comment..."
+                value={messageText}
+                onChangeText={setMessageText}
+                placeholder="Type a message..."
                 className="mr-3 flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm"
                 multiline
                 maxLength={500}
               />
               <TouchableOpacity
-                onPress={handleCreateComment}
-                disabled={!commentText.trim() || creatingComment}
-                className={`rounded-full p-2 ${commentText.trim() && !creatingComment ? 'bg-blue-500' : 'bg-gray-300'}`}>
-                {creatingComment ? (
+                onPress={handleSendMessage}
+                disabled={!messageText.trim() || creatingMessage}
+                className={`rounded-full p-2 ${
+                  messageText.trim() && !creatingMessage ? 'bg-blue-500' : 'bg-gray-300'
+                }`}
+              >
+                {creatingMessage ? (
                   <ActivityIndicator size="small" color="white" />
                 ) : (
                   <Ionicons name="send" size={20} color="white" />

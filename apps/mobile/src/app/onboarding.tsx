@@ -134,6 +134,8 @@ const baseSteps = [
           </View>
         }
       />
+      {/* COPILOT_HIDE_EVENTS_START - Remove this comment block to re-enable events in onboarding */}
+      {/*
       <OnboardingFeature
         title={t('onboarding.features.events.title')}
         description={t('onboarding.features.events.description')}
@@ -143,6 +145,8 @@ const baseSteps = [
           </View>
         }
       />
+      */}
+      {/* COPILOT_HIDE_EVENTS_END */}
     </View>
   </ScrollView>,
 ];
