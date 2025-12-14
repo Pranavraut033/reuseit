@@ -1,60 +1,79 @@
-# ReUseIt AI Agent Instructions
+# ReUseIt Copilot Instructions
 
-## Project Overview
+For full project rules, workflows, and architecture, see `agents.md`.
 
-ReUseIt is a gamified recycling app using AI for waste identification. Monorepo with React Native (Expo) mobile app, NestJS GraphQL backend, Python ML training, and MongoDB database.
+## Purpose
 
-## Architecture
+These instructions define strict rules for GitHub Copilot during code generation.
+Copilot must follow established patterns, avoid hallucination, and write code consistent with the monorepo.
 
-- **Mobile**: React Native (Expo) + NativeWind styling + Apollo Client
-- **Backend**: NestJS + GraphQL + Prisma ORM + MongoDB
-- **ML**: Python training pipeline + TensorFlow Lite models + Ollama LLM
-- **Deployment**: Docker Compose with services
+## Core Rules
 
-Key directories: `apps/backend/`, `apps/mobile/`, `apps/ml-training/`, `types/`
+- Never invent files, folders, modules, APIs, types, or schema fields.
+- Always follow existing patterns in the repo.
+- Prefer modifying existing modules over creating new ones.
+- Backend-first workflow: Prisma schema → resolver → tests → frontend.
 
-## Tech Stack Conventions
+## TypeScript
 
-- **TypeScript**: Strict mode, no `any` types
-- **Styling**: NativeWind only (no web classes like `space-x`, `space-y`)
-- **State**: Apollo Client for server state, Zustand for global UI
-- **Text**: Use `i18n.ts` for all user-facing text, create/update translation keys
-- **Database**: Prisma migrations for schema changes
+- Strict mode required.
+- Never use `any`.
+- Explicit types for all variables, params, returns.
+- Use generated GraphQL types when available.
 
-## Development Workflows
+## Styling
 
-- **Backend Dev**: `pnpm --filter backend run start:dev` (fast local)
-- **Mobile Dev**: `pnpm --filter mobile run start`
-- **Production**: `docker-compose --profile production up backend`
-- **Schema Changes**: Update `apps/backend/prisma/schema.prisma`, run `pnpm prisma:generate && pnpm prisma:migrate:dev`
-- **GraphQL**: After backend changes, run `pnpm codegen` for mobile types
-- **ML Scripts**: `cd apps/ml-training && source .venv/bin/activate && python <script.py>`
-- **Testing**: Backend `pnpm --filter backend test`, Mobile `pnpm --filter mobile test`
+- Use NativeWind only (no web utilities like `space-x`, `space-y`, `gap-*`, etc.).
+- Mobile-first, native components only.
+- Follow the project's existing design tokens and patterns.
 
-## Key Patterns
+## Text / Localization
 
-- **Backend First**: Schema → Resolver → Tests, then implement mobile
-- **Modules**: NestJS modules in `apps/backend/src/[module]/` with `.service.ts`, `.resolver.ts`, `.spec.ts`
-- **Mobile Screens**: Expo Router in `apps/mobile/src/app/`, components in `src/components/`
-- **GraphQL**: Queries in `apps/mobile/src/gql/`, fragments for DRY
-- **Gamification**: Points/badges in `point` module, awarded for actions like posts/events
-- **Events**: Full CRUD with participants, linked to posts/locations
+- All user-facing text must come from `i18n.ts`.
+- Create or update translation keys for new text.
+- Never hardcode UI strings.
 
-## Integration Points
+## React Native (Expo)
 
-- **Auth**: JWT + Firebase OAuth, secure storage with expo-secure-store
-- **Maps**: Google Maps for locations/recycling points
-- **ML**: On-device TensorFlow Lite for waste classification
-- **LLM**: Ollama for AI analysis, FastAPI wrapper
-- **Caching**: Redis for sessions/queries
+- Functional components only.
+- Navigation: Expo Router.
+- State:
+  - Apollo Client for server state
+  - Zustand for UI/global state
+- Use existing hooks/components before creating new ones.
 
-## Critical Rules
+## Backend (NestJS + GraphQL)
 
-- **ALWAYS** check/update `PROJECT_STATUS.md` before/after tasks
-- **NEVER** create new architecture without existing patterns
-- **VERIFY** file existence before operations
-- **TEST** changes immediately
-- **PREFER** modifying existing modules over new ones
+- Use the module structure: `module/` → `service.ts`, `resolver.ts`, `*.spec.ts`.
+- Follow existing naming, decorator usage, and resolver patterns.
+- Prisma:
+  - Schema changes require db push via `pnpm -F backend run prisma:db:push`
+  - Never add fields not defined in Prisma
+- After backend changes: update GraphQL types via codegen.
 
-Reference: `agents.md`, `docs/03-architecture.md`, `PROJECT_STATUS.md`</content>
-<parameter name="filePath">/Users/pranavraut/Documents/Workspace/reuseit-mono/.github/copilot-instructions.md
+## File Operations
+
+- Always verify file/folder existence before referencing.
+- Use absolute paths when modifying files.
+- Read the file before making edits.
+
+## Database
+
+- MongoDB with Prisma.
+- Follow existing geospatial index patterns.
+
+## ML Folder
+
+- Do not modify ML Python scripts unless the code is inside `apps/ml-training/`.
+- Assume TensorFlow Lite is used for on-device inference only.
+
+## Security
+
+- Use JWT auth patterns already present.
+- Never hardcode secrets or tokens.
+
+## Testing
+
+- Backend modules require unit tests.
+- GraphQL resolvers must include integration or e2e tests.
+- Maintain existing test structures.

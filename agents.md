@@ -1,6 +1,8 @@
-# Agent Instructions for ReUseIt Project
+# ReUseIt Agent Manual
 
-## 🚨 CORE RULES (Read First)
+Copilot-specific code-generation rules are defined in `copilot-instructions.md`.
+
+## 🚨 Core Rules (Read First)
 
 **ALWAYS check [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) before any work.**
 
@@ -27,7 +29,7 @@
 
 ---
 
-## 📁 DIRECTORY PURPOSE CHEATSHEET
+## 📁 Directory Purpose Cheatsheet
 
 | Directory | Purpose | Key Files |
 |-----------|---------|-----------|
@@ -39,7 +41,7 @@
 
 ---
 
-## 🎯 EXPLICIT AGENT BEHAVIORS
+## 🎯 Explicit Agent Behaviors
 
 ### When Adding Features
 1. **Check `PROJECT_STATUS.md`** for current priorities
@@ -68,7 +70,7 @@
 
 ---
 
-## 🚫 GUARDRAILS AGAINST HALLUCINATION
+## 🚫 Guardrails Against Hallucination
 
 ### File/Folder Verification
 - **ALWAYS** use `list_dir` or `file_search` to verify paths exist
@@ -87,7 +89,7 @@
 
 ---
 
-## 📖 DETAILED REFERENCE
+## 📖 Detailed Reference
 
 ### Project Context
 **ReUseIt** is a gamified recycling app using AI for waste identification.
@@ -115,7 +117,7 @@ Modern, clean, fun, user-friendly design:
 
 ---
 
-## 🔧 DEVELOPMENT WORKFLOWS
+## 🔧 Development Workflows
 
 ### Adding a New Feature
 1. **Check Requirements:** Reference `docs/02-requirements.md` and `PROJECT_STATUS.md`
@@ -168,7 +170,7 @@ To run Python scripts in the ML training module:
 
 ---
 
-## 📂 FILE LOCATIONS REFERENCE
+## 📂 File Locations Reference
 
 ### Backend (NestJS)
 - `apps/backend/prisma/schema.prisma` - Database schema
@@ -196,7 +198,7 @@ To run Python scripts in the ML training module:
 
 ---
 
-## ⚠️ IMPORTANT NOTES
+## ⚠️ Important Notes
 
 ### Security
 - Never commit `.env` files or API keys
@@ -215,7 +217,7 @@ To run Python scripts in the ML training module:
 
 ---
 
-## 🆘 GETTING HELP
+## 🆘 Getting Help
 
 1. **PROJECT_STATUS.md** - Current state and priorities
 2. **docs/** folder - Detailed documentation
@@ -230,7 +232,7 @@ To run Python scripts in the ML training module:
 
 ---
 
-## 📋 FINAL REMINDER
+## 📋 Final Reminder
 
 **🔴 CRITICAL:** Always update `PROJECT_STATUS.md` when:
 - Starting tasks (mark "In Progress")

@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** December 8, 2025 (Added one-time onboarding page)
+**Last Updated:** December 11, 2025 (Chat request management system completed)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -48,6 +48,11 @@
 - ✅ Post like/unlike functionality
 - ✅ Comment system (create, view)
 - ✅ Like count and comment count tracking
+- ✅ **Private Chat System** - Replaced public comments with Kleinanzeigen-style private messaging between post authors and interested users
+- ✅ **Dynamic Request Button** - Request button on PostCard now checks for existing chats and shows "Requested" when chat exists, prevents duplicate requests
+- ✅ **Author Chat Management Dashboard** - New screen for post authors to view, block, delete, and report incoming chat requests
+- ✅ **User Blocking System** - Authors can block users, preventing future requests on their posts
+- ✅ **Chat Reporting System** - Authors can report inappropriate chats with reasons stored in database
 - ✅ Post editing and deletion
 - ✅ Post filtering by author
 - ✅ "Liked by current user" status
@@ -159,8 +164,33 @@
 - ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated
 - 🔄 Points awarding for waste classifications
 - ✅ **Post Type System Implementation** - Add post types (general, giveaway, event, meetup) with conditional field requirements
+- ✅ **Replace Public Comments with Private Chat System** - Implement Kleinanzeigen-style private messaging for posts
 
 **Recently Completed:**
+- ✅ **Waste Analysis Screen Logic/View Separation** - Extracted all business logic into useWasteAnalysis custom hook, improved code maintainability and testability
+- ✅ TensorFlow.js React Native scaffolding
+- ✅ Backend recycling analysis system with LLM
+- ✅ GraphQL mutation for finalized recycling
+- ✅ Mobile detail page with backend integration
+- ✅ **TensorFlow.js native inference (Option C: TFLite→TFJS conversion)**
+- ✅ Real TFLite model integration with native inference
+- ✅ **ML Training Pipeline Improvements (8-class system, stratified splitting, class weights)**
+- ✅ **Object Detection Model Integration** - New TFLite model copied to mobile assets and detector module created, **multiple detections parsing implemented**
+- ✅ **Detection Mode Toggle** - UI toggle added to switch between classification and object detection modes
+- ✅ **Visual Object Detection Mapping** - Bounding box overlay and detailed results display implemented
+- ✅ **Local TensorFlow Model Integration** - Replaced external Moondream vision API with local waste classification model, using TensorFlow/Keras for on-device inference with Ollama Gemma3:1b for structured text formatting
+- ✅ **Hybrid Vision + LLM Pipeline** - End-to-end waste detection working: image preprocessing → TensorFlow classification → Gemma3 JSON formatting → German recycling guidance
+- ✅ **Fallback Detection Logic** - Robust error handling with fallback responses when ML model unavailable, ensuring service reliability
+- ✅ **Waste Detection Service Integration** - Complete object detection service with TensorFlow/Keras model, proper bounding box denormalization, and German recycling guidance
+- ✅ **qwen2.5:0.5b Model Integration** - Switched from Gemma3:1b to smaller, faster qwen2.5:0b model for LLM processing
+- ✅ **German Recycling Knowledge Base Conversion** - Converted markdown recycling rules to structured JSON format with multilingual support, updated LLM service to use unified knowledge base
+- ✅ **ML Training Folder Organization** - Organized `apps/ml-training/` by separating deprecated classifier code into `classifier/` subfolder, keeping active object detection in `object_detection/`, and shared utilities in root
+- ✅ **Independent Dataset Preparation** - Added explicit dataset configurations and `prepare_datasets()` utility for standalone dataset creation, making object detector independent of classifier code
+- ✅ **Dataset Preparation Script** - Created `prepare_datasets.sh` script that automatically activates virtual environment and runs dataset preparation, with --clean and --clear flags for dataset management
+- ✅ **Object Detection Model Regularization** - Enhanced object detection training with L2 regularization, increased dropout (0.4), label smoothing (0.1), progressive unfreezing, cosine learning rate scheduling, and improved data augmentation (rotation, zoom, shear, Gaussian noise)
+- ✅ **TensorFlow Graph Compatibility Fix** - Fixed AttributeError in augment_image function by removing conditional config attribute access that caused issues in TensorFlow graph mode, and corrected multi-output loss configuration
+- ✅ **Stable Data Augmentation** - Updated augmentation pipeline to use only stable transformations: horizontal flip, brightness, contrast, small saturation/hue changes, and light Gaussian noise; removed aggressive zoom, rotation, cropping, and padding for better training stability
+- ✅ **Explore Page Type Safety** - Removed legacy Place type mapping and updated explore page to use GraphQL types directly for better type safety and maintainability
 - ✅ **Waste Analysis Screen Logic/View Separation** - Extracted all business logic into useWasteAnalysis custom hook, improved code maintainability and testability
 - ✅ TensorFlow.js React Native scaffolding
 - ✅ Backend recycling analysis system with LLM
@@ -349,6 +379,17 @@
 
 3. **Events Mobile UI** (Completed ✅ - Includes creator dashboard and date/time picker improvements)
 
+4. **Replace Public Comments with Private Chat System** (High Priority)
+   - Remove entire public comments feature from backend and mobile
+   - Create new Chat/Request model in Prisma schema for private conversations
+   - Implement chat threads between post author and interested users only
+   - Update GraphQL resolvers and services for chat functionality
+   - Replace comments UI with "Go to Chat" / "Request" button on posts
+   - Show "X requests" instead of comment count
+   - Add chat warning about avoiding personal contact details
+   - Ensure only chat participants can view their conversations
+   - Create chat inbox for post authors to see incoming requests
+
 3. **Leaderboard Implementation** (Medium Priority)
    - Create leaderboard GraphQL query
    - Add ranking calculation logic
@@ -373,11 +414,15 @@
    - Add article creation form
    - Implement search functionality
 
-7. **Profile Enhancements** (Low Priority)
-   - Add profile editing functionality
-   - Show user statistics
-   - Display earned badges
-   - Add user posts history
+7. **Profile Enhancements** (Completed ✅)
+   - ✅ Add profile editing functionality with form validation (name, username, phone)
+   - ✅ Implement data export for GDPR compliance with backend integration
+   - ✅ Add account deletion with proper warnings and confirmation dialogs
+   - ✅ Add i18n translations for all profile features
+   - ✅ Update backend user service and DTOs for profile updates
+   - Show user statistics (pending)
+   - Display earned badges (pending)
+   - Add user posts history (pending)
 
 8. **City Selection Feature** (Low Priority)
    - Add city selection in user profile
