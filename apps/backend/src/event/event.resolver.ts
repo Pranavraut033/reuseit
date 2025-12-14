@@ -13,8 +13,8 @@ import { User } from '../user/entities/user.entity';
 import { CreateEventInput } from './dto/create-event.input';
 import { UpdateEventInput } from './dto/update-event.input';
 import { Event } from './entities/event.entity';
-import { EvenParticipant } from './entities/event-participant.entity';
 import { EventFilterInput } from './entities/event-filter.entity';
+import { EvenParticipant } from './entities/event-participant.entity';
 import {
   EventCreatorLoader,
   EventLocationLoader,

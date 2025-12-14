@@ -24,10 +24,10 @@ import { Post } from './entities/post.entity';
 import { PostFilterInput } from './entities/post-type.entity';
 import {
   PostAuthorLoader,
-  PostCommentCountLoader,
-  PostCommentsLoader,
+  PostChatCountLoader,
   PostEventLoader,
   PostLikeCountLoader,
+  PostLikedByUserLoader,
   PostLocationLoader,
   PostUserArticlesLoader,
 } from './post.loader';
@@ -54,7 +54,11 @@ export class PostResolver {
   }
 
   @Query(() => [Post], { name: 'posts' })
-  @CacheQuery(() => 'posts', 300)
+  @CacheQuery(
+    (limit, offset, postFilter) =>
+      `posts:${limit ?? 'null'}:${offset ?? 'null'}:${JSON.stringify(postFilter ?? {})}`,
+    300,
+  )
   async findAll(
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
     @Args('offset', { type: () => Int, nullable: true }) offset?: number,
@@ -126,11 +130,11 @@ export class PostResolver {
     return loader.load(post.authorId);
   }
 
-  @ResolveField('comments', () => [Post])
-  async comments(
+  @ResolveField('chatCount', () => Number)
+  async chatCount(
     @Parent() post: Post,
-    @Loader(PostCommentsLoader) loader: DataLoader<string, Comment[]>,
-  ): Promise<Comment[]> {
+    @Loader(PostChatCountLoader) loader: DataLoader<string, number>,
+  ): Promise<number> {
     return loader.load(post.id);
   }
 
@@ -170,12 +174,14 @@ export class PostResolver {
     return this.postService.isLikedByUser(post.id, userId);
   }
 
-  @ResolveField('commentCount', () => Number)
-  async commentCount(
+  @ResolveField('hasChatWithCurrentUser', () => Boolean, { nullable: true })
+  async hasChatWithCurrentUser(
     @Parent() post: Post,
-    @Loader(PostCommentCountLoader) loader: DataLoader<string, number>,
-  ): Promise<number> {
-    return loader.load(post.id);
+    @Context('req') req: { user?: User },
+  ): Promise<boolean | null> {
+    const userId = req?.user?.id;
+    if (!userId) return null;
+    return this.postService.hasChatWithCurrentUser(post.id, userId);
   }
 
   @ResolveField('likeCount', () => Number)

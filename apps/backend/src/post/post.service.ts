@@ -228,4 +228,17 @@ export class PostService {
   getLikeCount(postId: string): Promise<number> {
     return this.prisma.like.count({ where: { postId } });
   }
+
+  async hasChatWithCurrentUser(postId: string, userId: string): Promise<boolean> {
+    const messageCount = await this.prisma.chatMessage.count({
+      where: {
+        chat: {
+          postId,
+          requesterId: userId,
+        },
+      },
+    });
+
+    return messageCount > 0;
+  }
 }

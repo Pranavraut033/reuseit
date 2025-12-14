@@ -5,12 +5,10 @@ import { NotificationModule } from '~/notification/notification.module';
 import { PointsModule } from '~/points/points.module';
 
 import { PrismaModule } from '../prisma/prisma.module';
-import { CommentAuthorLoader, CommentPostLoader } from './comment.loader';
-import { CommentModule } from './comment.module';
+import { ChatModule } from './chat.module';
 import {
   PostAuthorLoader,
-  PostCommentCountLoader,
-  PostCommentsLoader,
+  PostChatCountLoader,
   PostEventLoader,
   PostLikeCountLoader,
   PostLikedByUserLoader,
@@ -23,11 +21,8 @@ import { PostService } from './post.service';
 
 @Module({
   providers: [
-    CommentAuthorLoader,
-    CommentPostLoader,
     PostAuthorLoader,
-    PostCommentCountLoader,
-    PostCommentsLoader,
+    PostChatCountLoader,
     PostEventLoader,
     PostLikeCountLoader,
     PostLikedByUserLoader,
@@ -37,6 +32,6 @@ import { PostService } from './post.service';
     PostService,
     PostUserArticlesLoader,
   ],
-  imports: [CommentModule, PrismaModule, LocationModule, PointsModule, NotificationModule],
+  imports: [ChatModule, PrismaModule, LocationModule, PointsModule, NotificationModule],
 })
 export class PostModule {}

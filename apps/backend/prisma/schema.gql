@@ -13,20 +13,29 @@ type UserArticle {
   postId: ID
 }
 
-type Comment {
+type ChatMessage {
   id: ID!
   createdAt: DateTime!
-  author: User
-  authorId: ID
+  chat: Chat
+  sender: User!
   content: String!
-  post: Post!
-  postId: ID!
+  chatId: ID!
 }
 
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+type Chat {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  post: Post!
+  requester: User!
+  author: User!
+  messages(take: Int, orderBy: String): [ChatMessage!]!
+}
 
 type Like {
   id: ID!
@@ -48,7 +57,7 @@ type Post {
   condition: String
   tags: [String!]!
   pickupDate: DateTime
-  comments: [Comment!]!
+  chats: [Chat!]!
 
   """Post description"""
   description: String!
@@ -59,11 +68,12 @@ type Post {
   likes: [Like!]!
   likedByCurrentUser: Boolean
   likeCount: Float!
-  commentCount: Float!
+  chatCount: Float!
   location: Location
   locationId: ID
   anonymous: Boolean!
   postType: PostType!
+  hasChatWithCurrentUser: Boolean
 }
 
 enum PostType {
@@ -127,6 +137,16 @@ type Event {
   locationId: ID!
   participants: [EvenParticipant!]!
   posts: [Post!]!
+}
+
+type Comment {
+  id: ID!
+  createdAt: DateTime!
+  author: User
+  authorId: ID
+  content: String!
+  post: Post!
+  postId: ID!
 }
 
 type PointsHistory {
@@ -260,9 +280,9 @@ type Query {
   postsByAuthor(authorId: String!): [Post!]!
   postsByIds(ids: [String!]!): [Post!]!
   post(id: String!): Post!
-  comments: [Comment!]!
-  comment(id: String!): Comment!
-  commentsByPost(postId: String!): [Comment!]!
+  getChatByPostAndUser(postId: String!): Chat
+  getChatById(id: String!): Chat!
+  getChatsForUser: [Chat!]!
   AIInsights(input: AIInsightsInput!): AIInsights!
   placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
   placeDetails(placeId: String!, sessionToken: String): PlaceDetails
@@ -342,9 +362,11 @@ type Mutation {
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: String!): Post!
   togglePostLike(postId: String!): Boolean!
-  createComment(createCommentInput: CreateCommentInput!): Comment!
-  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
-  removeComment(id: String!): Comment!
+  createChat(createChatInput: CreateChatInput!): Chat!
+  createChatMessage(createChatMessageInput: CreateChatMessageInput!): ChatMessage!
+  blockUser(blockUserInput: BlockUserInput!): Boolean!
+  deleteChat(chatId: String!): Boolean!
+  reportChat(reportChatInput: ReportChatInput!): Boolean!
 }
 
 input SignInInput {
@@ -353,13 +375,37 @@ input SignInInput {
 }
 
 input CreateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """User email address"""
+  email: String!
+
+  """User display name"""
+  name: String!
+
+  """Username (optional)"""
+  username: String
+
+  """Phone number"""
+  phoneNumber: String
+
+  """Avatar URL"""
+  avatarUrl: String
 }
 
 input UpdateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  """User email address"""
+  email: String
+
+  """User display name"""
+  name: String
+
+  """Username (optional)"""
+  username: String
+
+  """Phone number"""
+  phoneNumber: String
+
+  """Avatar URL"""
+  avatarUrl: String
   id: String!
 }
 
@@ -579,19 +625,20 @@ input UpdatePostInput {
   id: String!
 }
 
-input CreateCommentInput {
-  """Comment content"""
-  content: String!
-
-  """Post ID that this comment belongs to"""
+input CreateChatInput {
   postId: String!
 }
 
-input UpdateCommentInput {
-  """Comment content"""
-  content: String
+input CreateChatMessageInput {
+  chatId: String!
+  content: String!
+}
 
-  """Post ID that this comment belongs to"""
-  postId: String
-  id: String!
+input BlockUserInput {
+  userId: String!
+}
+
+input ReportChatInput {
+  chatId: String!
+  reason: String!
 }

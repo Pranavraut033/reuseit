@@ -6,6 +6,7 @@ import { User } from '~/user/entities/user.entity';
 import { UserArticle } from '~/user/entities/user-article.entity';
 
 import { Comment } from './comment.entity';
+import { Chat } from './chat.entity';
 import { Like } from './like.entity';
 import { PostType } from './post-type.entity';
 
@@ -41,8 +42,8 @@ export class Post {
   @Field(() => GraphQLISODateTime, { nullable: true })
   pickupDate?: Date;
 
-  @Field(() => [Comment])
-  comments: Comment[];
+  @Field(() => [Chat])
+  chats: Chat[];
 
   @Field(() => String, { description: 'Post description' })
   description: string;
@@ -69,7 +70,7 @@ export class Post {
   likeCount: number;
 
   @Field(() => Number)
-  commentCount: number;
+  chatCount: number;
 
   @Field(() => Location, { nullable: true })
   location?: Location;

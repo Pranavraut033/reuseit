@@ -44,25 +44,6 @@ export class PostAuthorLoader implements NestDataLoader<string, User | null> {
 }
 
 /**
- * DataLoader for Post's comments (one-to-many)
- */
-@Injectable()
-export class PostCommentsLoader implements NestDataLoader<string, Comment[]> {
-  constructor(private readonly prisma: PrismaService) {}
-
-  generateDataLoader(): DataLoader<string, Comment[]> {
-    return new DataLoader<string, Comment[]>(async (postIds) => {
-      const comments = await this.prisma.comment.findMany({
-        where: { postId: { in: [...postIds] } },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      return orderManyByKeys(postIds, comments, (comment) => comment.postId);
-    });
-  }
-}
-
-/**
  * DataLoader for Post's location (many-to-one)
  */
 @Injectable()
@@ -140,21 +121,21 @@ export class PostLikeCountLoader implements NestDataLoader<string, number> {
 }
 
 /**
- * DataLoader for Post's comment count
+ * DataLoader for Post's chat count
  */
 @Injectable()
-export class PostCommentCountLoader implements NestDataLoader<string, number> {
+export class PostChatCountLoader implements NestDataLoader<string, number> {
   constructor(private readonly prisma: PrismaService) {}
 
   generateDataLoader(): DataLoader<string, number> {
     return new DataLoader<string, number>(async (postIds) => {
-      const comments = await this.prisma.comment.groupBy({
+      const chats = await this.prisma.chat.groupBy({
         by: ['postId'],
         where: { postId: { in: [...postIds] } },
         _count: { postId: true },
       });
 
-      const countMap = new Map(comments.map((c) => [c.postId, c._count.postId]));
+      const countMap = new Map(chats.map((c) => [c.postId, c._count.postId]));
       return postIds.map((id) => countMap.get(id) || 0);
     });
   }

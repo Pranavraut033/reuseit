@@ -26,8 +26,12 @@ export class UserService {
     });
   }
 
-  update(_id: string, _updateUserInput: UpdateUserInput) {
-    return `This action updates a #${_id} user`;
+  update(id: string, updateUserInput: UpdateUserInput) {
+    const { id: _, ...updateData } = updateUserInput;
+    return this.prismaService.user.update({
+      where: { id },
+      data: updateData,
+    });
   }
 
   async remove(id: string) {
