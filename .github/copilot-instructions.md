@@ -26,6 +26,10 @@ Copilot must follow established patterns, avoid hallucination, and write code co
 - Use NativeWind only (no web utilities like `space-x`, `space-y`, `gap-*`, etc.).
 - Mobile-first, native components only.
 - Follow the project's existing design tokens and patterns.
+- Focus on theme, layout, and interaction _flow_ — visual rhythm, spacing, hierarchy, and purposeful micro-interactions.
+- Do **not** prescribe component-level implementations here; components are already designed in `apps/mobile/src/components/`.
+- When suggesting style changes, reference `docs/STYLE_GUIDELINES_TAILWIND.md` for tokens and layout principles.
+- Always follow `docs/style_guideline.md` for high-level look & feel and component behavior; do NOT generate generic or default-styled components.
 
 ## Text / Localization
 
