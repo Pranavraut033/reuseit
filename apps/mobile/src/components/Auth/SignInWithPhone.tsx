@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Toast } from 'toastify-react-native';
 
@@ -7,11 +7,12 @@ import Field from '~/components/form/Field';
 import PhoneInput, { Country } from '~/components/form/PhoneInput';
 import { useAppContext } from '~/context/AppContext';
 import { useAuth } from '~/context/AuthContext';
+import { t } from '~/utils/i18n';
 
 import CodeModal from './CodeModal';
 
 function SignInWithPhone() {
-  const { signInWithPhoneNumber, verifyCode, error } = useAuth();
+  const { signInWithPhoneNumber, verifyCode } = useAuth();
   const methods = useForm({
     defaultValues: {
       phoneNumber: '',
@@ -44,13 +45,6 @@ function SignInWithPhone() {
     }).finally(hideLoading);
   }, [getValues, hideLoading, showLoading, signInWithPhoneNumber]);
 
-  useEffect(() => {
-    if (!error) return;
-    const message = (error as any)?.message as string;
-
-    Toast.error(message, 'bottom');
-  }, [error]);
-
   const onCodeSubmit = useCallback(() => {
     const { code } = getValues();
     if (!code) return Toast.error('Please enter the verification code', 'bottom');
@@ -80,9 +74,10 @@ function SignInWithPhone() {
             required: 'Phone number is required',
             pattern: {
               value: /^\d{9,14}$/,
-              message: 'Please enter a valid phone number',
+              message: t('auth.invalidPhone'),
             },
-          }}>
+          }}
+        >
           {({ onChange, onBlur, value }) => (
             <PhoneInput
               value={value as string}
@@ -95,8 +90,9 @@ function SignInWithPhone() {
 
         {/* Continue with Phone */}
         <Button
-          title="Continue with Phone"
-          className="w-full rounded-lg"
+          title={t('auth.continueWithPhone')}
+          className="w-full rounded-md"
+          type="primary"
           onPress={handleSubmit(onSubmit)}
         />
       </FormProvider>

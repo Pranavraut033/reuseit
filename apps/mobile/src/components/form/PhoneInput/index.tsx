@@ -3,6 +3,7 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as RNLocalize from 'react-native-localize';
 
 import countries from '~/json/countries.json';
+import { t } from '~/utils/i18n';
 
 import CountrySelector from './CountrySelector';
 
@@ -22,7 +23,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   country,
   onCountrySelect,
   onBlur,
-  placeholder = 'Enter phone number',
+  placeholder = t('auth.enterPhone') ?? 'Enter phone number',
   ...rest
 }) => {
   const defaultCountry = useMemo(() => {
@@ -56,16 +57,19 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
 
   return (
     <>
-      <View className="w-full flex-col items-center ">
-        <View className="flex flex-row items-center rounded-lg border border-gray-300 focus-within:border-primary">
+      <View className="w-full flex-col items-center">
+        <View className="flex flex-row items-center overflow-hidden rounded-md border border-gray-200 bg-white focus-within:border-primary">
           <TouchableOpacity
-            className="border-r border-gray-300 px-4 py-2"
-            onPress={() => setShowSelector(true)}>
-            <Text className="text-gray-700">{selectedCountry.dial_code}</Text>
+            className="border-r border-gray-200 px-4 py-3"
+            onPress={() => setShowSelector(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Country selector ${selectedCountry.code}`}>
+            <Text className="text-forest">{selectedCountry.dial_code}</Text>
           </TouchableOpacity>
           <TextInput
-            className="flex-1 p-4"
+            className="flex-1 p-3 text-forest"
             placeholder={placeholder}
+            placeholderTextColor="#9CA3AF"
             keyboardType="phone-pad"
             textContentType="telephoneNumber"
             inputMode="numeric"

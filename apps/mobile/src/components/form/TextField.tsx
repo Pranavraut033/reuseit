@@ -48,7 +48,7 @@ const TextField: React.FC<TextFieldProps> = ({
 }) => {
   return (
     <View className={clsx('mb-4', className)}>
-      {!!label && <Text className="mb-2 text-sm font-medium text-gray-700">{label}</Text>}
+      {!!label && <Text className="mb-2 text-sm font-medium text-forest">{label}</Text>}
       <Field
         name={name}
         rules={rules}

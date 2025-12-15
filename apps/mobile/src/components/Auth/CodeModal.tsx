@@ -3,6 +3,7 @@ import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Button } from '~/components/common/Button';
 import Field from '~/components/form/Field';
+import { t } from '~/utils/i18n';
 
 const CodeModal: React.FC<{
   visible: boolean;
@@ -21,20 +22,23 @@ const CodeModal: React.FC<{
         <View className="w-full flex-1 items-center justify-center">
           <View
             onStartShouldSetResponder={() => true}
-            className="w-11/12 items-center rounded-3xl border border-gray-100 bg-white p-8 shadow-2xl">
+            className="w-11/12 items-center rounded-lg border border-gray-100 bg-white p-6 shadow-card">
             <View className="mb-4 w-full flex-row items-center justify-between">
-              <Text className="text-lg font-semibold text-gray-900">Enter OTP</Text>
-              <TouchableOpacity onPress={onClose} className="p-1">
+              <Text className="text-lg font-semibold text-forest">{t('auth.enterOTP')}</Text>
+              <TouchableOpacity
+                onPress={onClose}
+                className="p-1"
+                accessibilityLabel={t('auth.close')}>
                 <Text className="text-2xl text-gray-500">×</Text>
               </TouchableOpacity>
             </View>
             <Text className="mb-6 text-center text-sm leading-5 text-gray-600">
-              Please enter the 6-digit code sent to your phone.
+              {t('auth.otpPrompt')}
             </Text>
-            <Field name="code" rules={{ required: 'Please enter the code' }}>
+            <Field name="code" rules={{ required: t('auth.enterCode') }}>
               {({ value, onChange }) => (
                 <TextInput
-                  className="mb-6 w-full rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-4 text-center text-2xl tracking-widest transition-colors focus:border-primary focus:bg-white"
+                  className="mb-6 w-full rounded-md border-2 border-gray-200 bg-gray-50 px-4 py-4 text-center text-2xl tracking-widest transition-colors focus:border-primary focus:bg-white"
                   keyboardType="number-pad"
                   maxLength={6}
                   value={value as string}
@@ -45,19 +49,23 @@ const CodeModal: React.FC<{
               )}
             </Field>
             <Button
-              title="Verify"
-              className="w-full rounded-xl bg-primary py-4 shadow-lg active:scale-95"
+              title={t('auth.verify')}
+              className="w-full rounded-md py-4 shadow-card"
+              type="primary"
               onPress={() => onSubmit?.()}
             />
             {onResend && (
-              <TouchableOpacity className="mt-4 rounded-lg bg-gray-50 p-2" onPress={onResend}>
+              <TouchableOpacity
+                className="mt-4 rounded-md bg-gray-50 p-2"
+                onPress={onResend}
+                accessibilityRole="button">
                 <Text className="text-center text-sm font-medium text-primary">
-                  Didn&apos;t receive code? Resend
+                  {t('auth.resend')}
                 </Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity className="mt-3 p-2" onPress={onClose}>
-              <Text className="text-sm text-gray-500 underline">Wrong phone number?</Text>
+            <TouchableOpacity className="mt-3 p-2" onPress={onClose} accessibilityRole="button">
+              <Text className="text-sm text-gray-500 underline">{t('auth.wrongPhone')}</Text>
             </TouchableOpacity>
           </View>
         </View>

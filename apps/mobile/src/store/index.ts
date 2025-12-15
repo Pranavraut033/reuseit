@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import * as SecureStore from 'expo-secure-store';
 import { Region } from 'react-native-maps';
 import { create } from 'zustand';
@@ -7,9 +6,7 @@ import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import { SignInMutation } from '~/__generated__/graphql';
 
-export type User = SignInMutation['signIn']['user'] & {
-  googleUser?: FirebaseAuthTypes.User;
-};
+export type User = SignInMutation['signIn']['user'];
 
 export interface AppState {
   onboardingCompleted: boolean;

@@ -4,32 +4,17 @@ import { JwtService } from '@nestjs/jwt';
 import * as admin from 'firebase-admin';
 
 import { PrismaService } from '~/prisma/prisma.service';
-import { UserService } from '~/user/user.service';
 
-import { Public } from './constants';
 import { SignInInput } from './dto/signin.input';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('FIREBASE_APP') private firebaseApp: admin.app.App,
-    private usersService: UserService,
     private prismaService: PrismaService,
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne({ email: username });
-
-    if (user && user.password === pass) {
-      const { password: _remove, ...result } = user;
-      return result;
-    }
-
-    return null;
-  }
-
-  @Public()
   async signIn({ idToken }: SignInInput) {
     // Verify the Firebase ID token to ensure authenticity
     let decoded: admin.auth.DecodedIdToken;
@@ -39,33 +24,34 @@ export class AuthService {
       throw new Error('Invalid or expired ID token', { cause: err });
     }
 
-    const googleId = decoded.uid;
-    const name = (decoded as unknown as { name?: string }).name || '';
     const emailRaw = (decoded.email || '').trim();
-    const email = emailRaw || `${googleId}@auth.local`;
-    const emailVerified = !!decoded.email_verified;
-    const phoneNumber = decoded.phone_number || undefined;
-    const avatarUrl = decoded.picture || undefined;
 
-    const user = await this.prismaService.safeUpsert('User', this.prismaService.user, {
-      where: { googleId },
-      update: {
-        name,
-        email,
-        emailVerified,
-        phoneNumber,
-        avatarUrl,
-        lastLogin: new Date(),
-      },
-      create: {
-        googleId,
-        name,
-        email,
-        emailVerified,
-        phoneNumber,
-        avatarUrl,
-      },
+    const userData = {
+      googleId: decoded.uid,
+      name: (decoded as unknown as { name?: string }).name || '',
+      email: emailRaw || `${decoded.uid}@auth.local`,
+      emailVerified: !!decoded.email_verified,
+      phoneNumber: decoded.phone_number || undefined,
+      avatarUrl: decoded.picture || undefined,
+      lastLogin: new Date(),
+    };
+
+    let user = await this.prismaService.user.findFirst({
+      where: { OR: [{ googleId: userData.googleId }, { email: userData.email }] },
     });
+
+    console.log({ user });
+
+    if (user) {
+      user = await this.prismaService.user.update({
+        where: { id: user.id },
+        data: { ...userData, name: undefined },
+      });
+    } else {
+      user = await this.prismaService.user.create({
+        data: userData,
+      });
+    }
 
     const { password: _remove, ...result } = user;
 

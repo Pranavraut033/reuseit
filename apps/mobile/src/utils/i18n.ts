@@ -102,6 +102,34 @@ const translations_en = {
     uploadingImages: 'Uploading images...',
     useCurrentLocation: 'Use Current Location',
   },
+  postCard: {
+    request: 'Request',
+    requested: 'Requested',
+    offer: 'Offer',
+    offered: 'Offered',
+  },
+  postChat: {
+    title: 'Send a message',
+    placeholder: 'Write a message...',
+    placeholderOffer: "Hi! Is this item still available? I'm interested and can pick up soon.",
+    placeholderRequest: 'Hi! I can offer this item — would pickup work for you?',
+    suggestions: {
+      offer: [
+        'Hi, is this item still available?',
+        "I'd like to pick it up today. Is that okay?",
+        'Can you tell me more about the condition?',
+      ],
+      request: [
+        'Hi, I can give this to you. When can we meet?',
+        'I have a similar item available — are you still looking for it?',
+        'Would pickup work for you or do you need delivery?',
+      ],
+      default: ['Hi, is this available?', "I'm interested", 'Can you share more details?'],
+    },
+    send: 'Send',
+    cancel: 'Cancel',
+    start: 'Start Chat',
+  },
   eventCreate: {
     descriptionMaxLength: 'Description must be less than 1000 characters',
     endTimeAfterStart: 'End time must be after start time',
@@ -243,6 +271,36 @@ const translations_en = {
     deleteError: 'Failed to delete account',
     privacyPolicy: 'Privacy Policy',
   },
+  auth: {
+    continueWithGoogle: 'Continue with Google',
+    continueWithApple: 'Continue with Apple',
+    continueWithEmail: 'Continue with Email',
+    continueWithEmailLink: 'Send Sign-In Link',
+    continueWithPhone: 'Continue with Phone',
+    enterPhone: 'Enter phone number',
+    loggedIn: 'Logged in successfully',
+    googleFailed: 'Failed to sign in with Google',
+    signIn: 'Sign in',
+    useDifferentEmail: 'Use a different email',
+    sendSignInLink: 'Send sign-in link',
+    emailCheckInfo: "We'll check which sign-in methods are available for this email",
+    appleFailed: 'Failed to sign in with Apple',
+    invalidPhone: 'Please enter a valid phone number',
+    enterOTP: 'Enter OTP',
+    otpPrompt: 'Please enter the 6-digit code sent to your phone.',
+    enterCode: 'Please enter the code',
+    verify: 'Verify',
+    resend: "Didn't receive code? Resend",
+    wrongPhone: 'Wrong phone number?',
+    close: 'Close',
+    unknownError: 'Something went wrong. Please try again.',
+    invalidEmail: 'Please enter a valid email address',
+    emailCheckFailed: 'Failed to check email',
+    passwordResetSent: 'Password reset email sent',
+    passwordResetFailed: 'Failed to send password reset email',
+    emailLinkSent: 'Check your email for the sign-in link',
+    enterPassword: 'Please enter your password',
+  },
 } as const;
 
 type Widen<T> = {
@@ -251,7 +309,7 @@ type Widen<T> = {
 
 export type TranslationObject = Widen<typeof translations_en>;
 
-type TranslationKey<T = TranslationObject> = {
+export type TranslationKey<T = TranslationObject> = {
   [K in keyof T & string]: T[K] extends string
     ? `${K}` // leaf
     : `${K}` | `${K}.${TranslationKey<T[K]>}`; // nested
@@ -353,6 +411,40 @@ export const translations: Record<string, TranslationObject> = {
       titleRequired: 'Titel ist erforderlich',
       uploadingImages: 'Bilder hochladen...',
       useCurrentLocation: 'Aktuellen Standort verwenden',
+    },
+    postCard: {
+      request: 'Anfragen',
+      requested: 'Angefragt',
+      offer: 'Anbieten',
+      offered: 'Angeboten',
+    },
+    postChat: {
+      title: 'Nachricht senden',
+      placeholder: 'Nachricht schreiben...',
+      placeholderOffer:
+        'Hallo! Ist dieser Artikel noch verfügbar? Ich habe Interesse und kann ihn bald abholen.',
+      placeholderRequest:
+        'Hallo! Ich kann diesen Artikel anbieten — würde Abholung für dich passen?',
+      suggestions: {
+        offer: [
+          'Hallo, ist dieser Artikel noch verfügbar?',
+          'Ich würde ihn heute abholen. Passt das?',
+          'Kannst du mir mehr zum Zustand sagen?',
+        ],
+        request: [
+          'Hallo, ich kann das geben. Wann können wir uns treffen?',
+          'Ich habe einen ähnlichen Artikel — suchst du noch?',
+          'Wäre Abholung in Ordnung oder brauchst du Lieferung?',
+        ],
+        default: [
+          'Hallo, ist das verfügbar?',
+          'Ich bin interessiert',
+          'Kannst du mehr Infos schicken?',
+        ],
+      },
+      send: 'Senden',
+      cancel: 'Abbrechen',
+      start: 'Nachricht starten',
     },
     eventCreate: {
       descriptionMaxLength: 'Beschreibung muss weniger als 1000 Zeichen lang sein',
@@ -496,6 +588,36 @@ export const translations: Record<string, TranslationObject> = {
       deleteError: 'Konto konnte nicht gelöscht werden',
       privacyPolicy: 'Datenschutzrichtlinie',
     },
+    auth: {
+      continueWithGoogle: 'Mit Google fortfahren',
+      continueWithApple: 'Mit Apple fortfahren',
+      continueWithEmail: 'Mit E-Mail fortfahren',
+      continueWithEmailLink: 'Anmeldelink senden',
+      continueWithPhone: 'Mit Telefon fortfahren',
+      enterPhone: 'Telefonnummer eingeben',
+      loggedIn: 'Erfolgreich eingeloggt',
+      googleFailed: 'Anmeldung mit Google fehlgeschlagen',
+      signIn: 'Anmelden',
+      useDifferentEmail: 'Andere E-Mail verwenden',
+      sendSignInLink: 'Anmeldelink senden',
+      emailCheckInfo: 'Wir prüfen, welche Anmeldemethoden für diese E-Mail verfügbar sind',
+      appleFailed: 'Anmeldung mit Apple fehlgeschlagen',
+      invalidPhone: 'Bitte geben Sie eine gültige Telefonnummer ein',
+      enterOTP: 'OTP eingeben',
+      otpPrompt: 'Bitte geben Sie den 6-stelligen Code ein, der an Ihr Telefon gesendet wurde.',
+      enterCode: 'Bitte geben Sie den Code ein',
+      verify: 'Überprüfen',
+      resend: 'Code nicht erhalten? Erneut senden',
+      wrongPhone: 'Falsche Telefonnummer?',
+      close: 'Schließen',
+      unknownError: 'Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
+      invalidEmail: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+      emailCheckFailed: 'E-Mail-Prüfung fehlgeschlagen',
+      passwordResetSent: 'Passwort-Zurücksetzungs-E-Mail gesendet',
+      passwordResetFailed: 'Passwort-Zurücksetzungs-E-Mail konnte nicht gesendet werden',
+      emailLinkSent: 'Überprüfen Sie Ihre E-Mails für den Anmeldelink',
+      enterPassword: 'Bitte geben Sie Ihr Passwort ein',
+    },
   },
 };
 
@@ -510,4 +632,21 @@ export const t = (key: TranslationKey, lang?: Language): string => {
   }
 
   return typeof value === 'string' ? value : key;
+};
+
+/**
+ * Return the raw translation value for a key. Useful when a translation may be
+ * a non-string type (e.g., an array of suggestion strings).
+ */
+export const tRaw = (key: string, lang?: Language): unknown => {
+  const language = lang || getCurrentLanguage();
+  const keys = key.split('.');
+  let value: Record<string, unknown> | string | unknown = translations[language];
+
+  for (const k of keys) {
+    if (typeof value === 'string') break;
+    value = (value as Record<string, unknown>)?.[k] as Record<string, unknown> | string | unknown;
+  }
+
+  return value;
 };
