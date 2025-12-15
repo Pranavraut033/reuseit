@@ -29,6 +29,7 @@ apps/backend/src/recycling/
 ### 2. Key Components
 
 #### Recycling Rules Service
+
 - **File:** `services/recycling-rules.service.ts`
 - **Purpose:** Returns structured recycling data based on German standards
 - **Features:**
@@ -39,6 +40,7 @@ apps/backend/src/recycling/
   - Rule-based material validation
 
 #### LLM Service
+
 - **File:** `services/llm.service.ts`
 - **Purpose:** Generate natural language instructions from structured rules
 - **Features:**
@@ -48,6 +50,7 @@ apps/backend/src/recycling/
   - Aligned with German recycling standards
 
 #### GraphQL Schema
+
 ```graphql
 type RecyclingInfo {
   objectName: String!
@@ -120,6 +123,7 @@ mutation FinalizeRecycling($input: FinalizeRecyclingInput!) {
 **File:** `apps/mobile/src/app/identify/detail.tsx`
 
 **Features:**
+
 - Displays classification results
 - "Get Analysis" button triggers backend mutation
 - Shows German bin assignment
@@ -170,6 +174,7 @@ Mobile: Display results with bin and guidance
 ## Example Request/Response
 
 ### Request
+
 ```json
 {
   "input": {
@@ -181,6 +186,7 @@ Mobile: Display results with bin and guidance
 ```
 
 ### Response
+
 ```json
 {
   "objectName": "plastic bottle",
@@ -205,6 +211,7 @@ Mobile: Display results with bin and guidance
 ## Testing
 
 ### Backend Testing
+
 ```bash
 cd apps/backend
 pnpm start:dev
@@ -213,13 +220,12 @@ pnpm start:dev
 Visit: http://localhost:3000/graphql
 
 Test mutation:
+
 ```graphql
 mutation {
-  finalizeRecycling(input: {
-    objectName: "Greasy Pizza Box"
-    materials: ["paper", "cardboard"]
-    city: "Munich"
-  }) {
+  finalizeRecycling(
+    input: { objectName: "Greasy Pizza Box", materials: ["paper", "cardboard"], city: "Munich" }
+  ) {
     objectName
     recycling {
       bin
@@ -231,6 +237,7 @@ mutation {
 ```
 
 ### Mobile Testing
+
 ```bash
 cd apps/mobile
 pnpm codegen  # Generate types
@@ -246,17 +253,20 @@ pnpm start    # Start Expo
 ## Future Enhancements
 
 ### Short Term
+
 1. Add points awarding for classifications
 2. Store classification history
 3. Replace prototype classifier with real TFLite model
 
 ### Medium Term
+
 1. Integrate real LLM API (OpenAI/Anthropic)
 2. Add more city-specific rules
 3. Support multilingual instructions
 4. Add image analysis for material detection
 
 ### Long Term
+
 1. Train custom waste classification model
 2. Add object detection for multiple items
 3. AR overlay for recycling guidance
@@ -265,11 +275,13 @@ pnpm start    # Start Expo
 ## Files Modified
 
 ### Backend
+
 - `src/recycling/` (new module)
 - `src/app.module.ts` (registered RecyclingModule)
 - `schema.gql` (auto-generated)
 
 ### Mobile
+
 - `src/gql/mutations/finalizeRecycling.ts` (new)
 - `src/app/identify/detail.tsx` (enhanced)
 - `src/__generated__/` (regenerated types)
@@ -291,6 +303,7 @@ pnpm lint
 ## Status Update
 
 Updated `PROJECT_STATUS.md`:
+
 - Sprint 8 added with ML & Recycling Analysis progress
 - FR3 status updated to "Partial" (was "Not Started")
 - TD-01 updated to reflect Phase 2 (model integration)

@@ -51,6 +51,7 @@ These platforms offer easy deployment with minimal configuration.
    - Start command: `pnpm start:prod`
 
 4. **Set Environment Variables**
+
    ```
    DATABASE_URL=mongodb+srv://...
    JWT_SECRET=your-production-secret
@@ -79,6 +80,7 @@ These platforms offer easy deployment with minimal configuration.
    - Connect your GitHub repository
 
 3. **Configure Service**
+
    ```
    Name: reuseit-backend
    Region: Choose closest to your users
@@ -100,27 +102,32 @@ These platforms offer easy deployment with minimal configuration.
 #### Option 3: Heroku
 
 1. **Install Heroku CLI**
+
    ```bash
    npm install -g heroku
    ```
 
 2. **Login**
+
    ```bash
    heroku login
    ```
 
 3. **Create App**
+
    ```bash
    cd backend
    heroku create reuseit-backend
    ```
 
 4. **Set Buildpack**
+
    ```bash
    heroku buildpacks:set heroku/nodejs
    ```
 
 5. **Configure Environment**
+
    ```bash
    heroku config:set DATABASE_URL=mongodb+srv://...
    heroku config:set JWT_SECRET=your-secret
@@ -212,18 +219,21 @@ docker run -p 4000:4000 \
 #### 4. Deploy to Cloud
 
 **Docker Hub:**
+
 ```bash
 docker tag reuseit-backend:latest yourusername/reuseit-backend:latest
 docker push yourusername/reuseit-backend:latest
 ```
 
 **AWS ECS/Fargate:**
+
 - Create ECS cluster
 - Define task definition using your Docker image
 - Create service with load balancer
 - Configure environment variables in task definition
 
 **Google Cloud Run:**
+
 ```bash
 # Tag for Google Container Registry
 docker tag reuseit-backend:latest gcr.io/your-project/reuseit-backend:latest
@@ -313,12 +323,12 @@ Edit `mobile/app.config.js`:
 ```javascript
 export default {
   expo: {
-    name: "ReUseIt",
-    slug: "reuseit",
-    version: "1.0.0",
+    name: 'ReUseIt',
+    slug: 'reuseit',
+    version: '1.0.0',
     ios: {
-      bundleIdentifier: "com.yourcompany.reuseit",
-      buildNumber: "1.0.0",
+      bundleIdentifier: 'com.yourcompany.reuseit',
+      buildNumber: '1.0.0',
     },
     // ... other config
   },
@@ -342,6 +352,7 @@ eas submit --platform ios
 ```
 
 You'll be prompted for:
+
 - Apple ID
 - App-specific password
 - Bundle identifier
@@ -372,17 +383,13 @@ Edit `mobile/app.config.js`:
 ```javascript
 export default {
   expo: {
-    name: "ReUseIt",
-    slug: "reuseit",
-    version: "1.0.0",
+    name: 'ReUseIt',
+    slug: 'reuseit',
+    version: '1.0.0',
     android: {
-      package: "com.yourcompany.reuseit",
+      package: 'com.yourcompany.reuseit',
       versionCode: 1,
-      permissions: [
-        "CAMERA",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-      ],
+      permissions: ['CAMERA', 'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
     },
     // ... other config
   },
@@ -476,29 +483,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install pnpm
         run: npm install -g pnpm
-      
+
       - name: Install dependencies
         run: cd backend && pnpm install
-      
+
       - name: Lint
         run: cd backend && pnpm lint
-      
+
       - name: Type check
         run: cd backend && pnpm type-check
-      
+
       - name: Run tests
         run: cd backend && pnpm test:cov
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -510,7 +517,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Deploy to Railway
         run: |
           # Railway deployment commands
@@ -537,21 +544,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: cd mobile && pnpm install
-      
+
       - name: Lint
         run: cd mobile && pnpm lint
-      
+
       - name: Type check
         run: cd mobile && pnpm type-check
-      
+
       - name: Run tests
         run: cd mobile && pnpm test --coverage
 
@@ -561,16 +568,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Expo
         uses: expo/expo-github-action@v7
         with:
           expo-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-      
+
       - name: Build iOS
         run: cd mobile && eas build --platform ios --non-interactive --no-wait
-      
+
       - name: Build Android
         run: cd mobile && eas build --platform android --non-interactive --no-wait
 ```
@@ -584,6 +591,7 @@ jobs:
 **Recommended Tools:**
 
 1. **Sentry** - Error tracking
+
    ```bash
    pnpm add @sentry/node @sentry/react-native
    ```
@@ -649,4 +657,4 @@ Before going live:
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

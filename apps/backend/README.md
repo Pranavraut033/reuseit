@@ -64,7 +64,7 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
    ```
    DATABASE_URL=mongodb://localhost:27017/reuseit
    JWT_SECRET=your_jwt_secret
-  GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    ```
 
    Adjust `DATABASE_URL` as needed.
@@ -85,9 +85,11 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
 
 - **Create 2dsphere index for geospatial queries:**
 
-  ```bash
-  node scripts/createGeoIndex.js
-  ```
+The backend now ensures a 2dsphere index on `Location.coordinates` at startup automatically. If you prefer to create it manually (or for offline DB maintenance), you can still run:
+
+```bash
+node scripts/createGeoIndex.js
+```
 
 ---
 
@@ -124,16 +126,15 @@ This is the backend codebase for the ReuseIt platform, built with [NestJS](https
 
   The `GoogleMapsModule` provides cached Google Maps features so the mobile app no longer calls Google APIs directly:
 
-  | Query | Arguments | Description |
-  |-------|-----------|-------------|
-  | `placesAutocomplete` | `input` (String!), optional `latitude`, `longitude`, `radius`, `sessionToken` | Returns place predictions near optional location bias. |
-  | `placeDetails` | `placeId` (String!), optional `sessionToken` | Returns detailed place info (name, coordinates, address components). |
-  | `nearbyPlaces` | `latitude` (Float!), `longitude` (Float!), optional `radius`, `keywords` ([String!]!) | Aggregates nearby places matching any keyword (deduplicated). |
-  | `reverseGeocode` | `latitude` (Float!), `longitude` (Float!) | Converts coordinates to structured address. |
-  | `generatePlacesSessionToken` | — | Returns a random token for grouping billing sessions. |
+  | Query                        | Arguments                                                                             | Description                                                          |
+  | ---------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+  | `placesAutocomplete`         | `input` (String!), optional `latitude`, `longitude`, `radius`, `sessionToken`         | Returns place predictions near optional location bias.               |
+  | `placeDetails`               | `placeId` (String!), optional `sessionToken`                                          | Returns detailed place info (name, coordinates, address components). |
+  | `nearbyPlaces`               | `latitude` (Float!), `longitude` (Float!), optional `radius`, `keywords` ([String!]!) | Aggregates nearby places matching any keyword (deduplicated).        |
+  | `reverseGeocode`             | `latitude` (Float!), `longitude` (Float!)                                             | Converts coordinates to structured address.                          |
+  | `generatePlacesSessionToken` | —                                                                                     | Returns a random token for grouping billing sessions.                |
 
   Caching TTLs (approx): Autocomplete 60s, Place Details 300s, Nearby 120s, Reverse Geocode 600s.
-
 
 ---
 
@@ -179,11 +180,13 @@ DATABASE_URL=mongodb://root:example@mongo:27017/reuseit?authSource=admin
 ```
 
 Notes:
+
 - The image uses a multi-stage Dockerfile (`Dockerfile`) that installs dependencies, runs `prisma generate`, and builds the NestJS app.
 - The compose file creates a `mongo` service (MongoDB 6) with a persistent volume `mongo-data`.
 - If you want to run in development mode with live reload, avoid the production image and mount your source (or run `yarn start:dev` on your host).
 
 Config tips:
+
 - To use your own credentials, set the `DATABASE_URL` environment variable before running `docker compose up`, or override the `environment` section in `docker-compose.yml`.
 - Prisma requires MongoDB to be running as a replica set for transactions. For simple local development without transactions you can use the single-node MongoDB instance in this compose file, but enable replica set in production or follow MongoDB docs to init a replica set.
 

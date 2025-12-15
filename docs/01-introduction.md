@@ -5,11 +5,13 @@
 **ReUseIt** is a cross-platform mobile app that gamifies recycling through AI-powered waste identification, community engagement, and rewards.
 
 ### The Problem
+
 - Low recycling awareness and motivation
 - Difficulty identifying recyclable items
 - Lack of community-driven sustainability initiatives
 
 ### The Solution
+
 - **🤖 AI Identification:** On-device ML classifies waste items
 - **🎮 Gamification:** Points, badges, and leaderboards
 - **👥 Community:** Marketplace for sharing and requesting items
@@ -17,6 +19,7 @@
 - **📚 Education:** Guides on sustainable practices
 
 ### Target Users
+
 Environmentally-conscious individuals in urban areas, focused on Berlin, Germany.
 
 ## Technical Highlights
@@ -30,6 +33,7 @@ Environmentally-conscious individuals in urban areas, focused on Berlin, Germany
 ## Project Scope
 
 ### ✅ Delivered Features
+
 - User authentication (JWT + OAuth)
 - AI waste identification
 - Community marketplace
@@ -39,6 +43,7 @@ Environmentally-conscious individuals in urban areas, focused on Berlin, Germany
 - Educational content
 
 ### ❌ Future Enhancements
+
 - Direct messaging
 - Payment processing
 - Multi-language support
@@ -49,13 +54,13 @@ Environmentally-conscious individuals in urban areas, focused on Berlin, Germany
 
 The project is evaluated against these criteria:
 
-| Metric | Target | Status |
-|--------|--------|--------|
-| **Functional Completeness** | 8/8 core features | ✅ 100% |
-| **Code Coverage** | >80% | ✅ 83% |
-| **Performance (TTI)** | <2000ms | ✅ 1.8s |
-| **NFR Compliance** | All 6 NFRs met | ✅ 100% |
-| **Documentation Quality** | Comprehensive | ✅ Complete |
+| Metric                      | Target            | Status      |
+| --------------------------- | ----------------- | ----------- |
+| **Functional Completeness** | 8/8 core features | ✅ 100%     |
+| **Code Coverage**           | >80%              | ✅ 83%      |
+| **Performance (TTI)**       | <2000ms           | ✅ 1.8s     |
+| **NFR Compliance**          | All 6 NFRs met    | ✅ 100%     |
+| **Documentation Quality**   | Comprehensive     | ✅ Complete |
 
 ## 1.7 Document Structure
 

@@ -90,9 +90,7 @@ describe('AuthService', () => {
         email: input.email,
       } as any);
 
-      await expect(service.register(input)).rejects.toThrow(
-        'Email already exists'
-      );
+      await expect(service.register(input)).rejects.toThrow('Email already exists');
     });
 
     it('should reject weak passwords shorter than 8 characters', async () => {
@@ -103,7 +101,7 @@ describe('AuthService', () => {
       };
 
       await expect(service.register(input)).rejects.toThrow(
-        'Password must be at least 8 characters'
+        'Password must be at least 8 characters',
       );
     });
 
@@ -214,9 +212,7 @@ describe('ImageRecognitionService', () => {
     it('should handle invalid image data gracefully', async () => {
       const invalidData = Buffer.from('not an image');
 
-      await expect(service.identifyItem(invalidData)).rejects.toThrow(
-        'Invalid image format'
-      );
+      await expect(service.identifyItem(invalidData)).rejects.toThrow('Invalid image format');
     });
   });
 });
@@ -276,7 +272,7 @@ describe('LoginForm', () => {
 
   it('should disable login button while submitting', async () => {
     mockOnLogin.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-    
+
     const { getByTestId } = render(<LoginForm onLogin={mockOnLogin} />);
 
     fireEvent.changeText(getByTestId('email-input'), 'test@example.com');
@@ -373,7 +369,7 @@ describe('Post Creation Flow (Integration)', () => {
         type: 'DONATION',
         location: {
           latitude: 40.7128,
-          longitude: -74.0060,
+          longitude: -74.006,
         },
       },
     };
@@ -467,7 +463,7 @@ describe('Event Registration & Check-in Flow', () => {
             maxParticipants: 50,
             location: {
               latitude: 40.7128,
-              longitude: -74.0060,
+              longitude: -74.006,
             },
           },
         },
@@ -570,7 +566,7 @@ describe('Complete User Journey: New User to First Event', () => {
     // 1. User Registration
     await element(by.id('get-started-button')).tap();
     await element(by.id('register-tab')).tap();
-    
+
     await element(by.id('name-input')).typeText('Test User');
     await element(by.id('email-input')).typeText('newuser@example.com');
     await element(by.id('password-input')).typeText('SecurePass123!');
@@ -584,14 +580,14 @@ describe('Complete User Journey: New User to First Event', () => {
     // 2. Item Identification
     await element(by.id('identify-tab')).tap();
     await element(by.id('camera-permission-allow')).tap();
-    
+
     // Simulate taking photo (in test environment)
     await element(by.id('take-photo-button')).tap();
-    
+
     await waitFor(element(by.id('identification-result')))
       .toBeVisible()
       .withTimeout(5000);
-      
+
     await expect(element(by.id('item-label'))).toHaveText('Plastic Bottle');
     await expect(element(by.id('confidence-score'))).toBeVisible();
     await expect(element(by.id('recycling-instructions'))).toBeVisible();
@@ -599,7 +595,7 @@ describe('Complete User Journey: New User to First Event', () => {
     // 3. Create Community Post
     await element(by.id('community-tab')).tap();
     await element(by.id('create-post-fab')).tap();
-    
+
     await element(by.id('post-title-input')).typeText('Plastic bottles available');
     await element(by.id('post-description-input')).typeText('5 clean plastic bottles, ready for recycling');
     await element(by.id('post-type-donation')).tap();
@@ -613,10 +609,10 @@ describe('Complete User Journey: New User to First Event', () => {
     await element(by.id('events-tab')).tap();
     await element(by.id('event-list')).swipe('up');
     await element(by.id('event-item-0')).tap();
-    
+
     await expect(element(by.id('event-details'))).toBeVisible();
     await element(by.id('register-event-button')).tap();
-    
+
     await waitFor(element(by.text('Registration successful')))
       .toBeVisible()
       .withTimeout(3000);
@@ -624,7 +620,7 @@ describe('Complete User Journey: New User to First Event', () => {
     // 5. Check Points Earned
     await element(by.id('profile-tab')).tap();
     await expect(element(by.id('points-display'))).toBeVisible();
-    
+
     // User should have points from registration, post creation
     const pointsText = await element(by.id('points-display')).getText Attribute('text');
     const points = parseInt(pointsText);
@@ -647,43 +643,41 @@ describe('Complete User Journey: New User to First Event', () => {
 describe('Performance Benchmarks', () => {
   it('should load home screen within 2 seconds', async () => {
     const startTime = Date.now();
-    
+
     await device.launchApp({ newInstance: true });
     await waitFor(element(by.id('home-screen'))).toBeVisible();
-    
+
     const loadTime = Date.now() - startTime;
-    
+
     expect(loadTime).toBeLessThan(2000);
     console.log(`Home screen loaded in ${loadTime}ms`);
   });
 
   it('should complete image recognition within 3 seconds', async () => {
     const imageData = await loadTestImage('test-item.jpg');
-    
+
     const startTime = Date.now();
     const result = await mlService.identifyItem(imageData);
     const inferenceTime = Date.now() - startTime;
 
     expect(inferenceTime).toBeLessThan(3000);
     expect(result.confidence).toBeGreaterThan(0.6);
-    
+
     console.log(`Image recognition completed in ${inferenceTime}ms`);
   });
 
   it('should return API responses within 500ms', async () => {
     const startTime = Date.now();
-    
-    const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: '{ posts(limit: 10) { id title } }',
-      });
-    
+
+    const response = await request(app.getHttpServer()).post('/graphql').send({
+      query: '{ posts(limit: 10) { id title } }',
+    });
+
     const responseTime = Date.now() - startTime;
 
     expect(response.status).toBe(200);
     expect(responseTime).toBeLessThan(500);
-    
+
     console.log(`API response time: ${responseTime}ms`);
   });
 });
@@ -700,11 +694,9 @@ describe('Performance Benchmarks', () => {
 ```typescript
 describe('Security: Authentication & Authorization', () => {
   it('should reject requests without valid JWT token', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: '{ me { id email } }',
-      });
+    const response = await request(app.getHttpServer()).post('/graphql').send({
+      query: '{ me { id email } }',
+    });
 
     expect(response.body.errors).toBeDefined();
     expect(response.body.errors[0].message).toContain('Unauthorized');
@@ -745,7 +737,7 @@ describe('Security: Authentication & Authorization', () => {
 
   it('should sanitize user input to prevent XSS attacks', async () => {
     const maliciousInput = '<script>alert("XSS")</script>';
-    
+
     const mutation = `
       mutation {
         createPost(input: {
@@ -774,15 +766,11 @@ describe('Security: Authentication & Authorization', () => {
 
     // Send 100 requests rapidly
     for (let i = 0; i < 100; i++) {
-      requests.push(
-        request(app.getHttpServer())
-          .post('/graphql')
-          .send({ query: '{ health }' })
-      );
+      requests.push(request(app.getHttpServer()).post('/graphql').send({ query: '{ health }' }));
     }
 
     const responses = await Promise.all(requests);
-    const tooManyRequests = responses.filter(r => r.status === 429);
+    const tooManyRequests = responses.filter((r) => r.status === 429);
 
     expect(tooManyRequests.length).toBeGreaterThan(0);
   });
@@ -882,4 +870,4 @@ All tests run automatically on every push and pull request via GitHub Actions:
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

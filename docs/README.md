@@ -24,6 +24,7 @@ Follow the documentation in order for a complete understanding:
 ## 🚀 Quick Start
 
 **For Evaluators (Docker Setup):**
+
 ```bash
 # 1. Clone repository
 git clone https://github.com/Pranavraut033/reuseit.git
@@ -61,14 +62,14 @@ pnpm --filter mobile run start
 
 ## 🏗️ Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Mobile Client | React Native (Expo) |
-| Backend API | NestJS + GraphQL |
-| Database | MongoDB Atlas + Prisma ORM |
-| AI/ML | TensorFlow Lite |
-| Authentication | Firebase Auth + JWT |
-| Maps | Google Maps API |
+| Layer          | Technology                 |
+| -------------- | -------------------------- |
+| Mobile Client  | React Native (Expo)        |
+| Backend API    | NestJS + GraphQL           |
+| Database       | MongoDB Atlas + Prisma ORM |
+| AI/ML          | TensorFlow Lite            |
+| Authentication | Firebase Auth + JWT        |
+| Maps           | Google Maps API            |
 
 ---
 
@@ -101,7 +102,6 @@ pnpm --filter mobile run start
 ## 📄 License
 
 This project is submitted as academic coursework for IU International University of Applied Sciences.
-
 
 - **Use Markdown** for all documentation
 - **Keep it updated** - Update docs when code changes

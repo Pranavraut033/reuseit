@@ -64,12 +64,14 @@ src/
 ### MediaPicker
 
 **Props:**
+
 - `images`: Array of MediaItem
 - `onImagesChange`: Callback when images change
 - `maxImages`: Maximum number of images (default: 4)
 - `onTagSuggestions`: Optional callback for ML tag suggestions
 
 **Features:**
+
 - Permission handling for camera/library
 - Automatic image compression (80% quality, max 1920x1920)
 - Drag-to-reorder functionality
@@ -79,10 +81,12 @@ src/
 ### LocationPicker
 
 **Props:**
+
 - `location`: LocationData object or null
 - `onLocationChange`: Callback when location changes
 
 **Features:**
+
 - GPS auto-detection with reverse geocoding
 - Interactive map picker (Google Maps)
 - Manual address entry
@@ -92,6 +96,7 @@ src/
 ### TagEditor
 
 **Props:**
+
 - `tags`: Array of tag strings
 - `onTagsChange`: Callback when tags change
 - `category`: Current category for context
@@ -100,6 +105,7 @@ src/
 - `maxTags`: Maximum tags allowed (default: 10)
 
 **Features:**
+
 - ML-powered tag suggestions based on content
 - Category and condition-specific suggestions
 - Berlin-relevant tag presets
@@ -109,11 +115,13 @@ src/
 ### PreviewCard
 
 **Props:**
+
 - `formData`: Partial PostCreateFormData
 - `images`: Array of image URIs
 - `userName`: User display name
 
 **Features:**
+
 - Live preview of post appearance
 - Handles all form fields dynamically
 - Shows engagement UI (likes, comments, share)
@@ -122,6 +130,7 @@ src/
 ### PostCreateScreen
 
 Main orchestration component that:
+
 - Manages form state with React Hook Form
 - Handles image upload to Firebase Storage
 - Integrates Apollo Client mutations
@@ -132,6 +141,7 @@ Main orchestration component that:
 ## GraphQL Integration
 
 ### Mutation
+
 ```graphql
 mutation CreatePost($createPostInput: CreatePostInput!) {
   createPost(createPostInput: $createPostInput) {
@@ -140,13 +150,20 @@ mutation CreatePost($createPostInput: CreatePostInput!) {
     createdAt
     images
     likes
-    author { id name avatarUrl }
-    comments { id }
+    author {
+      id
+      name
+      avatarUrl
+    }
+    comments {
+      id
+    }
   }
 }
 ```
 
 ### Input Type
+
 ```typescript
 {
   content: string;      // Combined title + description
@@ -159,18 +176,21 @@ mutation CreatePost($createPostInput: CreatePostInput!) {
 ## Utilities
 
 ### Image Compression (`imageCompression.ts`)
+
 - `compressImage(uri, quality)`: Compress single image
 - `compressImages(images, quality)`: Batch compression
 - `generateThumbnail(uri, size)`: Create thumbnail
 - `calculateOptimalDimensions(...)`: Maintain aspect ratio
 
 ### Localization (`i18n.ts`)
+
 - Auto-detects device language (EN/DE)
 - Comprehensive translations for all UI text
 - Category and condition translations
 - Accessibility labels in both languages
 
 ### Tag Suggestions (`tagSuggestion.ts`)
+
 - Text-based analysis for tag generation
 - Category-specific tag mappings
 - Condition-specific suggestions
@@ -178,12 +198,14 @@ mutation CreatePost($createPostInput: CreatePostInput!) {
 - Expandable to TensorFlow Lite for image analysis
 
 ### Offline Storage (`offlineStorage.ts`)
+
 - `saveOfflinePost(post)`: Cache post locally
 - `getOfflinePosts()`: Retrieve cached posts
 - `removeOfflinePost(id)`: Delete cached post
 - AsyncStorage-based persistence
 
 ### Validation (`postValidation.ts`)
+
 - Yup schema for all form fields
 - TypeScript type inference
 - Field-level error messages
@@ -208,22 +230,26 @@ import { PostCreateScreen } from '~/components/post';
 ## Dependencies
 
 ### Core
+
 - `react-hook-form` - Form state management
 - `yup` + `@hookform/resolvers` - Validation
 - `@apollo/client` - GraphQL integration
 - `expo-router` - Navigation
 
 ### Media
+
 - `expo-image-picker` - Image selection
 - `expo-image-manipulator` - Compression
 - `react-native-draggable-flatlist` - Reordering
 - `@react-native-firebase/storage` - Upload
 
 ### Location
+
 - `expo-location` - GPS services
 - `react-native-maps` - Map picker
 
 ### Utilities
+
 - `date-fns` - Date formatting
 - `react-native-localize` - Language detection
 - `@react-native-async-storage/async-storage` - Offline storage
@@ -233,6 +259,7 @@ import { PostCreateScreen } from '~/components/post';
 ## Accessibility
 
 All components include:
+
 - Semantic role labels
 - Descriptive accessibility labels
 - Keyboard navigation support
@@ -243,6 +270,7 @@ All components include:
 ## Localization
 
 Supported languages:
+
 - English (default)
 - German (Deutsch)
 
@@ -295,16 +323,19 @@ Run the following checks before deployment:
 ## Troubleshooting
 
 ### Images not compressing
+
 - Check expo-image-manipulator installation
 - Verify write permissions
 - Check available storage space
 
 ### Location not working
+
 - Verify location permissions granted
 - Check Google Maps API key in app.config.js
 - Test on physical device (simulator issues common)
 
 ### Offline sync not working
+
 - Check AsyncStorage permissions
 - Verify NetInfo listener setup
 - Clear AsyncStorage cache if corrupted

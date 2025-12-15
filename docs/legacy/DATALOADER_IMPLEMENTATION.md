@@ -105,21 +105,27 @@ export class UserResolver {
 ## DataLoader Types
 
 ### Entity Loaders (Many-to-One)
+
 Load a single related entity by ID:
+
 - `UserLoader` - Load User by ID
 - `PostLoader` - Load Post by ID
 - `CommentLoader` - Load Comment by ID
 - etc.
 
 ### Relation Loaders (One-to-Many)
+
 Load multiple related entities for a parent:
+
 - `UserPostsLoader` - Load all Posts for a User
 - `PostCommentsLoader` - Load all Comments for a Post
 - `EventParticipantsLoader` - Load all Participants for an Event
 - etc.
 
 ### Aggregation Loaders
+
 Load computed values efficiently:
+
 - `PostLikeCountLoader` - Count likes for Posts
 - `PostCommentCountLoader` - Count comments for Posts
 
@@ -128,40 +134,36 @@ Load computed values efficiently:
 Located in `src/common/base.loader.ts`:
 
 ### orderByKeys
+
 Orders results to match the input key order for one-to-one or many-to-one relations:
 
 ```typescript
-function orderByKeys<K, V>(
-  keys: readonly K[],
-  values: V[],
-  getKey: (value: V) => K,
-): (V | null)[]
+function orderByKeys<K, V>(keys: readonly K[], values: V[], getKey: (value: V) => K): (V | null)[];
 ```
 
 ### orderManyByKeys
+
 Groups results by key for one-to-many relations:
 
 ```typescript
-function orderManyByKeys<K, V>(
-  keys: readonly K[],
-  values: V[],
-  getKey: (value: V) => K,
-): V[][]
+function orderManyByKeys<K, V>(keys: readonly K[], values: V[], getKey: (value: V) => K): V[][];
 ```
 
 ### groupBy
+
 Generic grouping utility:
 
 ```typescript
 function groupBy<T, K extends string | number | symbol>(
   items: T[],
   keyFn: (item: T) => K,
-): Record<K, T[]>
+): Record<K, T[]>;
 ```
 
 ## Complete Loader List
 
 ### User Module (8 loaders)
+
 1. `UserLoader` - User by ID
 2. `UserPostsLoader` - Posts by User
 3. `UserCommentsLoader` - Comments by User
@@ -172,6 +174,7 @@ function groupBy<T, K extends string | number | symbol>(
 8. `UserArticlesLoader` - Articles by User
 
 ### Post Module (9 loaders)
+
 1. `PostLoader` - Post by ID
 2. `PostAuthorLoader` - Author of Post
 3. `PostCommentsLoader` - Comments on Post
@@ -183,27 +186,32 @@ function groupBy<T, K extends string | number | symbol>(
 9. `PostLikedByUserLoader` - Check if user liked Post (special case)
 
 ### Comment Module (2 loaders)
+
 1. `CommentAuthorLoader` - Author of Comment
 2. `CommentPostLoader` - Post of Comment
 
 ### Event Module (4 loaders)
+
 1. `EventCreatorLoader` - Creator of Event
 2. `EventLocationLoader` - Location of Event
 3. `EventPostsLoader` - Posts for Event
 4. `EventParticipantsLoader` - Participants of Event
 
 ### Location Module (3 loaders)
+
 1. `LocationCreatorLoader` - Creator of Location
 2. `LocationPostsLoader` - Posts at Location
 3. `LocationEventsLoader` - Events at Location
 
 ### Badge Module (4 loaders)
+
 1. `BadgeLoader` - Badge by ID
 2. `BadgeUsersLoader` - Users with Badge
 3. `BadgeAssignmentLoader` - Badge assignment by ID
 4. `BadgeAssignmentBadgeLoader` - Badge of Assignment
 
 ### UserArticle Module (2 loaders)
+
 1. `UserArticleUserLoader` - User of Article
 2. `UserArticlePostLoader` - Post of Article
 
@@ -212,6 +220,7 @@ function groupBy<T, K extends string | number | symbol>(
 Services have been updated to remove `include` statements since relations are now loaded via DataLoaders:
 
 **Before:**
+
 ```typescript
 async findOne(id: string) {
   return this.prisma.post.findUnique({
@@ -226,6 +235,7 @@ async findOne(id: string) {
 ```
 
 **After:**
+
 ```typescript
 async findOne(id: string) {
   return this.prisma.post.findUnique({
@@ -245,11 +255,13 @@ async findOne(id: string) {
 ## Testing
 
 To verify DataLoader is working:
+
 1. Enable Prisma query logging in `schema.prisma`
 2. Run a nested GraphQL query
 3. Check that relations are loaded with single batched queries instead of N+1 queries
 
 Example query:
+
 ```graphql
 query {
   posts {
@@ -272,6 +284,7 @@ query {
 ```
 
 Should generate:
+
 - 1 query for posts
 - 1 batched query for all authors
 - 1 batched query for all comments
@@ -282,6 +295,7 @@ Instead of N+1 queries for each relation.
 ## Migration Notes
 
 If migrating from the previous custom implementation:
+
 1. ✅ Installed `nestjs-dataloader` package
 2. ✅ Converted all loaders from `BaseDataLoader` to `NestDataLoader` interface
 3. ✅ Updated all resolvers to use `@Loader` decorator from `nestjs-dataloader`
@@ -296,7 +310,6 @@ If migrating from the previous custom implementation:
 - [DataLoader by Facebook](https://github.com/graphql/dataloader)
 - [NestJS GraphQL Documentation](https://docs.nestjs.com/graphql/quick-start)
 
-
 # DataLoader Implementation Complete!
 
 ## Summary
@@ -306,11 +319,13 @@ Your NestJS backend now uses the **DataLoader pattern** with **GraphQL field res
 ## Architecture
 
 ### 1. DataLoader Infrastructure
+
 - **Base Loader**: `src/common/base.loader.ts`
   - Provides `BaseDataLoader` class with caching
   - Helper functions: `orderByKeys`, `orderManyByKeys`, `groupBy`
 
 ### 2. Loaders Created
+
 All loaders use Prisma types and batch database queries:
 
 - **User**: 8 loaders (posts, comments, badges, events, participants, points history, articles)
@@ -322,11 +337,13 @@ All loaders use Prisma types and batch database queries:
 - **UserArticle**: 2 loaders (user, post)
 
 ### 3. Field Resolvers
+
 All resolvers now use `@ResolveField()` decorators to load relations lazily.
 
 ## How It Works
 
 1. **Queries return raw objects** without relations:
+
    ```typescript
    @Query(() => [Post])
    findAll() {
@@ -335,6 +352,7 @@ All resolvers now use `@ResolveField()` decorators to load relations lazily.
    ```
 
 2. **Field resolvers load relations using DataLoader**:
+
    ```typescript
    @ResolveField('author', () => User)
    async author(@Parent() post: Post) {
@@ -351,6 +369,7 @@ All resolvers now use `@ResolveField()` decorators to load relations lazily.
 The resolvers currently have loader parameters in `@ResolveField` methods. You need to **inject loaders via constructor**.
 
 ### Current (Incorrect):
+
 ```typescript
 @ResolveField('posts', () => [Object])
 async posts(@Parent() user: User, userPostsLoader: UserPostsLoader) {
@@ -359,6 +378,7 @@ async posts(@Parent() user: User, userPostsLoader: UserPostsLoader) {
 ```
 
 ### Should Be:
+
 ```typescript
 constructor(
   private readonly userService: UserService,
@@ -390,14 +410,17 @@ async posts(@Parent() user: User) {
 ## Performance Impact
 
 Before:
+
 - Query 1 post with 100 comments = 101 queries (1 + 100)
 
 After:
+
 - Query 1 post with 100 comments = 2 queries (1 for post + 1 batched for all authors)
 
 ## Testing
 
 Test with a query like:
+
 ```graphql
 query {
   posts {

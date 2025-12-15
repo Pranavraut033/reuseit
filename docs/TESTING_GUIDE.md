@@ -3,24 +3,25 @@
 ## Backend Testing
 
 ### Start Backend
+
 ```bash
 cd apps/backend
 pnpm start:dev
 ```
 
 ### GraphQL Playground
+
 Open: http://localhost:3000/graphql
 
 ### Test Mutations
 
 #### Example 1: Plastic Bottle (Berlin)
+
 ```graphql
 mutation {
-  finalizeRecycling(input: {
-    objectName: "Plastic Bottle"
-    materials: ["plastic"]
-    city: "Berlin"
-  }) {
+  finalizeRecycling(
+    input: { objectName: "Plastic Bottle", materials: ["plastic"], city: "Berlin" }
+  ) {
     objectName
     materials
     recycling {
@@ -37,12 +38,10 @@ mutation {
 **Expected:** Gelber Sack with Berlin-specific orange bin note
 
 #### Example 2: Greasy Pizza Box
+
 ```graphql
 mutation {
-  finalizeRecycling(input: {
-    objectName: "Greasy Pizza Box"
-    materials: ["paper", "cardboard"]
-  }) {
+  finalizeRecycling(input: { objectName: "Greasy Pizza Box", materials: ["paper", "cardboard"] }) {
     recycling {
       bin
       rules
@@ -54,13 +53,10 @@ mutation {
 **Expected:** Restmüll (exception handling for greasy paper)
 
 #### Example 3: Glass Jar (Munich)
+
 ```graphql
 mutation {
-  finalizeRecycling(input: {
-    objectName: "Glass Jar"
-    materials: ["glass"]
-    city: "Munich"
-  }) {
+  finalizeRecycling(input: { objectName: "Glass Jar", materials: ["glass"], city: "Munich" }) {
     recycling {
       bin
       cityOverride
@@ -72,12 +68,10 @@ mutation {
 **Expected:** Glas with Munich strict separation note
 
 #### Example 4: Electronics
+
 ```graphql
 mutation {
-  finalizeRecycling(input: {
-    objectName: "Old Phone"
-    materials: ["electronic", "battery"]
-  }) {
+  finalizeRecycling(input: { objectName: "Old Phone", materials: ["electronic", "battery"] }) {
     recycling {
       bin
       rules
@@ -91,6 +85,7 @@ mutation {
 ## Mobile Testing
 
 ### Start Mobile App
+
 ```bash
 cd apps/mobile
 pnpm start
@@ -124,12 +119,14 @@ pnpm start
 ### Expected Behavior
 
 **Prototype Classification:**
+
 - Image with "plastic" in name → Plastic (85%)
 - Image with "paper" in name → Paper (82%)
 - Image with "glass" in name → Glass (80%)
 - Other → Unknown (40%)
 
 **Backend Analysis:**
+
 - Green text showing German bin
 - City-specific notes (if applicable)
 - Formatted instructions from LLM service
@@ -137,24 +134,28 @@ pnpm start
 ## Common Test Cases
 
 ### 1. Recyclable Plastic
+
 - **Object:** "Yogurt Container"
 - **Materials:** ["plastic"]
 - **Expected Bin:** Gelber Sack
 - **Key Rule:** Rinse before disposal
 
 ### 2. Contaminated Paper
+
 - **Object:** "Greasy Napkin"
 - **Materials:** ["paper"]
 - **Expected Bin:** Restmüll (exception)
 - **Reason:** Food contamination
 
 ### 3. Mixed Materials
+
 - **Object:** "Unknown Item"
 - **Materials:** ["mixed"]
 - **Expected Bin:** Restmüll (fallback)
 - **Guidance:** Check for separation
 
 ### 4. Organic Waste
+
 - **Object:** "Apple Core"
 - **Materials:** ["organic", "food"]
 - **Expected Bin:** Biomüll
@@ -163,6 +164,7 @@ pnpm start
 ## Debugging
 
 ### Backend Logs
+
 ```bash
 # Watch backend console for:
 [RecyclingService] Finalizing recycling for: <object>
@@ -170,6 +172,7 @@ pnpm start
 ```
 
 ### Mobile Logs
+
 ```bash
 # Metro bundler shows:
 - GraphQL request/response
@@ -180,28 +183,34 @@ pnpm start
 ### Common Issues
 
 **Issue:** Backend mutation not found
+
 - **Fix:** Ensure backend is running and schema regenerated
 - **Check:** `schema.gql` contains `finalizeRecycling`
 
 **Issue:** Mobile codegen errors
+
 - **Fix:** Start backend first, then run `pnpm codegen`
 - **Check:** `apps/mobile/src/__generated__/` updated
 
 **Issue:** Classification not triggering
+
 - **Fix:** Ensure TensorFlow initialized (`ready` state)
 - **Check:** Console for "Initializing TensorFlow..."
 
 ## Performance Checks
 
 ### Backend Response Time
+
 - Target: < 500ms for mutation
 - Monitor: GraphQL Playground network tab
 
 ### Mobile Classification
+
 - Prototype: Instant (heuristic)
 - Backend call: 300-800ms (depends on network)
 
 ### Network Efficiency
+
 - Mutation size: ~2-5KB request
 - Response size: ~3-8KB (with instructions)
 

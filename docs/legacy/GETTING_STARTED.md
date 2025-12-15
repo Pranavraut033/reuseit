@@ -11,23 +11,28 @@ Ensure you have the following installed on your development machine:
 ### Required Software
 
 #### 1. Node.js (v18.x or higher)
+
 Download and install from [nodejs.org](https://nodejs.org/)
 
 Verify installation:
+
 ```bash
 node --version
 # Should output v18.x.x or higher
 ```
 
 #### 2. pnpm (v8.x or higher)
+
 Fast, efficient package manager
 
 Install globally:
+
 ```bash
 npm install -g pnpm
 ```
 
 Verify installation:
+
 ```bash
 pnpm --version
 # Should output 8.x.x or higher
@@ -36,23 +41,28 @@ pnpm --version
 #### 3. MongoDB (v5.x or higher)
 
 **Option A: Local Installation**
+
 - Download from [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
 - Follow installation instructions for your operating system
 
 **Option B: Cloud (Recommended for beginners)**
+
 - Create a free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 - Set up a free cluster
 - Get your connection string
 
 #### 4. Expo CLI
+
 For React Native development
 
 Install globally:
+
 ```bash
 npm install -g expo-cli
 ```
 
 Verify installation:
+
 ```bash
 expo --version
 ```
@@ -60,11 +70,13 @@ expo --version
 #### 5. Development Tools
 
 **For iOS Development (macOS only):**
+
 - Xcode (latest version from Mac App Store)
 - Xcode Command Line Tools
 - iOS Simulator
 
 **For Android Development:**
+
 - Android Studio
 - Android SDK
 - Android Emulator or physical device
@@ -137,22 +149,26 @@ mongodb://localhost:27017/reuseit?replicaSet=rs0
 ### Option 2: MongoDB Atlas (Cloud)
 
 #### 1. Create Account
+
 - Visit [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 - Sign up for a free account
 
 #### 2. Create Cluster
+
 - Choose "Create a Cluster"
 - Select the free tier (M0)
 - Choose a region close to you
 - Click "Create Cluster"
 
 #### 3. Configure Network Access
+
 - Click "Network Access" in the left sidebar
 - Click "Add IP Address"
 - Click "Allow Access from Anywhere" (for development only)
 - Confirm
 
 #### 4. Create Database User
+
 - Click "Database Access" in the left sidebar
 - Click "Add New Database User"
 - Choose "Password" authentication
@@ -161,6 +177,7 @@ mongodb://localhost:27017/reuseit?replicaSet=rs0
 - Add user
 
 #### 5. Get Connection String
+
 - Click "Database" in the left sidebar
 - Click "Connect" on your cluster
 - Choose "Connect your application"
@@ -169,6 +186,7 @@ mongodb://localhost:27017/reuseit?replicaSet=rs0
 - Replace `<dbname>` with `reuseit`
 
 Example:
+
 ```
 mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/reuseit?retryWrites=true&w=majority
 ```
@@ -296,18 +314,21 @@ This starts both backend and mobile concurrently.
 ### Option 2: Start Services Individually
 
 **Terminal 1 - Backend Server:**
+
 ```bash
 cd backend
 pnpm start:dev
 ```
 
 You should see:
+
 ```
 [Nest] INFO Starting Nest application...
 [Nest] INFO GraphQL server running on http://localhost:4000/graphql
 ```
 
 **Terminal 2 - Mobile App:**
+
 ```bash
 cd mobile
 pnpm start
@@ -360,6 +381,7 @@ Or press `a` in the Expo terminal.
 2. You should see the GraphQL Playground
 
 3. Try a simple query:
+
 ```graphql
 query {
   health
@@ -367,6 +389,7 @@ query {
 ```
 
 Expected response:
+
 ```json
 {
   "data": {
@@ -394,6 +417,7 @@ Expected response:
 **Error:** `MongooseServerSelectionError: connect ECONNREFUSED`
 
 **Solution:**
+
 - Ensure MongoDB is running
 - Check your DATABASE_URL is correct
 - For local MongoDB, verify replica set is initialized
@@ -404,6 +428,7 @@ Expected response:
 **Error:** `Error: listen EADDRINUSE: address already in use :::4000`
 
 **Solution:**
+
 ```bash
 # Find process using port 4000
 lsof -i :4000
@@ -417,6 +442,7 @@ kill -9 PID
 **Error:** `Cannot find module '@prisma/client'`
 
 **Solution:**
+
 ```bash
 cd backend
 pnpm prisma generate
@@ -427,6 +453,7 @@ pnpm prisma generate
 **Error:** `Unable to start server`
 
 **Solution:**
+
 ```bash
 # Clear Expo cache
 cd mobile
@@ -440,6 +467,7 @@ expo start -c
 **Problem:** Mobile app shows network errors
 
 **Solution:**
+
 1. Ensure backend is running (`http://localhost:4000/graphql` accessible)
 2. For physical devices, use your computer's local IP instead of `localhost`
    ```env
@@ -453,6 +481,7 @@ expo start -c
 **Problem:** Map is blank or shows "For development purposes only"
 
 **Solution:**
+
 - Ensure you have a valid Google Maps API key
 - Enable the following APIs in Google Cloud Console:
   - Maps SDK for iOS
@@ -509,4 +538,4 @@ Now that you have the application running:
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

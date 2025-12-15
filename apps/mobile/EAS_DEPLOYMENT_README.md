@@ -9,10 +9,12 @@
 ## Setup Steps
 
 ### 1. Create App Store Listings
+
 - **Android**: Go to Google Play Console and create a new app with package name `ai.reuseit.app`
 - **iOS**: Go to App Store Connect and create a new app
 
 ### 2. Configure EAS Credentials
+
 Run these commands in the mobile app directory:
 
 ```bash
@@ -37,6 +39,7 @@ EXPO_PUBLIC_APP_URL="https://your-production-backend-domain.com"
 ```
 
 ### 4. Build Production App
+
 ```bash
 # Build for Android
 eas build --platform android --profile production
@@ -46,6 +49,7 @@ eas build --platform ios --profile production
 ```
 
 ### 5. Download and Upload Manually
+
 1. After the build completes, go to the Expo dashboard (https://expo.dev/)
 2. Find your build and download the artifact (.aab for Android, .ipa for iOS)
 3. **Android**: Upload the .aab file to Google Play Console under "Production" track

@@ -185,96 +185,96 @@ it('should create a post with image', async () => {
 
 ### TC-01: Authentication - Invalid Email Format
 
-| Field | Value |
-|-------|-------|
-| **Input** | Email: `user..test.com` / Pass: `123456` |
-| **Expected** | Inline error: "Invalid email format" (no API call) |
-| **Result** | ✅ Pass |
-| **Execution Time** | 0.02s |
+| Field              | Value                                              |
+| ------------------ | -------------------------------------------------- |
+| **Input**          | Email: `user..test.com` / Pass: `123456`           |
+| **Expected**       | Inline error: "Invalid email format" (no API call) |
+| **Result**         | ✅ Pass                                            |
+| **Execution Time** | 0.02s                                              |
 
 ---
 
 ### TC-02: ML - Scan Recyclable Item
 
-| Field | Value |
-|-------|-------|
-| **Input** | Image: `plastic_bottle.jpg` |
-| **Expected** | Confidence >85%, Label: "Plastic (PET)", Prompt: "Recycle at yellow bin" |
-| **Actual** | Confidence: 92%, Label: "Plastic (PET)" |
-| **Result** | ✅ Pass |
-| **Execution Time** | 2.1s |
+| Field              | Value                                                                    |
+| ------------------ | ------------------------------------------------------------------------ |
+| **Input**          | Image: `plastic_bottle.jpg`                                              |
+| **Expected**       | Confidence >85%, Label: "Plastic (PET)", Prompt: "Recycle at yellow bin" |
+| **Actual**         | Confidence: 92%, Label: "Plastic (PET)"                                  |
+| **Result**         | ✅ Pass                                                                  |
+| **Execution Time** | 2.1s                                                                     |
 
 ---
 
 ### TC-03: ML - Scan Unknown Item
 
-| Field | Value |
-|-------|-------|
-| **Input** | Image: `blurry_floor.jpg` |
-| **Expected** | Confidence <40%, Prompt: "Retake photo or search manually" |
-| **Actual** | Confidence: 18%, Prompt displayed |
-| **Result** | ✅ Pass |
-| **Execution Time** | 1.8s |
+| Field              | Value                                                      |
+| ------------------ | ---------------------------------------------------------- |
+| **Input**          | Image: `blurry_floor.jpg`                                  |
+| **Expected**       | Confidence <40%, Prompt: "Retake photo or search manually" |
+| **Actual**         | Confidence: 18%, Prompt displayed                          |
+| **Result**         | ✅ Pass                                                    |
+| **Execution Time** | 1.8s                                                       |
 
 ---
 
 ### TC-04: Events - Duplicate Registration
 
-| Field | Value |
-|-------|-------|
-| **Input** | User: `ID_99`, Event: `Event_A` (already joined) |
-| **Expected** | Toast: "You are already registered for this event" |
-| **Actual** | Toast displayed, no duplicate entry in DB |
-| **Result** | ✅ Pass |
-| **Execution Time** | 0.15s |
+| Field              | Value                                              |
+| ------------------ | -------------------------------------------------- |
+| **Input**          | User: `ID_99`, Event: `Event_A` (already joined)   |
+| **Expected**       | Toast: "You are already registered for this event" |
+| **Actual**         | Toast displayed, no duplicate entry in DB          |
+| **Result**         | ✅ Pass                                            |
+| **Execution Time** | 0.15s                                              |
 
 ---
 
 ### TC-05: Content - Offline Access
 
-| Field | Value |
-|-------|-------|
-| **Input** | Network: Disabled, Action: Open "Recycling Guide" |
-| **Expected** | Content loads from Apollo Cache, "Offline Mode" banner |
-| **Actual** | Article displayed from cache, banner shown |
-| **Result** | ✅ Pass |
-| **Execution Time** | 0.05s |
+| Field              | Value                                                  |
+| ------------------ | ------------------------------------------------------ |
+| **Input**          | Network: Disabled, Action: Open "Recycling Guide"      |
+| **Expected**       | Content loads from Apollo Cache, "Offline Mode" banner |
+| **Actual**         | Article displayed from cache, banner shown             |
+| **Result**         | ✅ Pass                                                |
+| **Execution Time** | 0.05s                                                  |
 
 ---
 
 ### TC-06: Gamification - Point Award
 
-| Field | Value |
-|-------|-------|
-| **Input** | User posts item |
-| **Expected** | User points increase by +10 |
-| **Actual** | Points: 45 → 55 |
-| **Result** | ✅ Pass |
-| **Execution Time** | 0.12s |
+| Field              | Value                       |
+| ------------------ | --------------------------- |
+| **Input**          | User posts item             |
+| **Expected**       | User points increase by +10 |
+| **Actual**         | Points: 45 → 55             |
+| **Result**         | ✅ Pass                     |
+| **Execution Time** | 0.12s                       |
 
 ---
 
 ### TC-07: Location - Find Nearby Centers
 
-| Field | Value |
-|-------|-------|
-| **Input** | GPS: 52.5200° N, 13.4050° E (Berlin) |
-| **Expected** | Display 5+ recycling centers within 2km |
-| **Actual** | 7 centers displayed on map |
-| **Result** | ✅ Pass |
-| **Execution Time** | 0.68s |
+| Field              | Value                                   |
+| ------------------ | --------------------------------------- |
+| **Input**          | GPS: 52.5200° N, 13.4050° E (Berlin)    |
+| **Expected**       | Display 5+ recycling centers within 2km |
+| **Actual**         | 7 centers displayed on map              |
+| **Result**         | ✅ Pass                                 |
+| **Execution Time** | 0.68s                                   |
 
 ---
 
 ### TC-08: Performance - Concurrent Load
 
-| Field | Value |
-|-------|-------|
-| **Input** | 500 concurrent API requests (Artillery) |
+| Field        | Value                                   |
+| ------------ | --------------------------------------- |
+| **Input**    | 500 concurrent API requests (Artillery) |
 | **Expected** | Avg response time <500ms, 0% error rate |
-| **Actual** | Avg: 240ms, Errors: 0% |
-| **Result** | ✅ Pass |
-| **Duration** | 60s load test |
+| **Actual**   | Avg: 240ms, Errors: 0%                  |
+| **Result**   | ✅ Pass                                 |
+| **Duration** | 60s load test                           |
 
 ---
 
@@ -285,6 +285,7 @@ it('should create a post with image', async () => {
 **Test Method:** Chrome DevTools Performance profiling + manual stopwatch
 
 **Results:**
+
 - Trial 1: 1.75s
 - Trial 2: 1.82s
 - Trial 3: 1.84s
@@ -297,6 +298,7 @@ it('should create a post with image', async () => {
 **Test Method:** 100 sample images, average processing time
 
 **Results:**
+
 - Mean: 2.1s
 - Median: 2.0s
 - 95th percentile: 2.8s
@@ -309,6 +311,7 @@ it('should create a post with image', async () => {
 **Test Method:** Manual audit + TalkBack screen reader
 
 **Compliance:**
+
 - ✅ Contrast ratio >4.5:1 for all text
 - ✅ Dynamic font scaling works
 - ✅ Screen reader labels present on interactive elements
@@ -321,6 +324,7 @@ it('should create a post with image', async () => {
 **Test Method:** OWASP ZAP automated scan + manual penetration testing
 
 **Findings:**
+
 - ✅ No SQL injection vulnerabilities
 - ✅ XSS prevented by React Native's auto-escaping
 - ✅ HTTPS enforced
@@ -333,6 +337,7 @@ it('should create a post with image', async () => {
 **Test Method:** Airplane mode activation during app use
 
 **Capabilities Verified:**
+
 - ✅ Cached articles accessible
 - ✅ Mutations queued and retry on reconnection
 - ✅ "Offline Mode" banner displayed
@@ -347,12 +352,12 @@ it('should create a post with image', async () => {
 **Results:**
 
 | Concurrent Users | Avg Response Time | Error Rate |
-|------------------|-------------------|------------|
-| 100 | 95ms | 0% |
-| 250 | 180ms | 0% |
-| 500 | 240ms | 0% |
-| 750 | 420ms | 0.1% |
-| 1000 | 580ms | 0.3% |
+| ---------------- | ----------------- | ---------- |
+| 100              | 95ms              | 0%         |
+| 250              | 180ms             | 0%         |
+| 500              | 240ms             | 0%         |
+| 750              | 420ms             | 0.1%       |
+| 1000             | 580ms             | 0.3%       |
 
 **Status:** ✅ Pass at 500 users (Target: 500 concurrent)
 

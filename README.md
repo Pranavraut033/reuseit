@@ -1,4 +1,5 @@
 # Project README
+
 ## About the Project
 
 This project is a community platform designed to make recycling, reusing, and sustainable living easier for everyone. It brings together three major parts of daily life—waste management, community connection, and environmental action—and puts them into one simple experience.

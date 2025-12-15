@@ -7,12 +7,14 @@ This document provides a comprehensive overview of all features available in the
 ## 🔐 User Authentication & Profile Management
 
 ### Authentication
+
 - **Email/Password Registration:** Secure account creation with validated credentials
 - **Google OAuth:** One-tap sign-in with Google account
 - **JWT Token Management:** Secure session handling with refresh tokens
 - **Password Recovery:** Reset password via email verification
 
 ### Profile Management
+
 - **User Profile Editing:** Update name, photo, bio, and preferences
 - **Statistics Dashboard:** View personal recycling metrics and contributions
 - **Achievement Display:** Showcase earned points and badges
@@ -23,18 +25,21 @@ This document provides a comprehensive overview of all features available in the
 ## 📚 Educational Content
 
 ### Article Browsing
+
 - **Curated Content:** Access professionally written recycling guides
 - **Search Functionality:** Find articles by keywords, categories, or tags
 - **Category Filtering:** Browse by material types (plastic, glass, metal, etc.)
 - **Bookmarking:** Save favorite articles for quick access
 
 ### Recycling Guides
+
 - **Step-by-Step Instructions:** Detailed guidance for proper recycling
 - **Material-Specific Tips:** Specialized information for different recyclables
 - **Local Guidelines:** Information adapted to regional recycling rules
 - **Visual Aids:** Images and diagrams for better understanding
 
 ### Location Information
+
 - **Recycling Center Directory:** Comprehensive database of local facilities
 - **Operating Hours:** Real-time information on facility availability
 - **Accepted Materials:** Detailed lists of what each center accepts
@@ -45,18 +50,21 @@ This document provides a comprehensive overview of all features available in the
 ## 📸 AI-Powered Item Identification
 
 ### Image Recognition
+
 - **Camera Integration:** Capture photos directly in-app
 - **Photo Upload:** Select existing images from device gallery
 - **On-Device ML Processing:** Privacy-focused local inference using TensorFlow Lite
 - **Multi-Item Detection:** Identify multiple items in a single image
 
 ### Identification Results
+
 - **Confidence Scores:** Percentage accuracy for each identification
 - **Material Classification:** Specific material type (e.g., PET plastic, aluminum)
 - **Recycling Instructions:** Tailored guidance based on identified item
 - **Alternative Actions:** Suggestions for reuse or proper disposal
 
 ### Privacy Features
+
 - **Local Processing:** Images never leave your device
 - **No Cloud Storage:** No image data stored on servers
 - **Instant Results:** Fast inference without network dependency
@@ -66,6 +74,7 @@ This document provides a comprehensive overview of all features available in the
 ## 🌍 Community Marketplace & Posts
 
 ### Post Creation
+
 - **Donation Posts:** Offer items for free to community members
 - **Request Posts:** Ask for specific items you need
 - **Rich Media:** Add photos to showcase items
@@ -73,12 +82,14 @@ This document provides a comprehensive overview of all features available in the
 - **Location Tagging:** Specify pickup or delivery locations
 
 ### Community Interaction
+
 - **Like System:** Show appreciation for helpful posts
 - **Commenting:** Ask questions and provide feedback
 - **User Profiles:** View other users' contribution history
 - **Direct Messaging:** (Planned) Contact users privately
 
 ### Search & Discovery
+
 - **Keyword Search:** Find posts by item name or description
 - **Category Filters:** Browse by item type or material
 - **Location-Based:** Find items near you
@@ -89,24 +100,28 @@ This document provides a comprehensive overview of all features available in the
 ## 📅 Event Management
 
 ### Event Discovery
+
 - **Interactive Map:** See events plotted on a map
 - **List View:** Browse events in chronological order
 - **Filter Options:** By date, location, event type
 - **Search Function:** Find specific events by name or keyword
 
 ### Event Registration
+
 - **One-Tap Registration:** Quick and easy signup process
 - **Participant Limits:** View available spots
 - **Registration Confirmation:** Email and push notifications
 - **Calendar Integration:** (Planned) Add to device calendar
 
 ### Event Participation
+
 - **QR Code Check-In:** Scan code at event to confirm attendance
 - **Location-Based Check-In:** Automatic check-in when at venue
 - **Points Rewards:** Earn points for attending and volunteering
 - **Event Feedback:** Rate and review events after attendance
 
 ### Event Organization
+
 - **Create Events:** Organize community recycling drives
 - **Set Parameters:** Date, time, location, participant limits
 - **Manage Registrations:** View and manage attendees
@@ -117,6 +132,7 @@ This document provides a comprehensive overview of all features available in the
 ## 🏆 Gamification System
 
 ### Points System
+
 - **Action-Based Points:** Earn points for various activities
   - Item identification: 5 points
   - Creating posts: 10 points
@@ -126,6 +142,7 @@ This document provides a comprehensive overview of all features available in the
 - **Point Multipliers:** Special events with bonus point opportunities
 
 ### Achievement Badges
+
 - **Milestone Badges:** Unlock at specific point thresholds
   - Bronze Badge: 100 points
   - Silver Badge: 500 points
@@ -139,6 +156,7 @@ This document provides a comprehensive overview of all features available in the
 - **Rare Badges:** Special achievements for exceptional contributions
 
 ### Leaderboards
+
 - **Global Rankings:** See top contributors worldwide
 - **Local Rankings:** Compete with users in your area
 - **Friend Rankings:** Compare progress with connections
@@ -146,6 +164,7 @@ This document provides a comprehensive overview of all features available in the
 - **Category Leaders:** Top users in specific activities
 
 ### Progress Tracking
+
 - **Personal Dashboard:** Visual representation of achievements
 - **Goal Setting:** Set and track personal recycling goals
 - **Streak Tracking:** Monitor consecutive days of activity
@@ -156,12 +175,14 @@ This document provides a comprehensive overview of all features available in the
 ## 📍 Location Services
 
 ### Recycling Center Map
+
 - **Interactive Map:** Google Maps integration with custom markers
 - **Proximity Search:** Find centers near your current location
 - **Distance Display:** See how far each facility is
 - **Directions:** Get turn-by-turn navigation to centers
 
 ### Facility Information
+
 - **Detailed Profiles:** Comprehensive information for each center
   - Address and contact details
   - Operating hours and holidays
@@ -171,6 +192,7 @@ This document provides a comprehensive overview of all features available in the
 - **Photos:** Visual tour of facilities
 
 ### Check-In System
+
 - **Location Verification:** Confirm visits to recycling centers
 - **Points Rewards:** Earn points for verified check-ins
 - **Visit History:** Track your recycling center visits
@@ -181,6 +203,7 @@ This document provides a comprehensive overview of all features available in the
 ## 🔔 Smart Notifications
 
 ### Push Notifications
+
 - **Real-Time Alerts:** Instant notifications for important events
 - **Event Reminders:** Alerts before registered events
 - **Community Activity:** Notifications for post interactions
@@ -188,12 +211,14 @@ This document provides a comprehensive overview of all features available in the
 - **System Updates:** Information about new features or changes
 
 ### In-App Notifications
+
 - **Notification Center:** Centralized hub for all notifications
 - **Categorization:** Organized by type (events, community, achievements)
 - **Read/Unread Status:** Track which notifications you've seen
 - **Action Buttons:** Quick actions directly from notifications
 
 ### Notification Preferences
+
 - **Granular Control:** Enable/disable specific notification types
 - **Quiet Hours:** Set times when notifications are silenced
 - **Frequency Settings:** Choose how often to receive updates
@@ -204,6 +229,7 @@ This document provides a comprehensive overview of all features available in the
 ## 🔒 Privacy & Security Features
 
 ### Data Protection
+
 - **End-to-End Encryption:** Secure data transmission
 - **Local Data Storage:** Sensitive data encrypted on device
 - **GDPR Compliance:** Full data privacy compliance
@@ -211,6 +237,7 @@ This document provides a comprehensive overview of all features available in the
 - **Account Deletion:** Complete data removal on request
 
 ### Privacy Controls
+
 - **Profile Visibility:** Control who can see your profile
 - **Activity Privacy:** Choose what actions are public
 - **Location Sharing:** Opt-in for location-based features
@@ -234,4 +261,4 @@ Features planned for future releases:
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

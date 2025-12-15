@@ -34,6 +34,7 @@ ReUseIt follows a modern microservices architecture deployed via Docker Compose.
 **Responsibility:** Presentation layer and client-side logic
 
 **Key Technologies:**
+
 - **React Native 0.72** - Core framework
 - **Expo SDK 49** - Managed workflow for rapid development
 - **Apollo Client 3.8** - GraphQL client with normalized caching
@@ -42,6 +43,7 @@ ReUseIt follows a modern microservices architecture deployed via Docker Compose.
 - **TensorFlow Lite** - On-device ML inference
 
 **Structure:**
+
 ```
 mobile/src/
 ├── app/                    # Expo Router screens
@@ -53,6 +55,7 @@ mobile/src/
 ```
 
 **State Management:**
+
 - **Server State:** Apollo Client cache
 - **UI State:** Zustand (global) + useState (local)
 - **Form State:** React Hook Form
@@ -64,6 +67,7 @@ mobile/src/
 **Responsibility:** Business logic, authentication, and data orchestration
 
 **Key Technologies:**
+
 - **NestJS 10** - Progressive Node.js framework
 - **Apollo Server 4** - GraphQL server
 - **Prisma 5.6** - Type-safe ORM
@@ -71,6 +75,7 @@ mobile/src/
 - **DataLoader** - Batch and cache database queries
 
 **Modular Architecture:**
+
 ```
 backend/src/
 ├── auth/                   # Authentication & JWT
@@ -85,6 +90,7 @@ backend/src/
 ```
 
 **Design Patterns:**
+
 - **Dependency Injection** - NestJS IoC container
 - **Repository Pattern** - Prisma service abstraction
 - **DataLoader Pattern** - N+1 query optimization
@@ -98,6 +104,7 @@ backend/src/
 **Schema Design:**
 
 **Users Collection:**
+
 ```typescript
 {
   id: string
@@ -112,6 +119,7 @@ backend/src/
 ```
 
 **Posts Collection:**
+
 ```typescript
 {
   id: string
@@ -133,6 +141,7 @@ backend/src/
 ```
 
 **Events Collection:**
+
 ```typescript
 {
   id: string
@@ -148,6 +157,7 @@ backend/src/
 ```
 
 **Indexes:**
+
 - `posts.location` - 2dsphere (geospatial queries)
 - `posts.authorId` - For user post lookups
 - `users.email` - Unique constraint
@@ -287,6 +297,7 @@ backend/src/
 ```
 
 **Hosting:**
+
 - **Backend:** Railway (containerized NestJS)
 - **Database:** MongoDB Atlas (M0 free tier → M2 production)
 - **Client:** Expo EAS Build → APK distribution
@@ -295,26 +306,29 @@ backend/src/
 
 **Previous:** [← Requirements](02-requirements.md) | **Next:** [Implementation →](04-implementation.md)
 
-
 ## Services
 
 ### Mobile Client (React Native + Expo)
+
 - **UI Framework:** React Native with NativeWind (Tailwind CSS)
 - **State:** Apollo Client (server) + Zustand (global UI)
 - **Navigation:** Expo Router
 - **ML:** TensorFlow Lite for on-device inference
 
 ### Backend API (NestJS + GraphQL)
+
 - **Framework:** NestJS with Apollo Server
 - **Database:** Prisma ORM with MongoDB
 - **Auth:** JWT with Passport
 - **Caching:** DataLoader for N+1 prevention
 
 ### AI Services
+
 - **Ollama:** Local LLM runtime for waste analysis
 - **LLM API:** FastAPI wrapper for structured recycling guidance
 
 ### Infrastructure
+
 - **Database:** MongoDB with replica set
 - **Cache:** Redis for performance
 - **Monitoring:** Statping dashboard

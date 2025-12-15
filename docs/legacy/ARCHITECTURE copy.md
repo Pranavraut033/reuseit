@@ -74,6 +74,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ```
 
 **Notation Legend:**
+
 - **Solid arrows (│):** Represent direct data flow and communication
 - **Data Flow direction:** Top to bottom (client → server → database)
 - **Control Flow:** Bidirectional - requests flow down, responses flow up
@@ -88,6 +89,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 **Purpose:** Provides the user interface and client-side application logic.
 
 **Components:**
+
 - **React Native Framework:** Cross-platform mobile development
 - **Expo SDK:** Simplified development tooling and native API access
 - **Apollo Client:** GraphQL client with intelligent caching
@@ -97,6 +99,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - **NativeWind:** Utility-first styling with Tailwind CSS
 
 **Responsibilities:**
+
 - Render UI components and handle user interactions
 - Manage local application state
 - Execute on-device ML inference for image recognition
@@ -105,6 +108,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Communicate with backend via GraphQL
 
 **Data Flow:**
+
 1. User interactions trigger UI events
 2. Events dispatched to appropriate handlers
 3. GraphQL queries/mutations sent to backend
@@ -120,6 +124,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 **Components:**
 
 #### Core Framework
+
 - **NestJS:** Modular, TypeScript-first backend framework
 - **Apollo Server:** GraphQL server implementation
 - **Express:** Underlying HTTP server
@@ -127,6 +132,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 #### Modules
 
 **Authentication Module**
+
 - User registration and login
 - JWT token generation and validation
 - OAuth2 integration (Google)
@@ -134,48 +140,56 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Session management
 
 **User Module**
+
 - Profile management (CRUD operations)
 - Statistics calculation
 - Preferences management
 - Privacy settings
 
 **Content Module**
+
 - Article and guide management
 - Search and filtering
 - Content categorization
 - Bookmarking system
 
 **Community Module**
+
 - Post creation and management
 - Comment system
 - Like/unlike functionality
 - User interactions
 
 **Event Module**
+
 - Event creation and editing
 - Registration management
 - Check-in verification
 - Participant tracking
 
 **Gamification Module**
+
 - Points calculation and tracking
 - Badge assignment logic
 - Leaderboard generation
 - Achievement system
 
 **Location Module**
+
 - Recycling center data management
 - Proximity search
 - Check-in verification
 - Location-based filtering
 
 **Notification Module**
+
 - Push notification dispatch (via Firebase FCM)
 - In-app notification management
 - Notification preferences
 - Event reminders
 
 **Responsibilities:**
+
 - Validate and sanitize all incoming data
 - Enforce authentication and authorization
 - Execute business logic and rules
@@ -184,6 +198,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Return properly formatted responses
 
 **Data Flow:**
+
 1. GraphQL requests received from client
 2. Authentication middleware validates JWT tokens
 3. Resolvers execute appropriate business logic
@@ -197,6 +212,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 **Purpose:** Persistent storage of all application data.
 
 **Technology:**
+
 - **MongoDB:** NoSQL document database
 - **Prisma ORM:** Type-safe database client
 - **MongoDB Atlas:** Cloud-hosted database service
@@ -204,19 +220,21 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 **Collections:**
 
 #### Users Collection
+
 ```typescript
 {
-  id: string
-  email: string
-  password: string (hashed)
-  name: string
-  profilePhoto: string
-  createdAt: DateTime
-  updatedAt: DateTime
+  id: string;
+  email: string;
+  password: string(hashed);
+  name: string;
+  profilePhoto: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
 }
 ```
 
 #### Posts Collection
+
 ```typescript
 {
   id: string
@@ -232,32 +250,36 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ```
 
 #### Events Collection
+
 ```typescript
 {
-  id: string
-  organizerId: string
-  title: string
-  description: string
-  location: GeoJSON
-  startDate: DateTime
-  endDate: DateTime
-  maxParticipants: number
-  currentParticipants: number
+  id: string;
+  organizerId: string;
+  title: string;
+  description: string;
+  location: GeoJSON;
+  startDate: DateTime;
+  endDate: DateTime;
+  maxParticipants: number;
+  currentParticipants: number;
 }
 ```
 
 #### Gamification Collections
+
 - **Points:** User point transactions and totals
 - **Badges:** Badge definitions and user assignments
 - **Leaderboards:** Ranked user lists by various metrics
 
 **Indexing Strategy:**
+
 - Geographic indexes on location fields for proximity queries
 - Text indexes on searchable fields (title, description)
 - Compound indexes on frequently queried field combinations
 - TTL indexes for temporary data (sessions, tokens)
 
 **Responsibilities:**
+
 - Store and retrieve application data
 - Enforce data integrity constraints
 - Provide efficient query execution
@@ -271,16 +293,19 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### Firebase
 
 **Authentication:**
+
 - OAuth2 provider integration
 - Token validation
 - User credential management
 
 **Cloud Messaging (FCM):**
+
 - Push notification delivery
 - Device token management
 - Message queuing
 
 **Cloud Storage:**
+
 - User-uploaded images
 - Profile photos
 - Event images
@@ -288,15 +313,18 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### Google Maps Platform
 
 **Geocoding API:**
+
 - Convert addresses to coordinates
 - Reverse geocoding for location names
 
 **Maps SDK:**
+
 - Interactive map display
 - Custom markers and overlays
 - User location tracking
 
 **Directions API:**
+
 - Turn-by-turn navigation
 - Route optimization
 - Distance calculations
@@ -304,11 +332,13 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### TensorFlow Lite
 
 **Model Deployment:**
+
 - Pre-trained MobileNet model
 - On-device inference
 - Real-time classification
 
 **Benefits:**
+
 - Privacy (no data sent to servers)
 - Offline functionality
 - Fast inference (<3s)
@@ -320,6 +350,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### 1. GraphQL over REST
 
 **Rationale:**
+
 - Eliminates over-fetching and under-fetching of data
 - Single endpoint simplifies API management
 - Strong typing with schema definitions
@@ -327,6 +358,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Better developer experience with self-documenting API
 
 **Trade-offs:**
+
 - Slightly steeper learning curve
 - More complex caching strategies
 - Requires careful query optimization
@@ -334,6 +366,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### 2. Modular NestJS Backend
 
 **Rationale:**
+
 - Clear separation of concerns
 - Independent module testing
 - Easy to scale and maintain
@@ -341,12 +374,14 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Built-in support for GraphQL
 
 **Trade-offs:**
+
 - More initial boilerplate
 - Potential over-engineering for simple features
 
 ### 3. Prisma ORM
 
 **Rationale:**
+
 - Type-safe database access
 - Automatic migration generation
 - Excellent TypeScript integration
@@ -354,18 +389,21 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Works well with MongoDB
 
 **Trade-offs:**
+
 - Additional abstraction layer
 - Learning curve for Prisma-specific syntax
 
 ### 4. On-Device ML with TensorFlow Lite
 
 **Rationale:**
+
 - Privacy-first approach (no image data transmission)
 - Works offline without network
 - Faster inference (no network latency)
 - Reduced server costs
 
 **Trade-offs:**
+
 - Larger app bundle size
 - Device performance dependency
 - Model updates require app updates
@@ -373,6 +411,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### 5. MongoDB Atlas (Cloud-First)
 
 **Rationale:**
+
 - Managed service reduces operational overhead
 - Global distribution for low latency
 - Automatic backups and scaling
@@ -380,6 +419,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - Excellent geospatial query support
 
 **Trade-offs:**
+
 - Vendor lock-in
 - Ongoing costs based on usage
 - Less control over infrastructure
@@ -387,12 +427,14 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ### 6. Microservices-Ready Architecture
 
 **Rationale:**
+
 - Modular structure allows future decomposition
 - Each module can be scaled independently
 - Team can work on modules in parallel
 - Easier to adopt new technologies per service
 
 **Current State:**
+
 - Monolithic deployment for simplicity
 - Modules designed for future extraction
 - Clear boundaries between domains
@@ -484,18 +526,21 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ## Performance Optimizations
 
 ### Client-Side
+
 - Apollo Client caching reduces redundant requests
 - Lazy loading of images and components
 - Optimized bundle size with code splitting
 - On-device ML eliminates network latency
 
 ### Backend
+
 - Database query optimization with proper indexing
 - GraphQL DataLoader for batching and caching
 - Response compression (gzip)
 - Connection pooling for database
 
 ### Database
+
 - Geospatial indexes for location queries
 - Compound indexes for common query patterns
 - Read replicas for read-heavy operations (planned)
@@ -506,15 +551,18 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ## Scalability Considerations
 
 ### Horizontal Scaling
+
 - Stateless backend allows multiple instances
 - Load balancer distributes traffic
 - Database sharding for large datasets (future)
 
 ### Vertical Scaling
+
 - Cloud infrastructure allows resource upgrades
 - MongoDB Atlas auto-scales based on load
 
 ### Caching Strategy
+
 - Apollo Client cache on mobile
 - Redis cache for backend (planned)
 - CDN for static assets
@@ -524,6 +572,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 ## Monitoring & Observability
 
 ### Metrics Tracked
+
 - API response times
 - Error rates
 - Database query performance
@@ -531,6 +580,7 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 - System resource usage
 
 ### Tools (Planned)
+
 - Application Performance Monitoring (APM)
 - Error tracking (Sentry)
 - Analytics (Mixpanel or similar)
@@ -538,4 +588,4 @@ ReUseIt employs a modern, cloud-based architecture designed for scalability, mai
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

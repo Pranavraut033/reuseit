@@ -43,6 +43,7 @@ Authorization: Bearer <your-jwt-token>
 #### Obtaining Tokens
 
 **Register:**
+
 ```graphql
 mutation Register($input: RegisterInput!) {
   register(input: $input) {
@@ -67,6 +68,7 @@ mutation Register($input: RegisterInput!) {
 ```
 
 **Login:**
+
 ```graphql
 mutation Login($input: LoginInput!) {
   login(input: $input) {
@@ -90,6 +92,7 @@ mutation Login($input: LoginInput!) {
 ```
 
 **Refresh Token:**
+
 ```graphql
 mutation RefreshToken($refreshToken: String!) {
   refreshToken(refreshToken: $refreshToken) {
@@ -627,13 +630,13 @@ subscription OnNotification {
 
 ### Common Error Codes
 
-| Code | Status | Description |
-|------|--------|-------------|
-| `UNAUTHENTICATED` | 401 | No valid authentication token provided |
-| `FORBIDDEN` | 403 | Authenticated but not authorized for this action |
-| `NOT_FOUND` | 404 | Requested resource not found |
-| `BAD_USER_INPUT` | 400 | Invalid input data |
-| `INTERNAL_SERVER_ERROR` | 500 | Server error |
+| Code                    | Status | Description                                      |
+| ----------------------- | ------ | ------------------------------------------------ |
+| `UNAUTHENTICATED`       | 401    | No valid authentication token provided           |
+| `FORBIDDEN`             | 403    | Authenticated but not authorized for this action |
+| `NOT_FOUND`             | 404    | Requested resource not found                     |
+| `BAD_USER_INPUT`        | 400    | Invalid input data                               |
+| `INTERNAL_SERVER_ERROR` | 500    | Server error                                     |
 
 ---
 
@@ -642,10 +645,12 @@ subscription OnNotification {
 API requests are rate limited to prevent abuse:
 
 **Limits:**
+
 - **Authenticated**: 1000 requests per 15 minutes
 - **Unauthenticated**: 100 requests per 15 minutes
 
 **Headers:**
+
 ```
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 999
@@ -653,6 +658,7 @@ X-RateLimit-Reset: 1635724800
 ```
 
 **Error Response:**
+
 ```json
 {
   "errors": [
@@ -695,4 +701,4 @@ curl -X POST http://localhost:4000/graphql \
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

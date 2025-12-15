@@ -26,12 +26,14 @@ We are committed to providing a welcoming and inclusive environment for all cont
 ### Our Standards
 
 **Positive behavior includes:**
+
 - Being respectful of differing viewpoints
 - Gracefully accepting constructive criticism
 - Focusing on what is best for the community
 - Showing empathy towards other community members
 
 **Unacceptable behavior includes:**
+
 - Use of sexualized language or imagery
 - Trolling, insulting/derogatory comments, and personal attacks
 - Public or private harassment
@@ -82,6 +84,7 @@ git remote add upstream https://github.com/original-repo/reuseit.git
 ### 2. Create a Branch
 
 Branch naming convention:
+
 - Feature: `feature/short-description`
 - Bug fix: `fix/short-description`
 - Documentation: `docs/short-description`
@@ -154,6 +157,7 @@ Then create a Pull Request on GitHub.
 All code must be written in TypeScript with proper type annotations.
 
 **Good:**
+
 ```typescript
 interface User {
   id: string;
@@ -167,6 +171,7 @@ function getUserById(id: string): Promise<User> {
 ```
 
 **Bad:**
+
 ```typescript
 function getUserById(id: any): Promise<any> {
   // Implementation
@@ -178,6 +183,7 @@ function getUserById(id: any): Promise<any> {
 We use ESLint and Prettier to enforce code style.
 
 **Configuration:**
+
 - Indentation: 2 spaces
 - Quotes: Single quotes
 - Semicolons: Required
@@ -185,6 +191,7 @@ We use ESLint and Prettier to enforce code style.
 - Trailing commas: ES5
 
 **Auto-format:**
+
 ```bash
 pnpm format
 ```
@@ -192,24 +199,28 @@ pnpm format
 ### Naming Conventions
 
 **Variables and Functions:** camelCase
+
 ```typescript
 const userName = 'John';
 function calculateTotal() {}
 ```
 
 **Classes and Interfaces:** PascalCase
+
 ```typescript
 class UserService {}
 interface PostData {}
 ```
 
 **Constants:** UPPER_SNAKE_CASE
+
 ```typescript
 const MAX_RETRY_ATTEMPTS = 3;
 const API_BASE_URL = 'https://api.example.com';
 ```
 
 **Files:**
+
 - Components: PascalCase (`LoginForm.tsx`)
 - Utilities: camelCase (`dateUtils.ts`)
 - Tests: Match source file with `.spec.ts` suffix
@@ -370,7 +381,7 @@ WIP
 ### Commit Best Practices
 
 1. **One logical change per commit**: Don't mix unrelated changes
-2. **Write meaningful messages**: Explain *what* and *why*, not *how*
+2. **Write meaningful messages**: Explain _what_ and _why_, not _how_
 3. **Keep commits small**: Easier to review and revert if needed
 4. **Reference issues**: Use `Closes #123` or `Fixes #456`
 
@@ -405,18 +416,22 @@ docs(api): update GraphQL schema documentation
 
 ```markdown
 ## Description
+
 Brief description of what this PR does.
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 
 ## How Has This Been Tested?
+
 Describe the tests you ran and how to reproduce them.
 
 ## Checklist
+
 - [ ] My code follows the style guidelines
 - [ ] I have performed a self-review
 - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -427,9 +442,11 @@ Describe the tests you ran and how to reproduce them.
 - [ ] Any dependent changes have been merged
 
 ## Screenshots (if applicable)
+
 Add screenshots to help explain your changes.
 
 ## Related Issues
+
 Closes #123
 Relates to #456
 ```
@@ -465,11 +482,13 @@ Relates to #456
 ### What to Test
 
 **Backend:**
+
 - Unit tests for services and utilities
 - Integration tests for resolvers/controllers
 - E2E tests for critical user flows
 
 **Mobile:**
+
 - Component tests for UI components
 - Hook tests for custom hooks
 - Integration tests for screen flows
@@ -514,12 +533,14 @@ it('should create user and hash password', async () => {
 ### Code Comments
 
 **When to comment:**
+
 - Complex algorithms or logic
 - Non-obvious workarounds
 - Public APIs and interfaces
 - Important business logic
 
 **When NOT to comment:**
+
 - Obvious code (`i++; // increment i`)
 - Redundant information
 - Commented-out code (delete it instead)
@@ -529,12 +550,12 @@ it('should create user and hash password', async () => {
 ```typescript
 /**
  * Calculates the recycling score based on user activity.
- * 
+ *
  * Score is calculated using a weighted average of:
  * - Posts created (weight: 0.3)
  * - Events attended (weight: 0.5)
  * - Items identified (weight: 0.2)
- * 
+ *
  * @param userId - The ID of the user
  * @returns Promise resolving to the calculated score (0-100)
  */
@@ -569,6 +590,7 @@ If you have questions:
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors list
 - Project README
 - Release notes (for significant contributions)
@@ -577,4 +599,4 @@ Thank you for contributing to ReUseIt! 🌱
 
 ---
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_

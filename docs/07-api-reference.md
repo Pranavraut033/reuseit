@@ -146,7 +146,7 @@ type Event {
 
 ```graphql
 type Location {
-  type: String!        # Always "Point"
+  type: String! # Always "Point"
   coordinates: [Float!]! # [longitude, latitude]
   address: String
 }
@@ -167,7 +167,11 @@ query Me {
     email
     name
     points
-    badges { id name icon }
+    badges {
+      id
+      name
+      icon
+    }
   }
 }
 ```
@@ -182,7 +186,10 @@ query GetUser($id: ID!) {
     avatar
     bio
     points
-    posts { id title }
+    posts {
+      id
+      title
+    }
   }
 }
 ```
@@ -250,14 +257,25 @@ query GetPost($id: ID!) {
     condition
     images
     tags
-    location { coordinates address }
-    author { id name avatar }
+    location {
+      coordinates
+      address
+    }
+    author {
+      id
+      name
+      avatar
+    }
     likesCount
     commentsCount
     comments {
       id
       content
-      author { id name avatar }
+      author {
+        id
+        name
+        avatar
+      }
       createdAt
     }
     createdAt
@@ -443,7 +461,10 @@ mutation CommentOnPost($postId: ID!, $content: String!) {
   commentOnPost(postId: $postId, content: $content) {
     id
     content
-    author { id name }
+    author {
+      id
+      name
+    }
     createdAt
   }
 }
@@ -467,7 +488,9 @@ mutation DeletePost($id: ID!) {
 mutation RegisterForEvent($eventId: ID!) {
   registerForEvent(eventId: $eventId) {
     id
-    participants { id }
+    participants {
+      id
+    }
   }
 }
 ```
@@ -478,7 +501,7 @@ mutation RegisterForEvent($eventId: ID!) {
 mutation CheckInEvent($qrCode: String!) {
   checkInEvent(qrCode: $qrCode) {
     success
-    points  # Points awarded
+    points # Points awarded
   }
 }
 ```
@@ -494,7 +517,10 @@ mutation AwardPoints($userId: ID!, $points: Int!, $reason: String!) {
   awardPoints(userId: $userId, points: $points, reason: $reason) {
     id
     points
-    badges { id name }
+    badges {
+      id
+      name
+    }
   }
 }
 ```
@@ -521,13 +547,13 @@ mutation AwardPoints($userId: ID!, $points: Int!, $reason: String!) {
 
 ### Error Codes
 
-| Code | Description | HTTP Status |
-|------|-------------|-------------|
-| `UNAUTHENTICATED` | Missing or invalid token | 401 |
-| `FORBIDDEN` | Insufficient permissions | 403 |
-| `BAD_USER_INPUT` | Validation error | 400 |
-| `NOT_FOUND` | Resource not found | 404 |
-| `INTERNAL_SERVER_ERROR` | Server error | 500 |
+| Code                    | Description              | HTTP Status |
+| ----------------------- | ------------------------ | ----------- |
+| `UNAUTHENTICATED`       | Missing or invalid token | 401         |
+| `FORBIDDEN`             | Insufficient permissions | 403         |
+| `BAD_USER_INPUT`        | Validation error         | 400         |
+| `NOT_FOUND`             | Resource not found       | 404         |
+| `INTERNAL_SERVER_ERROR` | Server error             | 500         |
 
 ---
 
@@ -565,7 +591,10 @@ type PaginatedPosts {
 ```graphql
 query {
   posts(page: 2, limit: 20) {
-    items { id title }
+    items {
+      id
+      title
+    }
     total
     hasMore
   }
@@ -578,23 +607,23 @@ query {
 
 ### CreatePostInput
 
-| Field | Type | Validation |
-|-------|------|------------|
-| `title` | String! | 3-100 characters |
-| `description` | String | Max 1000 characters |
-| `category` | Category! | Must be valid enum |
-| `condition` | Condition! | Must be valid enum |
-| `images` | [String!]! | Min 1, max 4 URLs |
-| `tags` | [String!] | Max 10 tags |
-| `location` | LocationInput | Valid GeoJSON Point |
+| Field         | Type          | Validation          |
+| ------------- | ------------- | ------------------- |
+| `title`       | String!       | 3-100 characters    |
+| `description` | String        | Max 1000 characters |
+| `category`    | Category!     | Must be valid enum  |
+| `condition`   | Condition!    | Must be valid enum  |
+| `images`      | [String!]!    | Min 1, max 4 URLs   |
+| `tags`        | [String!]     | Max 10 tags         |
+| `location`    | LocationInput | Valid GeoJSON Point |
 
 ### RegisterInput
 
-| Field | Type | Validation |
-|-------|------|------------|
-| `email` | String! | Valid email format |
+| Field      | Type    | Validation                         |
+| ---------- | ------- | ---------------------------------- |
+| `email`    | String! | Valid email format                 |
 | `password` | String! | Min 8 chars, 1 uppercase, 1 number |
-| `name` | String! | 2-50 characters |
+| `name`     | String! | 2-50 characters                    |
 
 ---
 

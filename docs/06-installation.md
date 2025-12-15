@@ -4,15 +4,16 @@
 
 Ensure the following software is installed:
 
-| Software | Version | Download |
-|----------|---------|----------|
-| **Node.js** | 18.x or higher | [nodejs.org](https://nodejs.org/) |
-| **pnpm** | 8.x or higher | `npm install -g pnpm` |
-| **Docker** | 24.x or higher | [docker.com](https://www.docker.com/) |
-| **Docker Compose** | 2.x or higher | Included with Docker Desktop |
-| **Git** | Latest | [git-scm.com](https://git-scm.com/) |
+| Software           | Version        | Download                              |
+| ------------------ | -------------- | ------------------------------------- |
+| **Node.js**        | 18.x or higher | [nodejs.org](https://nodejs.org/)     |
+| **pnpm**           | 8.x or higher  | `npm install -g pnpm`                 |
+| **Docker**         | 24.x or higher | [docker.com](https://www.docker.com/) |
+| **Docker Compose** | 2.x or higher  | Included with Docker Desktop          |
+| **Git**            | Latest         | [git-scm.com](https://git-scm.com/)   |
 
 **Optional (for mobile development):**
+
 - **Android Studio** (for Android emulator)
 - **Xcode** (macOS only, for iOS simulator)
 - **Expo Go app** (on physical device)
@@ -128,6 +129,7 @@ pnpm prisma:seed
 ```
 
 This creates:
+
 - 10 sample users
 - 20 articles
 - 15 posts
@@ -149,6 +151,7 @@ docker-compose up -d
 ```
 
 This starts:
+
 - **MongoDB** (database) on port 27017
 - **Redis** (cache) on port 6379
 - **Backend** (NestJS API) on port 3000
@@ -157,6 +160,7 @@ This starts:
 - **Statping** (monitoring) on port 8080
 
 **Verify services are running:**
+
 ```bash
 docker-compose logs -f
 ```
@@ -354,6 +358,7 @@ APK download link will be provided after build completes (~10 minutes).
 **Error:** `docker-compose up` fails
 
 **Solution:**
+
 1. Ensure Docker Desktop is running
 2. Check available disk space: `docker system df`
 3. Clear Docker cache: `docker system prune -a`
@@ -364,6 +369,7 @@ APK download link will be provided after build completes (~10 minutes).
 **Error:** `Port already in use`
 
 **Solution:**
+
 ```bash
 # Find process using port
 lsof -i :3000
@@ -377,6 +383,7 @@ BACKEND_PORT="3001"
 **Error:** MongoDB unhealthy
 
 **Solution:**
+
 ```bash
 # Reset MongoDB
 docker-compose down -v
@@ -393,6 +400,7 @@ docker-compose up -d
 **Error:** `Cannot GET /graphql`
 
 **Solution:**
+
 1. Verify backend is running: `docker-compose logs backend`
 2. Check port: `curl http://localhost:3000/health`
 3. Restart backend: `docker-compose restart backend`
@@ -402,6 +410,7 @@ docker-compose up -d
 **Error:** `MongooseServerSelectionError`
 
 **Solution:**
+
 1. Ensure MongoDB is healthy: `docker-compose ps`
 2. Check DATABASE_URL in `.env`
 3. Verify replica set: `docker-compose exec mongodb mongosh --eval "rs.status()"`
@@ -415,11 +424,13 @@ docker-compose up -d
 **Solution:**
 
 **On Android Emulator:**
+
 ```env
 EXPO_PUBLIC_API_URL="http://10.0.2.2:3000/graphql"
 ```
 
 **On Physical Device:**
+
 ```env
 # Find your computer's IP
 EXPO_PUBLIC_API_URL="http://192.168.1.100:3000/graphql"
@@ -432,6 +443,7 @@ Ensure device and computer are on same WiFi.
 **Error:** `Camera permission denied`
 
 **Solution:**
+
 - iOS Simulator: Use physical device (simulator has no camera)
 - Android Emulator: Enable camera in AVD settings
 - Physical Device: Grant camera permission in app settings
@@ -443,6 +455,7 @@ Ensure device and computer are on same WiFi.
 **Error:** Waste analysis fails
 
 **Solution:**
+
 1. Check Ollama logs: `docker-compose logs ollama`
 2. Verify model pulled: `curl http://localhost:11434/api/tags`
 3. Restart services: `docker-compose restart ollama llm-service`
@@ -454,6 +467,7 @@ Ensure device and computer are on same WiFi.
 **Error:** `MongooseServerSelectionError: connect ECONNREFUSED`
 
 **Solution:**
+
 1. Ensure MongoDB is running: `mongod --replSet rs0`
 2. Verify replica set initialized: `mongosh` → `rs.status()`
 3. Check `DATABASE_URL` in `.env`
@@ -463,6 +477,7 @@ Ensure device and computer are on same WiFi.
 **Error:** `Cannot GET /graphql`
 
 **Solution:**
+
 1. Verify backend is running: `pnpm --filter backend run start:dev`
 2. Check port 3000 is not in use: `lsof -i :3000`
 3. Clear browser cache
@@ -472,6 +487,7 @@ Ensure device and computer are on same WiFi.
 **Error:** `Error: Generator "client" does not exist`
 
 **Solution:**
+
 ```bash
 cd apps/backend
 pnpm install
@@ -521,32 +537,32 @@ pnpm --filter backend run prisma:studio
 
 ### Root `.env` (Docker Services)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGO_USERNAME` | ⚠️ | MongoDB admin username (default: admin) |
-| `MONGO_PASSWORD` | ⚠️ | MongoDB admin password (default: admin123) |
-| `MONGO_DATABASE` | ⚠️ | Database name (default: reuseit) |
-| `DATABASE_URL` | ✅ | Full MongoDB connection string |
-| `REDIS_URL` | ⚠️ | Redis connection URL (default: redis://redis:6379) |
-| `BACKEND_PORT` | ⚠️ | Backend service port (default: 3000) |
-| `JWT_SECRET` | ✅ | JWT signing secret |
-| `FIREBASE_PROJECT_ID` | ✅ | Firebase project ID |
-| `FIREBASE_PRIVATE_KEY` | ✅ | Firebase service account key |
-| `FIREBASE_CLIENT_EMAIL` | ✅ | Firebase service account email |
-| `GOOGLE_MAPS_API_KEY` | ✅ | Google Maps API key |
-| `OLLAMA_PORT` | ⚠️ | Ollama service port (default: 11434) |
-| `LLM_PORT` | ⚠️ | LLM service port (default: 8000) |
-| `STATPING_PORT` | ⚠️ | Statping monitoring port (default: 8080) |
+| Variable                | Required | Description                                        |
+| ----------------------- | -------- | -------------------------------------------------- |
+| `MONGO_USERNAME`        | ⚠️       | MongoDB admin username (default: admin)            |
+| `MONGO_PASSWORD`        | ⚠️       | MongoDB admin password (default: admin123)         |
+| `MONGO_DATABASE`        | ⚠️       | Database name (default: reuseit)                   |
+| `DATABASE_URL`          | ✅       | Full MongoDB connection string                     |
+| `REDIS_URL`             | ⚠️       | Redis connection URL (default: redis://redis:6379) |
+| `BACKEND_PORT`          | ⚠️       | Backend service port (default: 3000)               |
+| `JWT_SECRET`            | ✅       | JWT signing secret                                 |
+| `FIREBASE_PROJECT_ID`   | ✅       | Firebase project ID                                |
+| `FIREBASE_PRIVATE_KEY`  | ✅       | Firebase service account key                       |
+| `FIREBASE_CLIENT_EMAIL` | ✅       | Firebase service account email                     |
+| `GOOGLE_MAPS_API_KEY`   | ✅       | Google Maps API key                                |
+| `OLLAMA_PORT`           | ⚠️       | Ollama service port (default: 11434)               |
+| `LLM_PORT`              | ⚠️       | LLM service port (default: 8000)                   |
+| `STATPING_PORT`         | ⚠️       | Statping monitoring port (default: 8080)           |
 
 ### Mobile `.env`
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `EXPO_PUBLIC_API_URL` | ✅ | Backend GraphQL endpoint |
-| `EXPO_PUBLIC_FIREBASE_API_KEY` | ✅ | Firebase web API key |
-| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | ✅ | Firebase auth domain |
-| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | ✅ | Firebase project ID |
-| `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` | ✅ | Google Maps API key |
+| Variable                           | Required | Description              |
+| ---------------------------------- | -------- | ------------------------ |
+| `EXPO_PUBLIC_API_URL`              | ✅       | Backend GraphQL endpoint |
+| `EXPO_PUBLIC_FIREBASE_API_KEY`     | ✅       | Firebase web API key     |
+| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | ✅       | Firebase auth domain     |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID`  | ✅       | Firebase project ID      |
+| `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`  | ✅       | Google Maps API key      |
 
 ---
 

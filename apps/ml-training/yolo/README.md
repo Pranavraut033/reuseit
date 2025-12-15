@@ -31,6 +31,7 @@ python auto_label_yolo.py \
 ```
 
 **CSV Format:** The generated CSV includes relative paths from the input directory:
+
 ```
 filename,x_center,y_center,width,height,confidence,class_id
 paper_cardboard/image1.jpg,0.5,0.5,0.8,0.6,0.85,39
@@ -194,24 +195,31 @@ python visualize_yolo_labels.py --dataset yolo_dataset --split test --output vis
 ### React Native (Expo)
 
 1. **Install dependencies:**
+
 ```bash
 npx expo install expo-gl expo-gl-cpp tensorflow/tfjs @tensorflow/tfjs-tflite
 ```
 
 2. **Load model:**
+
 ```typescript
 import * as tf from '@tensorflow/tfjs';
 import * as tflite from '@tensorflow/tfjs-tflite';
 import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 
 const model = await tflite.loadTFLiteModel(
-  bundleResourceIO(require('./assets/model_fp16.tflite'), 'model_fp16.tflite')
+  bundleResourceIO(require('./assets/model_fp16.tflite'), 'model_fp16.tflite'),
 );
 ```
 
 3. **Run inference:**
+
 ```typescript
-const imageTensor = tf.browser.fromPixels(imageData).resizeBilinear([640, 640]).div(255.0).expandDims(0);
+const imageTensor = tf.browser
+  .fromPixels(imageData)
+  .resizeBilinear([640, 640])
+  .div(255.0)
+  .expandDims(0);
 const predictions = await model.predict(imageTensor);
 const results = await predictions.data();
 ```
@@ -219,6 +227,7 @@ const results = await predictions.data();
 ### Android (Java/Kotlin)
 
 1. **Add to build.gradle:**
+
 ```gradle
 dependencies {
     implementation 'org.tensorflow:tensorflow-lite:2.12.0'
@@ -227,11 +236,13 @@ dependencies {
 ```
 
 2. **Load model:**
+
 ```kotlin
 val tflite = Interpreter(FileUtil.loadMappedFile(context, "model_fp16.tflite"))
 ```
 
 3. **Run inference:**
+
 ```kotlin
 val inputBuffer = ByteBuffer.allocateDirect(4 * 640 * 640 * 3).order(ByteOrder.nativeOrder())
 val outputBuffer = Array(1) { Array(25200) { FloatArray(8) } }  // Adjust based on model output
@@ -242,17 +253,20 @@ tflite.run(inputBuffer, outputBuffer)
 ### iOS (Swift)
 
 1. **Add TensorFlow Lite pod:**
+
 ```ruby
 pod 'TensorFlowLiteSwift'
 ```
 
 2. **Load model:**
+
 ```swift
 let modelPath = Bundle.main.path(forResource: "model_fp16", ofType: "tflite")!
 let interpreter = try Interpreter(modelPath: modelPath)
 ```
 
 3. **Run inference:**
+
 ```swift
 let inputData = Data(bytes: imageBuffer, count: 640 * 640 * 3 * 4)
 try interpreter.allocateTensors()
@@ -265,16 +279,16 @@ let outputTensor = try interpreter.output(at: 0)
 
 The model detects 8 waste categories:
 
-| Class ID | Category | Description |
-|----------|----------|-------------|
-| 0 | paper_cardboard | Paper, cardboard, cartons |
-| 1 | glass | Glass bottles, jars |
-| 2 | recyclables | Metal, plastic containers |
-| 3 | bio_waste | Food waste, organic matter |
-| 4 | textile_reuse | Clothes, fabrics |
-| 5 | electronics | Electronic waste |
-| 6 | battery | Batteries |
-| 7 | residual_waste | Non-recyclable waste |
+| Class ID | Category        | Description                |
+| -------- | --------------- | -------------------------- |
+| 0        | paper_cardboard | Paper, cardboard, cartons  |
+| 1        | glass           | Glass bottles, jars        |
+| 2        | recyclables     | Metal, plastic containers  |
+| 3        | bio_waste       | Food waste, organic matter |
+| 4        | textile_reuse   | Clothes, fabrics           |
+| 5        | electronics     | Electronic waste           |
+| 6        | battery         | Batteries                  |
+| 7        | residual_waste  | Non-recyclable waste       |
 
 ## 🔧 Configuration
 

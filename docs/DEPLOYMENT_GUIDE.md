@@ -98,10 +98,11 @@ To enable Google Analytics:
 Modify the `theme:` section in `docs/mkdocs.yml` to adjust colors, icons, or features.
 
 Example change (primary color):
+
 ```yaml
 theme:
   palette:
-    - media: "(prefers-color-scheme: light)"
+    - media: '(prefers-color-scheme: light)'
       primary: teal
 ```
 
@@ -109,12 +110,12 @@ theme:
 
 ## 10. Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| 404 on Pages site | Build artifact missing | Verify workflow ran successfully |
-| Styling broken | Cached CSS | Hard refresh (Cmd+Shift+R) |
-| Page not listed | Missing nav entry | Add page to `nav:` in `mkdocs.yml` |
-| Broken links | Renamed files | Use relative links & update navigation |
+| Issue             | Cause                  | Solution                               |
+| ----------------- | ---------------------- | -------------------------------------- |
+| 404 on Pages site | Build artifact missing | Verify workflow ran successfully       |
+| Styling broken    | Cached CSS             | Hard refresh (Cmd+Shift+R)             |
+| Page not listed   | Missing nav entry      | Add page to `nav:` in `mkdocs.yml`     |
+| Broken links      | Renamed files          | Use relative links & update navigation |
 
 ---
 
@@ -154,13 +155,17 @@ git push origin main
 If a deployment introduces issues:
 
 1. Revert commit locally:
+
 ```bash
 git revert <commit-sha>
 ```
+
 2. Push revert:
+
 ```bash
 git push origin main
 ```
+
 3. Workflow redeploys previous stable version automatically.
 
 ---
@@ -187,18 +192,19 @@ Commit changes only if configuration requires updates.
 
 ## 17. File Summary
 
-| File | Purpose |
-|------|---------|
-| `docs/mkdocs.yml` | MkDocs configuration (navigation, theme) |
-| `.github/workflows/docs.yml` | Automation workflow for deployment |
-| `docs/*.md` | Documentation content |
-| `docs/site/` | Generated build output (ignored from version control) |
+| File                         | Purpose                                               |
+| ---------------------------- | ----------------------------------------------------- |
+| `docs/mkdocs.yml`            | MkDocs configuration (navigation, theme)              |
+| `.github/workflows/docs.yml` | Automation workflow for deployment                    |
+| `docs/*.md`                  | Documentation content                                 |
+| `docs/site/`                 | Generated build output (ignored from version control) |
 
 ---
 
 ## 18. Next Steps
 
 For enhancements:
+
 - Add versioning (via `mike` tool)
 - Integrate diagrams (Mermaid via `pymdownx.superfences`)
 - Add changelog page generated from Conventional Commits

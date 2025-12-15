@@ -1,6 +1,7 @@
 # Code Citations
 
 ## License: GPL-3.0
+
 https://github.com/robocomp/robocomp-robolab/blob/686d04e8ae6fb4f6cdf96151fb8ad4c121352c8b/components/detection/jetson_bytetrack_tracker/src/specificworker.py
 
 ```
@@ -13,4 +14,3 @@ https://github.com/robocomp/robocomp-robolab/blob/686d04e8ae6fb4f6cdf96151fb8ad4
     'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven',
     'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier
 ```
-

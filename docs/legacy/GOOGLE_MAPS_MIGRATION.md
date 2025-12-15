@@ -57,6 +57,7 @@ Google Maps functionality has been migrated from client-side direct API calls to
 ## Testing
 
 ### Backend
+
 1. Start backend: `pnpm --filter backend run start:dev`
 2. Visit GraphQL Playground: `http://localhost:3000/graphql`
 3. Test queries:
@@ -72,12 +73,7 @@ query TestReverseGeocode {
 }
 
 query TestNearbyPlaces {
-  nearbyPlaces(
-    latitude: 37.7749
-    longitude: -122.4194
-    radius: 1000
-    keywords: ["recycling"]
-  ) {
+  nearbyPlaces(latitude: 37.7749, longitude: -122.4194, radius: 1000, keywords: ["recycling"]) {
     placeId
     name
     photoUrl
@@ -86,6 +82,7 @@ query TestNearbyPlaces {
 ```
 
 ### Mobile
+
 1. Ensure backend is running with `GOOGLE_MAPS_API_KEY` set
 2. Start mobile: `pnpm --filter mobile run start`
 3. Test features:
@@ -107,6 +104,7 @@ query TestNearbyPlaces {
 ## Rollback
 
 If needed, revert these commits to restore direct API calls. You'll need to:
+
 1. Restore old `googleMaps.ts` implementation
 2. Add `GOOGLE_MAPS_API_KEY` to mobile `app.config.js`
 3. Remove GraphQL queries and generated types

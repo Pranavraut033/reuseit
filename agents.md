@@ -13,6 +13,9 @@ Copilot-specific code-generation rules are defined in `copilot-instructions.md`.
 - **ALWAYS** update `PROJECT_STATUS.md` after completing tasks
 - **PREFER** modifying existing modules over creating new ones
 - **ALWAYS** use `i18n.ts` for displaying text and create/update translation keys if necessary
+ - **MANDATORY:** All UI and component work MUST follow `docs/style_guideline.md`.
+ - **NO GENERIC UI:** Do not produce or merge generic, default framework styles (e.g., unmodified Bootstrap or stock Material components).
+ - **COMPLIANCE:** All generated UI components must conform to the design system and be reviewed for visual distinctiveness prior to merge.
 
 ### Tech Stack Rules
 - **Backend:** NestJS + GraphQL + Prisma + MongoDB

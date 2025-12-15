@@ -1,6 +1,6 @@
 # ReUseIt Project Status
 
-**Last Updated:** December 11, 2025 (Chat request management system completed)
+**Last Updated:** December 15, 2025 (Added passwordless email authentication)
 **Current Phase:** Phase 1 - Core Development
 **Project Status:** 🟡 In Active Development
 
@@ -8,19 +8,20 @@
 
 ## 📊 Overall Progress
 
-| Category | Progress | Status |
-|----------|----------|--------|
-| Core Features | 90% | 🟢 Excellent Progress |
-| Documentation | 100% | 🟢 Complete |
-| Testing | 15% | 🟡 Partial |
-| Deployment | 25% | 🟡 In Progress |
-| Technical Debt | - | 🟡 Moderate |
+| Category       | Progress | Status                |
+| -------------- | -------- | --------------------- |
+| Core Features  | 90%      | 🟢 Excellent Progress |
+| Documentation  | 100%     | 🟢 Complete           |
+| Testing        | 15%      | 🟡 Partial            |
+| Deployment     | 25%      | 🟡 In Progress        |
+| Technical Debt | -        | 🟡 Moderate           |
 
 ---
 
 ## ✅ Completed Features
 
 ### Sprint 1: Foundation (Completed)
+
 - ✅ Monorepo setup with pnpm workspaces
 - ✅ Backend scaffolding (NestJS + Prisma + GraphQL)
 - ✅ Mobile app initialization (Expo + TypeScript)
@@ -31,13 +32,15 @@
 - ✅ GraphQL API setup
 
 ### Sprint 2: Core Features (Completed)
+
 - ✅ Firebase integration in mobile app
-- ✅ User authentication flow (login/signup)
+- ✅ User authentication flow (login/signup with Google, Phone, Email, and Passwordless options)
 - ✅ Basic user profile management
 - ✅ GraphQL queries and mutations setup
 - ✅ **Firebase Push Notifications**: Complete Firebase Cloud Messaging integration with FCM token registration, foreground/background message handling, and backend notification service
 
 ### Sprint 3: Community & Location (Completed)
+
 - ✅ Explore page implementation (with location-based place discovery, category filtering, manual area loading, and sliding bottom sheet for place details)
 - ✅ Recycling places display on map
 - ✅ Google Maps integration
@@ -45,6 +48,7 @@
 - ✅ Image upload capability
 
 ### Sprint 4: Posts & Engagement (Completed)
+
 - ✅ Post like/unlike functionality
 - ✅ Comment system (create, view)
 - ✅ Like count and comment count tracking
@@ -60,6 +64,7 @@
 ### Sprint 5: Events System (Completed - Full Stack)
 
 ### Sprint 6: GDPR & Data Privacy Compliance (Completed)
+
 - ✅ Implemented GDPR-compliant user deletion (backend)
 - ✅ Added user data export endpoint (backend)
 - ✅ Added privacy controls (data export, delete account, privacy policy) to mobile app
@@ -79,6 +84,7 @@
 - ✅ GraphQL fragments for DRY event fields
 
 ### Sprint 6: Gamification (Completed - Backend)
+
 - ✅ Points system implementation
 - ✅ Points history tracking
 - ✅ Badge assignment system
@@ -87,12 +93,14 @@
 - ✅ Points query and mutations
 
 ### Sprint 8: User Articles (Completed)
+
 - ✅ User article CRUD operations
 - ✅ Article-to-post relationship
 - ✅ Article-to-user relationship
 - ✅ Image support for articles
 
 ### Sprint 9: Post Type System (Completed)
+
 - ✅ Post type enum (GENERAL, GIVEAWAY, EVENT, MEETUP) added to Prisma schema
 - ✅ Conditional field validation based on post type
 - ✅ Post type selector in mobile UI
@@ -103,6 +111,7 @@
 - ✅ Title field added back as required for all post types
 
 ### Sprint 8: ML & Recycling Analysis (Completed)
+
 - ✅ TensorFlow.js React Native integration
 - ✅ Waste classifier prototype (heuristic-based)
 - ✅ Camera integration with classification
@@ -136,6 +145,7 @@
 - ✅ **Stable Data Augmentation** - Updated augmentation pipeline to use only stable transformations: horizontal flip, brightness, contrast, small saturation/hue changes, and light Gaussian noise; removed aggressive zoom, rotation, cropping, and padding for better training stability
 - ✅ **Sample weight alignment fix** - Ensured training dataset returns per-output masks so the bbox/class heads receive matching sample weights and avoid tensor shape conflicts
 - ✅ **Explore Page Type Safety** - Removed legacy Place type mapping and updated explore page to use GraphQL types directly for better type safety and maintainability
+- ✅ **Profile screen styling update (mobile)** - Updated profile screen and edit form to use design tokens (`bg-primary`, `text-forest`, `shadow-card`), enabled scrolling and added bottom padding to avoid tab bar overlap; adjusted nested form labels and icons for consistency
 - ✅ **Comprehensive Recycling Information Enhancement** - Expanded recycling knowledge base with detailed preparation steps, environmental benefits, reuse ideas, and common mistakes for all German waste categories; enhanced LLM service for structured responses; improved UI display with organized sections for recycling guidance
 - ✅ **AI-Enhanced Waste Processing Pipeline** - Restructured waste analysis to use on-device object detection first, then send only normalized categories to LLM for educational content generation; separated core recycling rules from AI-generated enhancements; created visually distinct UI section for AI insights with soft gradient background, friendly AI icon, and card-like layout
 - ✅ **LLM Integration Optimization** - qwen2.5:0.5b model available with timeout handling for production use; removed LLM access to recycling knowledge base; simplified prompt for edge compatibility; category facts moved to JSON structure
@@ -145,6 +155,7 @@
 - ✅ **Live TFLite Object Detection Integration** - Switched to VisionCamera for real-time frame processing, integrated YOLOv8 TFLite model with live bounding box overlay, added preprocessing/postprocessing from Python script, and maintained capture button for recycling info modal
 
 ### Sprint 10: Production Readiness (Completed)
+
 - ✅ **Lint Issues Fixed** - Resolved all ESLint errors and warnings across backend and mobile apps
 - ✅ **Logging Standardization** - Replaced all console statements with proper NestJS Logger usage in backend services
 - ✅ **TypeScript Strict Mode** - Fixed all unsafe type assignments and unused variables
@@ -152,6 +163,7 @@
 - ✅ **GraphQL Type Generation** - Regenerated types to fix mobile app type mismatches
 
 ### Sprint 11: User Experience Enhancements (Completed)
+
 - ✅ **One-Time Onboarding Page** - Added multi-step onboarding flow that guides new users through app features, shown only once after first login using Zustand store persistence
 
 ## 🚧 In Progress
@@ -159,6 +171,7 @@
 ### Current Sprint: ML Integration & Mobile UI Completion
 
 **Active Tasks:**
+
 - ✅ Events mobile UI (backend complete, UI implemented with creator dashboard, location picker, and toast notifications)
 - ✅ Real TFLite model integration (native inference implemented)
 - ✅ **Object Detection Model Integration** - New TFLite model with bbox, class, and edges outputs integrated
@@ -167,6 +180,7 @@
 - ✅ **Replace Public Comments with Private Chat System** - Implement Kleinanzeigen-style private messaging for posts
 
 **Recently Completed:**
+
 - ✅ **Waste Analysis Screen Logic/View Separation** - Extracted all business logic into useWasteAnalysis custom hook, improved code maintainability and testability
 - ✅ TensorFlow.js React Native scaffolding
 - ✅ Backend recycling analysis system with LLM
@@ -176,6 +190,7 @@
 - ✅ Real TFLite model integration with native inference
 - ✅ **ML Training Pipeline Improvements (8-class system, stratified splitting, class weights)**
 - ✅ **Object Detection Model Integration** - New TFLite model copied to mobile assets and detector module created, **multiple detections parsing implemented**
+- ✅ **Post search feature** - Backend supports searching posts by title, description, and tags; mobile UI includes debounced search and filter integration
 - ✅ **Detection Mode Toggle** - UI toggle added to switch between classification and object detection modes
 - ✅ **Visual Object Detection Mapping** - Bounding box overlay and detailed results display implemented
 - ✅ **Local TensorFlow Model Integration** - Replaced external Moondream vision API with local waste classification model, using TensorFlow/Keras for on-device inference with Ollama Gemma3:1b for structured text formatting
@@ -220,30 +235,30 @@
 
 ## 📋 Functional Requirements Status
 
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| FR1 | User Authentication & Profile Management | ✅ Complete | JWT + Firebase OAuth + profile display |
-| FR2 | Educational Content | 🟡 Partial | User articles implemented, educational content pending |
-| FR3 | AI-Powered Item Identification | ✅ Complete | Camera + object detection model + backend analysis working; real TFLite model integrated |
-| FR4 | Community Marketplace (Posts) | ✅ Complete | Full CRUD + likes + comments + stats |
-| FR5 | Event Management | ✅ Complete | Backend and mobile UI implemented |
-| FR6 | Gamification System | 🟡 Partial | Points + badges backend done, leaderboard pending |
-| FR7 | Location Services | ✅ Complete | Google Maps + recycling places working |
+| ID  | Requirement                              | Status      | Notes                                                                                    |
+| --- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| FR1 | User Authentication & Profile Management | ✅ Complete | JWT + Firebase OAuth + profile display                                                   |
+| FR2 | Educational Content                      | 🟡 Partial  | User articles implemented, educational content pending                                   |
+| FR3 | AI-Powered Item Identification           | ✅ Complete | Camera + object detection model + backend analysis working; real TFLite model integrated |
+| FR4 | Community Marketplace (Posts)            | ✅ Complete | Full CRUD + likes + comments + stats                                                     |
+| FR5 | Event Management                         | ✅ Complete | Backend and mobile UI implemented                                                        |
+| FR6 | Gamification System                      | 🟡 Partial  | Points + badges backend done, leaderboard pending                                        |
+| FR7 | Location Services                        | ✅ Complete | Google Maps + recycling places working                                                   |
 
 ---
 
 ## 📋 Non-Functional Requirements Status
 
-| ID | Requirement | Target | Current | Status |
-|----|-------------|--------|---------|--------|
-| NFR1 | Response Time | <2s | Not measured | 🟡 Not validated |
-| NFR2 | Availability | 99% | Development only | 🔴 Not applicable yet |
-| NFR3 | Security | JWT + HTTPS | JWT implemented | 🟡 Partial |
-| NFR4 | Scalability | 10k users | Not tested | 🔴 Not validated |
-| NFR5 | Usability | Intuitive UI | Basic UI working | 🟡 In progress |
-| NFR6 | Compatibility | iOS 13+, Android 8+ | Not tested | 🔴 Not validated |
-| NFR7 | Accessibility | WCAG 2.1 AA | Not implemented | 🔴 Not started |
-| NFR8 | **Code Quality** | **ESLint + Prettier** | **✅ All issues resolved** | **🟢 Complete** |
+| ID   | Requirement      | Target                | Current                    | Status                |
+| ---- | ---------------- | --------------------- | -------------------------- | --------------------- |
+| NFR1 | Response Time    | <2s                   | Not measured               | 🟡 Not validated      |
+| NFR2 | Availability     | 99%                   | Development only           | 🔴 Not applicable yet |
+| NFR3 | Security         | JWT + HTTPS           | JWT implemented            | 🟡 Partial            |
+| NFR4 | Scalability      | 10k users             | Not tested                 | 🔴 Not validated      |
+| NFR5 | Usability        | Intuitive UI          | Basic UI working           | 🟡 In progress        |
+| NFR6 | Compatibility    | iOS 13+, Android 8+   | Not tested                 | 🔴 Not validated      |
+| NFR7 | Accessibility    | WCAG 2.1 AA           | Not implemented            | 🔴 Not started        |
+| NFR8 | **Code Quality** | **ESLint + Prettier** | **✅ All issues resolved** | **🟢 Complete**       |
 
 ---
 
@@ -252,13 +267,17 @@
 ### High Priority
 
 **TD-01: TensorFlow Lite Integration Partial**
+
 - **Status:** ✅ **Completed (Object Detection Model)**
 - **Impact:** Enhanced classifier working but using heuristics; native TFLite integration blocked by Expo compatibility
 - **Effort:** 5 hours (resolve Expo TFLite compatibility or convert model format)
 - **Completed:** TFJS scaffolding, camera integration, backend recycling analysis, detail page, **TensorFlow.js native inference implementation**, **Object Detection Model Integration**
 - **Next Steps:** Bundle real SavedModel with app, implement proper image preprocessing
 
+**NOTE:** Running `pnpm --filter mobile run typecheck` surfaced unrelated TypeScript errors in `src/components/common/TooltipWrapper.tsx` and `src/utils/i18n.ts` (duplicate key). These should be investigated as part of a short follow-up task (low-effort) to keep CI green.
+
 **TD-08: Android Build Failing**
+
 - **Status:** ✅ **Fixed**
 - **Impact:** Cannot build Android APK for development testing
 - **Effort:** 2 hours
@@ -266,6 +285,7 @@
 - **Fix:** Excluded TFLite model from asset bundle (`!assets/model/*.tflite`) and implemented fallback heuristic classification for development builds
 
 **TD-09: ML Training Pipeline Testing Incomplete**
+
 - **Status:** ✅ **Completed**
 - **Impact:** Improved waste classifier training pipeline implemented and tested successfully
 - **Effort:** 4 hours
@@ -273,23 +293,27 @@
 - **Resolution:** Core pipeline improvements complete and functional; training works on compatible hardware (Linux/Windows with CUDA or CPU-only)
 
 **TD-10: YOLO Autolabel FD Exhaustion**
+
 - **Status:** ✅ Fixed
 - **Impact:** Autolabeling crashed on large datasets with OSError: Too many open files
 - **Resolution:** Stream predictions from input folder, set `workers=0`, `batch=1`; avoid passing massive path lists to `model.predict`
 
 **TD-11: DateTimePicker Android Dismiss Error**
+
 - **Status:** ✅ **Fixed**
 - **Impact:** App crashed on Android when dismissing DateTimePicker due to undefined mode in library dismiss function
 - **Issue:** @react-native-community/datetimepicker library had bug with global mode variable causing TypeError when dismissing picker
 - **Fix:** Replaced with react-native-date-picker library which uses proper modal implementation and doesn't rely on deprecated Android APIs
 
 **TD-12: GraphQL DateTime Serialization Error**
+
 - **Status:** ✅ **Fixed**
 - **Impact:** GraphQL queries failed with "Expected DateTime.serialize to return non-nullable value, returned: null"
 - **Issue:** DateTime scalar from Prisma schema not properly registered in NestJS GraphQL module
 - **Fix:** Added DateTime resolver mapping in GraphQLModule configuration using GraphQLISODateTime from @nestjs/graphql
 
 **TD-02: Events Mobile UI Not Implemented**
+
 - **Status:** ✅ **Completed**
 - **Impact:** Full event management UI implemented with RSVP functionality and creator dashboard
 - **Effort:** 12 hours
@@ -298,18 +322,21 @@
 ### Medium Priority
 
 **TD-03: No Testing Infrastructure**
+
 - **Status:** 🔴 Not Started
 - **Impact:** No automated quality assurance
 - **Effort:** 16 hours
 - **Next Steps:** Set up Jest for backend, add basic unit tests
 
 **TD-04: No CI/CD Pipeline**
+
 - **Status:** 🔴 Not Started
 - **Impact:** Manual deployment process, no automated checks
 - **Effort:** 8 hours
 - **Next Steps:** Set up GitHub Actions for linting and testing
 
 **TD-05: Leaderboard Not Implemented**
+
 - **Status:** 🔴 Not Started
 - **Impact:** Users cannot see rankings despite points system working
 - **Effort:** 8 hours
@@ -318,18 +345,21 @@
 ### Low Priority
 
 **TD-06: Educational Articles UI Missing**
+
 - **Status:** 🔴 Not Started
 - **Impact:** User articles backend exists but no browsing UI
 - **Effort:** 12 hours
 - **Next Steps:** Create article browsing and detail screens
 
 **TD-07: Limited Error Handling**
+
 - **Status:** 🔴 Not Started
 - **Impact:** Some errors not user-friendly
 - **Effort:** 8 hours
 - **Next Steps:** Add comprehensive error handling across app
 
 **TD-12: Production Logging Configuration**
+
 - **Status:** ✅ **Completed**
 - **Impact:** Backend now uses structured logging instead of console statements
 - **Effort:** 4 hours
@@ -363,13 +393,13 @@
    - Test database connections after migration
    - Update documentation for new configuration approach
 
-2. **Points Awarding for Classifications** (High Priority)
+4. **Points Awarding for Classifications** (High Priority)
    - Connect classification results to points system
    - Award points based on correct recycling identification
    - Update user stats and badges
    - Add points history for classifications
 
-2. **ML Model Improvements: Prevent Overfitting** (Completed ✅)
+5. **ML Model Improvements: Prevent Overfitting** (Completed ✅)
    - ✅ Implement enhanced regularization techniques (L2, dropout, label smoothing)
    - ✅ Add progressive unfreezing for backbone layers
    - ✅ Improve data augmentation (rotation, zoom, shear, Gaussian noise)
@@ -377,9 +407,9 @@
    - ✅ Add early stopping and better callbacks
    - ✅ Test improved models for better generalization
 
-3. **Events Mobile UI** (Completed ✅ - Includes creator dashboard and date/time picker improvements)
+6. **Events Mobile UI** (Completed ✅ - Includes creator dashboard and date/time picker improvements)
 
-4. **Replace Public Comments with Private Chat System** (High Priority)
+7. **Replace Public Comments with Private Chat System** (High Priority)
    - Remove entire public comments feature from backend and mobile
    - Create new Chat/Request model in Prisma schema for private conversations
    - Implement chat threads between post author and interested users only
@@ -390,67 +420,68 @@
    - Ensure only chat participants can view their conversations
    - Create chat inbox for post authors to see incoming requests
 
-3. **Leaderboard Implementation** (Medium Priority)
+8. **Leaderboard Implementation** (Medium Priority)
    - Create leaderboard GraphQL query
    - Add ranking calculation logic
    - Build leaderboard UI component
    - Add filters (daily, weekly, all-time)
 
-4. **Testing Infrastructure** (Medium Priority)
+9. **Testing Infrastructure** (Medium Priority)
    - Set up Jest for backend testing
    - Write unit tests for auth, post, event modules
    - Add integration tests for key flows
    - Set up test database and fixtures
 
-5. **CI/CD Pipeline** (Medium Priority)
-   - Configure GitHub Actions workflow
-   - Add automated linting and type checks
-   - Add automated test runs
-   - Set up deployment automation
+10. **CI/CD Pipeline** (Medium Priority)
+    - Configure GitHub Actions workflow
+    - Add automated linting and type checks
+    - Add automated test runs
+    - Set up deployment automation
 
-6. **Educational Content UI** (Low Priority)
-   - Build article browsing screen
-   - Create article detail view
-   - Add article creation form
-   - Implement search functionality
+11. **Educational Content UI** (Low Priority)
+    - Build article browsing screen
+    - Create article detail view
+    - Add article creation form
+    - Implement search functionality
 
-7. **Profile Enhancements** (Completed ✅)
-   - ✅ Add profile editing functionality with form validation (name, username, phone)
-   - ✅ Implement data export for GDPR compliance with backend integration
-   - ✅ Add account deletion with proper warnings and confirmation dialogs
-   - ✅ Add i18n translations for all profile features
-   - ✅ Update backend user service and DTOs for profile updates
-   - Show user statistics (pending)
-   - Display earned badges (pending)
-   - Add user posts history (pending)
+12. **Profile Enhancements** (Completed ✅)
+    - ✅ Add profile editing functionality with form validation (name, username, phone)
+    - ✅ Implement data export for GDPR compliance with backend integration
+    - ✅ Add account deletion with proper warnings and confirmation dialogs
+    - ✅ Add i18n translations for all profile features
+    - ✅ Update backend user service and DTOs for profile updates
+    - Show user statistics (pending)
+    - Display earned badges (pending)
+    - Add user posts history (pending)
 
-8. **City Selection Feature** (Low Priority)
-   - Add city selection in user profile
-   - Add city selection in onboarding flow
-   - Update user schema to store city information
-   - Add city-based filtering/personalization
+13. **City Selection Feature** (Low Priority)
+    - Add city selection in user profile
+    - Add city selection in onboarding flow
+    - Update user schema to store city information
+    - Add city-based filtering/personalization
 
 ---
 
 ## 📊 Test Coverage Breakdown
 
-| Module | Coverage | Status |
-|--------|----------|--------|
-| Auth | 0% | 🔴 Not Started |
-| User | 0% | 🔴 Not Started |
-| Post | 0% | 🔴 Not Started |
-| Event | 0% | 🔴 Not Started |
-| Article | 0% | 🔴 Not Started |
-| Points | 0% | 🔴 Not Started |
-| Location | 0% | 🔴 Not Started |
-| LLM Service | 100% | 🟢 Unit Tests Complete |
-| **Overall** | **10%** | 🟡 **Partial** |
+| Module      | Coverage | Status                 |
+| ----------- | -------- | ---------------------- |
+| Auth        | 0%       | 🔴 Not Started         |
+| User        | 0%       | 🔴 Not Started         |
+| Post        | 0%       | 🔴 Not Started         |
+| Event       | 0%       | 🔴 Not Started         |
+| Article     | 0%       | 🔴 Not Started         |
+| Points      | 0%       | 🔴 Not Started         |
+| Location    | 0%       | 🔴 Not Started         |
+| LLM Service | 100%     | 🟢 Unit Tests Complete |
+| **Overall** | **10%**  | 🟡 **Partial**         |
 
 ---
 
 ## 🚀 Deployment Status
 
 ### Backend (Development)
+
 - **Environment:** Local Development
 - **Status:** 🟢 Running Locally (`pnpm --filter backend run start:dev`)
 - **URL:** `http://localhost:3000/graphql`
@@ -458,12 +489,14 @@
 - **Docker:** Excluded from development builds to prevent rebuild overhead
 
 ### Backend (Production)
+
 - **Environment:** Docker Container
 - **Status:** 🟢 Available via `docker-compose --profile production up backend`
 - **Build Context:** `./apps/backend/Dockerfile`
 - **Notes:** Only build when deploying to production
 
 ### Mobile (Development)
+
 - **Android:** 🟡 In Development
   - **Version:** 0.1.0
   - **Status:** Running on Expo Go
@@ -472,6 +505,7 @@
   - **Status:** Running on Expo Go
 
 ### Status Page (Statping)
+
 - **Environment:** Local Development
 - **Status:** 🟢 Deployed via Docker
 - **URL:** `http://localhost:8080`
@@ -479,6 +513,7 @@
 - **Database:** SQLite (Embedded)
 
 ### Database (MongoDB Atlas)
+
 - **Cluster:** M0 (Free tier)
 - **Region:** us-east-1
 - **Status:** 🟢 Active
@@ -488,29 +523,31 @@
 
 ## 📚 Documentation Status
 
-| Document | Status | Last Updated |
-|----------|--------|--------------|
-| 01-introduction.md | ✅ Complete | Dec 20, 2024 |
-| 02-requirements.md | ✅ Complete | Dec 18, 2024 |
-| 03-architecture.md | ✅ Complete | Dec 19, 2024 |
-| 04-implementation.md | ✅ Complete | Dec 21, 2024 |
-| 05-testing.md | ✅ Complete | Dec 22, 2024 |
-| 06-installation.md | ✅ Complete | Dec 20, 2024 |
-| 07-api-reference.md | ✅ Complete | Dec 19, 2024 |
-| 08-known-issues.md | ✅ Complete | Dec 23, 2024 |
+| Document              | Status      | Last Updated |
+| --------------------- | ----------- | ------------ |
+| 01-introduction.md    | ✅ Complete | Dec 20, 2024 |
+| 02-requirements.md    | ✅ Complete | Dec 18, 2024 |
+| 03-architecture.md    | ✅ Complete | Dec 19, 2024 |
+| 04-implementation.md  | ✅ Complete | Dec 21, 2024 |
+| 05-testing.md         | ✅ Complete | Dec 22, 2024 |
+| 06-installation.md    | ✅ Complete | Dec 20, 2024 |
+| 07-api-reference.md   | ✅ Complete | Dec 19, 2024 |
+| 08-known-issues.md    | ✅ Complete | Dec 23, 2024 |
 | 09-lessons-learned.md | ✅ Complete | Dec 23, 2024 |
-| DEPLOYMENT_GUIDE.md | ✅ Complete | Nov 15, 2025 |
-| agents.md | ✅ Complete | Nov 22, 2025 |
-| PROJECT_STATUS.md | ✅ Complete | Nov 22, 2025 |
+| DEPLOYMENT_GUIDE.md   | ✅ Complete | Nov 15, 2025 |
+| agents.md             | ✅ Complete | Nov 22, 2025 |
+| PROJECT_STATUS.md     | ✅ Complete | Nov 22, 2025 |
 
 ---
 
 ## 🎯 Sprint Goals
 
 ### Current Sprint (Nov 22 - Dec 6, 2025)
+
 **Theme:** ML Integration & Mobile UI Completion
 
 **Goals:**
+
 1. Integrate TensorFlow Lite for waste recognition
 2. Complete events mobile UI (backend already done)
 3. Implement leaderboard functionality
@@ -518,6 +555,7 @@
 5. Configure CI/CD pipeline
 
 **Success Criteria:**
+
 - Camera can identify common recyclable items
 - Users can view and create events from mobile app
 - Leaderboard displays top users with rankings
@@ -529,6 +567,7 @@
 ## 💡 Recent Insights & Decisions
 
 ### Architecture Decisions
+
 - **Google Maps over Mapbox:** Better API pricing for geocoding + places
 - **MongoDB over PostgreSQL:** Flexible schema for gamification data
 - **Prisma over Mongoose:** Better TypeScript support and type safety
@@ -537,6 +576,7 @@
 - **DataLoader pattern:** Successfully prevents N+1 queries in GraphQL
 
 ### Current Challenges
+
 - TensorFlow Lite model selection for waste classification
 - Mobile UI development lagging behind backend features
 - No automated testing infrastructure yet
@@ -544,6 +584,7 @@
 - Leaderboard aggregation requires optimization
 
 ### Lessons Learned (So Far)
+
 - DataLoader significantly improves GraphQL performance
 - Building backend first allows for faster mobile iteration
 - Firebase auth + JWT combination works well
@@ -556,21 +597,25 @@
 ## 📞 Key Resources
 
 ### Live Environments
+
 - **Backend API:** http://localhost:3000/graphql (Local Development)
 - **GraphQL Playground:** http://localhost:3000/graphql
 - **MongoDB Atlas:** https://cloud.mongodb.com (Login required)
 
 ### Code Repositories
+
 - **GitHub:** https://github.com/Pranavraut033/reuseit
 - **Branch:** `main`
 - **CI/CD:** Not configured yet
 
 ### Documentation
+
 - **Local Docs:** `/docs` folder
 - **Project Requirements:** `docs/project-requirement.txt`
 - **Agent Instructions:** `agents.md`
 
 ### Project Management
+
 - **Status Tracking:** This file (PROJECT_STATUS.md)
 
 ---
@@ -578,6 +623,7 @@
 ## 🔄 Update Protocol
 
 **When completing a task:**
+
 1. Mark task as ✅ Done in relevant section
 2. Update "Last Updated" timestamp at top
 3. Move completed task from "In Progress" to "Completed Features"
@@ -586,12 +632,14 @@
 6. Commit changes: `docs: update PROJECT_STATUS for [task name]`
 
 **When starting a task:**
+
 1. Move task to "In Progress" section
 2. Add 🔄 emoji next to task name
 3. Update "Last Updated" timestamp
 4. Commit changes: `docs: start work on [task name]`
 
 **When discovering a bug:**
+
 1. Add to "Known Issues & Technical Debt" with:
    - Status: 🔴 Not Started / 🟡 In Progress / ✅ Fixed
    - Impact description
@@ -604,4 +652,4 @@
 
 **End of Status Document**
 
-*This file is the single source of truth for project progress. Keep it updated!*
+_This file is the single source of truth for project progress. Keep it updated!_

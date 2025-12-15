@@ -3,12 +3,14 @@
 ## 🚀 Getting Started
 
 ### 1. Navigate to Create Post
+
 ```typescript
 // From anywhere in the app:
 router.push('/posts/create');
 ```
 
 ### 2. Component Import
+
 ```typescript
 import { PostCreateScreen } from '~/components/post';
 // Or use individual components:
@@ -22,11 +24,9 @@ import { MediaPicker, LocationPicker, TagEditor, PreviewCard } from '~/component
 - [ ] **Firebase Storage** - Ensure Firebase Storage is configured in your project
   - Check `apps/mobile/google-services.json` exists
   - Verify storage rules allow authenticated uploads
-  
 - [ ] **Google Maps API** - For location picker
   - Add API key to `app.config.js`
   - Enable Maps SDK for Android/iOS
-  
 - [ ] **Permissions** - Request in app.json/app.config.js
   ```json
   {
@@ -51,7 +51,9 @@ import { MediaPicker, LocationPicker, TagEditor, PreviewCard } from '~/component
   ```
 
 ### Dependencies Installed ✅
+
 All required dependencies have been installed:
+
 - `yup`
 - `@hookform/resolvers`
 - `expo-image-manipulator`
@@ -63,6 +65,7 @@ All required dependencies have been installed:
 ## 🎯 Usage Examples
 
 ### Basic Usage
+
 ```typescript
 // apps/mobile/src/app/posts/create.tsx
 import { PostCreateScreen } from '~/components/post';
@@ -73,6 +76,7 @@ export default function CreatePost() {
 ```
 
 ### Using Individual Components
+
 ```typescript
 import { MediaPicker, LocationPicker } from '~/components/post';
 
@@ -82,12 +86,12 @@ function MyCustomForm() {
 
   return (
     <>
-      <MediaPicker 
+      <MediaPicker
         images={images}
         onImagesChange={setImages}
         maxImages={4}
       />
-      
+
       <LocationPicker
         location={location}
         onLocationChange={setLocation}
@@ -100,7 +104,9 @@ function MyCustomForm() {
 ## 🔧 Configuration
 
 ### Customize Categories
+
 Edit `apps/mobile/src/utils/postValidation.ts`:
+
 ```typescript
 export const categories = [
   { value: 'electronics', label: t('categories.electronics') },
@@ -110,7 +116,9 @@ export const categories = [
 ```
 
 ### Customize Tag Suggestions
+
 Edit `apps/mobile/src/utils/tagSuggestion.ts`:
+
 ```typescript
 const CATEGORY_TAG_MAP: Record<string, string[]> = {
   electronics: ['technology', 'gadget', 'custom-tag'], // Customize
@@ -119,13 +127,16 @@ const CATEGORY_TAG_MAP: Record<string, string[]> = {
 ```
 
 ### Change Image Limits
+
 ```typescript
 // In MediaPicker component usage:
 <MediaPicker maxImages={6} /> // Default is 4
 ```
 
 ### Adjust Compression Quality
+
 Edit `apps/mobile/src/utils/imageCompression.ts`:
+
 ```typescript
 const COMPRESSION_QUALITY = 0.9; // Default is 0.8 (80%)
 const MAX_IMAGE_WIDTH = 2048; // Default is 1920
@@ -134,12 +145,14 @@ const MAX_IMAGE_WIDTH = 2048; // Default is 1920
 ## 🧪 Testing Locally
 
 ### 1. Start Development Server
+
 ```bash
 cd apps/mobile
 pnpm start
 ```
 
 ### 2. Test on Physical Device (Recommended)
+
 ```bash
 # iOS
 pnpm ios
@@ -149,6 +162,7 @@ pnpm android
 ```
 
 ### 3. Test Scenarios
+
 - [ ] Take photo with camera
 - [ ] Select multiple images from library
 - [ ] Drag to reorder images
@@ -167,9 +181,11 @@ pnpm android
 ## 🐛 Troubleshooting
 
 ### Images Not Uploading
+
 **Problem**: Images fail to upload to Firebase Storage
 
 **Solutions**:
+
 1. Check Firebase configuration:
    ```bash
    # Verify files exist:
@@ -190,42 +206,50 @@ pnpm android
 3. Verify user is authenticated
 
 ### Location Not Working
+
 **Problem**: GPS location not detected
 
 **Solutions**:
+
 1. Run on physical device (simulator has limited GPS)
 2. Check permissions granted in Settings > App > Permissions
 3. Enable location services in device settings
 4. Check Google Maps API key in `app.config.js`
 
 ### Form Validation Errors
+
 **Problem**: Form shows validation errors unexpectedly
 
 **Solutions**:
+
 1. Check Yup schema matches form structure
 2. Verify all required fields have values
 3. Check console for validation error details
 4. Ensure form default values are correct
 
 ### Offline Mode Not Working
+
 **Problem**: Posts not saving offline
 
 **Solutions**:
+
 1. Check AsyncStorage permissions
 2. Clear app data and reinstall
 3. Verify NetInfo is detecting offline state:
    ```typescript
    import NetInfo from '@react-native-community/netinfo';
-   NetInfo.fetch().then(state => {
+   NetInfo.fetch().then((state) => {
      console.log('Connection type', state.type);
      console.log('Is connected?', state.isConnected);
    });
    ```
 
 ### TypeScript Errors
+
 **Problem**: Type errors in component usage
 
 **Solutions**:
+
 1. Run codegen to update types:
    ```bash
    cd apps/mobile
@@ -237,6 +261,7 @@ pnpm android
 ## 📱 Platform-Specific Notes
 
 ### iOS
+
 - Requires physical device for camera/location
 - Date picker shows as modal overlay
 - Requires podfile update if adding new native modules:
@@ -245,11 +270,13 @@ pnpm android
   ```
 
 ### Android
+
 - Date picker shows as inline calendar
 - Requires Google Play Services for Maps
 - Check `android/app/build.gradle` for minimum SDK version (21+)
 
 ### Web (Limited Support)
+
 - Camera not supported
 - Location requires browser permissions
 - Image picker uses file input
@@ -257,7 +284,9 @@ pnpm android
 ## 🎨 Customization
 
 ### Styling
+
 All components use inline StyleSheet. To customize:
+
 ```typescript
 // Example: Change button color
 const styles = StyleSheet.create({
@@ -268,7 +297,9 @@ const styles = StyleSheet.create({
 ```
 
 ### Translations
+
 Add/edit translations in `apps/mobile/src/utils/i18n.ts`:
+
 ```typescript
 export const translations = {
   en: {
@@ -325,6 +356,7 @@ Before releasing to production:
 ## 💬 Support
 
 For issues or questions:
+
 1. Check this guide
 2. Review component README.md
 3. Check implementation summary
@@ -334,6 +366,7 @@ For issues or questions:
 ## 🎉 Success!
 
 If you can:
+
 - ✅ Take/select photos
 - ✅ See live preview
 - ✅ Get tag suggestions

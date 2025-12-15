@@ -7,6 +7,7 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
 ## 📖 Table of Contents
 
 ### Getting Started
+
 - **[Getting Started Guide](./GETTING_STARTED.md)** - Complete installation and setup instructions
   - Prerequisites
   - Installation steps
@@ -16,6 +17,7 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
   - Troubleshooting
 
 ### Features & Functionality
+
 - **[Features Documentation](./FEATURES.md)** - Comprehensive feature overview
   - User Authentication
   - Educational Content
@@ -27,6 +29,7 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
   - Smart Notifications
 
 ### Technical Documentation
+
 - **[System Architecture](./ARCHITECTURE.md)** - Architecture and design decisions
   - High-level architecture diagram
   - Component descriptions
@@ -45,6 +48,7 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
   - Rate limiting
 
 ### Development
+
 - **[Testing Guide](./TESTING.md)** - Testing strategy and examples
   - Unit testing
   - Integration testing
@@ -60,6 +64,7 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
   - Pull request process
 
 ### Deployment & Hosting
+
 - **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment
   - Backend deployment (Railway, Render, Heroku, Docker)
   - Mobile deployment (iOS, Android)
@@ -96,6 +101,7 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
 ## 🚀 Quick Navigation
 
 ### For New Contributors
+
 1. Read the [Getting Started Guide](./GETTING_STARTED.md)
 2. Review the [Architecture Documentation](./ARCHITECTURE.md)
 3. Check the [Contributing Guide](./CONTRIBUTING.md)
@@ -103,17 +109,20 @@ Welcome to the ReUseIt documentation! This index will help you find the informat
 5. Pick an issue and start coding!
 
 ### For Users
+
 1. Check out [Features](./FEATURES.md) to see what the app can do
 2. Follow the [Getting Started Guide](./GETTING_STARTED.md) to install
 3. Explore the app and provide feedback
 
 ### For API Consumers
+
 1. Review [API Documentation](./API.md)
 2. Understand authentication flow
 3. Explore available queries and mutations
 4. Test using GraphQL Playground
 
 ### For DevOps/Deployment
+
 1. Read [Deployment Guide](./DEPLOYMENT.md)
 2. Set up environment variables
 3. Configure CI/CD pipelines
@@ -172,24 +181,31 @@ See [Contributing Guide](./CONTRIBUTING.md) for details.
 ## 📄 Document Summaries
 
 ### GETTING_STARTED.md
+
 Complete setup guide covering prerequisites, installation, environment variables, database configuration, and troubleshooting. Perfect for first-time setup.
 
 ### FEATURES.md
+
 Detailed description of all application features including authentication, educational content, AI recognition, community features, events, gamification, and notifications.
 
 ### ARCHITECTURE.md
+
 In-depth technical architecture documentation covering system design, component interactions, data flow, design decisions, and scalability considerations.
 
 ### API.md
+
 Complete GraphQL API reference including authentication, schema definitions, example queries/mutations, subscriptions, error handling, and rate limiting.
 
 ### TESTING.md
+
 Comprehensive testing documentation with strategy overview, test examples for all levels (unit, integration, E2E, performance, security), and coverage requirements.
 
 ### DEPLOYMENT.md
+
 Production deployment guides for multiple platforms (Railway, Render, Heroku, Docker, AWS, GCP), mobile app deployment (iOS/Android), and CI/CD pipeline setup.
 
 ### CONTRIBUTING.md
+
 Guidelines for contributing to the project including code of conduct, development process, coding standards, commit conventions, and pull request guidelines.
 
 ---
@@ -198,6 +214,6 @@ Guidelines for contributing to the project including code of conduct, developmen
 
 **Happy coding! 🚀**
 
-*Last Updated: November 2025*
+_Last Updated: November 2025_
 
 </div>

@@ -5,6 +5,7 @@ This directory contains the machine learning training pipelines for the ReUseIt 
 ## 🎯 Overview
 
 The ML training includes:
+
 - **Waste Classification Model** (deprecated): MobileNetV3-based image classification for waste categories
 - **Object Detection Model** (active): MobileNetV2-based object detection with edge detection for waste items
 - **Shared Utilities**: Dataset downloading, preprocessing, and canonical class mappings
@@ -71,6 +72,7 @@ python auto_label.py --help
 ```
 
 **Features:**
+
 - Automatically loads YOLO model with safe weights handling
 - Processes images with streaming for memory efficiency
 - Progress indication for large datasets (48K+ images)
@@ -78,6 +80,7 @@ python auto_label.py --help
 - Falls back to dummy labels if YOLO fails to load
 
 **CSV Output Format:**
+
 ```csv
 filename,x_center,y_center,width,height,confidence,class_id
 image1.jpg,0.5,0.5,0.3,0.4,0.95,39
@@ -91,11 +94,13 @@ Coordinates are normalized (0-1 range) in YOLO format.
 The object detection model uses real YOLO-generated bounding boxes or automatically prepares datasets if they don't exist.
 
 1. **Generate Real Bounding Boxes** (recommended):
+
    ```bash
    python auto_label.py --input merged_dataset --output yolo_labels.csv
    ```
 
 2. **Train Object Detector**:
+
    ```bash
    cd object_detection
    python train_detector.py
