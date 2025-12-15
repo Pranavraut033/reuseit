@@ -1,9 +1,8 @@
 const { MongoClient } = require('mongodb');
+require('dotenv').config();
 
 async function main() {
-  const uri =
-    process.env.DATABASE_URL ||
-    'mongodb://admin:admin123@localhost:7008/reuseit?authSource=admin&replicaSet=rs0&directConnection=true';
+  const uri = process.env.DATABASE_URL;
   const client = new MongoClient(uri);
 
   try {
