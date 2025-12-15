@@ -309,6 +309,7 @@ input PostFilterInput {
   latitude: Float
   longitude: Float
   radiusInKm: Float
+  search: String
 }
 
 enum PostFilterType {
@@ -626,7 +627,8 @@ input UpdatePostInput {
 }
 
 input CreateChatInput {
-  postId: String!
+  postId: String
+  message: String
 }
 
 input CreateChatMessageInput {

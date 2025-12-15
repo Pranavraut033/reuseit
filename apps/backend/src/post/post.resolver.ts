@@ -27,7 +27,6 @@ import {
   PostChatCountLoader,
   PostEventLoader,
   PostLikeCountLoader,
-  PostLikedByUserLoader,
   PostLocationLoader,
   PostUserArticlesLoader,
 } from './post.loader';
@@ -54,11 +53,11 @@ export class PostResolver {
   }
 
   @Query(() => [Post], { name: 'posts' })
-  @CacheQuery(
-    (limit, offset, postFilter) =>
-      `posts:${limit ?? 'null'}:${offset ?? 'null'}:${JSON.stringify(postFilter ?? {})}`,
-    300,
-  )
+  // @CacheQuery(
+  //   (limit, offset, postFilter) =>
+  //     `posts:${limit ?? 'null'}:${offset ?? 'null'}:${JSON.stringify(postFilter ?? {})}`,
+  //   300,
+  // )
   async findAll(
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
     @Args('offset', { type: () => Int, nullable: true }) offset?: number,

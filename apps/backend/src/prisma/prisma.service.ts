@@ -11,6 +11,31 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {
     await this.$connect();
     await this.checkTransactionSupport();
+    // Ensure geospatial indexes required by the app are present
+    await this.ensureGeoIndexes();
+  }
+
+  /**
+   * Ensure required geospatial indexes exist in the database. This makes
+   * $geoNear and other geospatial operations safe to call without a manual
+   * index-creation step.
+   */
+  private async ensureGeoIndexes(): Promise<void> {
+    try {
+      await this.$runCommandRaw({
+        createIndexes: 'Location',
+        indexes: [{ key: { coordinates: '2dsphere' }, name: 'coordinates_2dsphere' }],
+      });
+      this.logger.log('✅ Ensured 2dsphere index on Location.coordinates');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      // If index already exists, MongoDB may return an error mentioning it — ignore
+      if (err.message && err.message.includes('already exists')) {
+        this.logger.log('2dsphere index on Location.coordinates already exists');
+        return;
+      }
+      this.logger.warn(`Failed to ensure geospatial indexes: ${err.message || 'unknown error'}`);
+    }
   }
 
   /**

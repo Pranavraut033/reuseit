@@ -84,13 +84,17 @@ export class ChatService {
       },
     });
 
-    // Notify post author about new chat request
-    await this.notificationService.sendNotificationToUser(
-      post.authorId,
-      'New Chat Request',
-      `Someone is interested in your post: "${post.title.slice(0, 50)}"`,
-      { postId: post.id, chatId: chat.id },
-    );
+    if (createChatInput.message) {
+      await this.createMessage({ chatId: chat.id, content: createChatInput.message }, userId);
+    } else {
+      // Notify post author about new chat request
+      await this.notificationService.sendNotificationToUser(
+        post.authorId,
+        'New Chat Request',
+        `Someone is interested in your post: "${post.title.slice(0, 50)}"`,
+        { postId: post.id, chatId: chat.id },
+      );
+    }
 
     return chat;
   }
@@ -106,19 +110,6 @@ export class ChatService {
           postId,
           requesterId: userId,
         },
-      },
-      include: {
-        messages: {
-          include: {
-            sender: true,
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-        post: true,
-        requester: true,
-        author: true,
       },
     });
 
@@ -141,19 +132,6 @@ export class ChatService {
 
     const chat = await this.prisma.chat.findUnique({
       where: { id: chatId },
-      include: {
-        messages: {
-          include: {
-            sender: true,
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-        post: true,
-        requester: true,
-        author: true,
-      },
     });
 
     if (!chat) {
@@ -177,47 +155,7 @@ export class ChatService {
       where: {
         OR: [{ requesterId: userId }, { authorId: userId }],
       },
-      include: {
-        post: {
-          select: {
-            id: true,
-            title: true,
-            images: true,
-          },
-        },
-        requester: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-          },
-        },
-        author: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-          },
-        },
-        messages: {
-          take: 1,
-          orderBy: {
-            createdAt: 'desc',
-          },
-          select: {
-            content: true,
-            createdAt: true,
-            sender: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
+      orderBy: { updatedAt: 'desc' },
     });
   }
 

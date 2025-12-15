@@ -17,21 +17,17 @@ The `PrismaService.safeUpsert()` method provides a fully type-safe, transaction-
 ### Basic Usage (User Model)
 
 ```typescript
-const user = await this.prismaService.safeUpsert(
-  'User',
-  this.prismaService.user,
-  {
-    where: { email: 'user@example.com' }, // TypeScript knows this must be UserWhereUniqueInput
-    update: {
-      name: 'Updated Name',
-      lastLogin: new Date(),
-    }, // TypeScript validates against UserUpdateInput
-    create: {
-      email: 'user@example.com',
-      name: 'New User',
-    }, // TypeScript validates against UserCreateInput
-  },
-);
+const user = await this.prismaService.safeUpsert('User', this.prismaService.user, {
+  where: { email: 'user@example.com' }, // TypeScript knows this must be UserWhereUniqueInput
+  update: {
+    name: 'Updated Name',
+    lastLogin: new Date(),
+  }, // TypeScript validates against UserUpdateInput
+  create: {
+    email: 'user@example.com',
+    name: 'New User',
+  }, // TypeScript validates against UserCreateInput
+});
 // user is properly typed as User with full autocomplete
 console.log(user.email, user.id, user.name);
 ```
@@ -39,49 +35,41 @@ console.log(user.email, user.id, user.name);
 ### With Post Model
 
 ```typescript
-const post = await this.prismaService.safeUpsert(
-  'Post',
-  this.prismaService.post,
-  {
-    where: { id: postId },
-    update: {
-      title: 'Updated Title',
-      content: 'Updated Content',
-    },
-    create: {
-      title: 'New Post',
-      content: 'New Content',
-      author: {
-        connect: { id: userId },
-      },
+const post = await this.prismaService.safeUpsert('Post', this.prismaService.post, {
+  where: { id: postId },
+  update: {
+    title: 'Updated Title',
+    content: 'Updated Content',
+  },
+  create: {
+    title: 'New Post',
+    content: 'New Content',
+    author: {
+      connect: { id: userId },
     },
   },
-);
+});
 // post is typed as Post
 ```
 
 ### With Event Model
 
 ```typescript
-const event = await this.prismaService.safeUpsert(
-  'Event',
-  this.prismaService.event,
-  {
-    where: { id: eventId },
-    update: {
-      name: 'Updated Event',
-      date: new Date(),
-    },
-    create: {
-      name: 'New Event',
-      date: new Date(),
-      creator: {
-        connect: { id: userId },
-      },
-      location: { lat: 0, lng: 0 },
-    },
+const event = await this.prismaService.safeUpsert('Event', this.prismaService.event, {
+  where: { id: eventId },
+  update: {
+    name: 'Updated Event',
+    date: new Date(),
   },
-);
+  create: {
+    name: 'New Event',
+    date: new Date(),
+    creator: {
+      connect: { id: userId },
+    },
+    location: { lat: 0, lng: 0 },
+  },
+});
 // event is typed as Event
 ```
 
@@ -118,60 +106,55 @@ const badgeAssignment = await this.prismaService.safeUpsert(
 ### With Google Sign-In (From auth.service.ts)
 
 ```typescript
-const user = await this.prismaService.safeUpsert(
-  'User',
-  this.prismaService.user,
-  {
-    where: { googleId },
-    update: {
-      name,
-      email: normalizedEmail,
-      emailVerified,
-      phoneNumber,
-      avatarUrl,
-      lastLogin: new Date(),
-    },
-    create: {
-      googleId,
-      name,
-      email: normalizedEmail,
-      emailVerified,
-      phoneNumber,
-      avatarUrl,
-    },
+const user = await this.prismaService.safeUpsert('User', this.prismaService.user, {
+  where: { googleId },
+  update: {
+    name,
+    email: normalizedEmail,
+    emailVerified,
+    phoneNumber,
+    avatarUrl,
+    lastLogin: new Date(),
   },
-);
+  create: {
+    googleId,
+    name,
+    email: normalizedEmail,
+    emailVerified,
+    phoneNumber,
+    avatarUrl,
+  },
+});
 ```
 
 ## Type Safety Benefits
 
 ### Before (No Type Safety):
+
 ```typescript
 // Old approach - all parameters are 'any'
 const user = await this.prisma.user.upsert({
   where: { emial: 'wrong@field.com' }, // ❌ Typo not caught!
-  update: { invalidField: 'oops' },     // ❌ Invalid field not caught!
+  update: { invalidField: 'oops' }, // ❌ Invalid field not caught!
   create: { name: 'Missing required fields' }, // ❌ Missing email not caught!
 });
 ```
 
 ### After (Full Type Safety):
+
 ```typescript
 // New approach - all parameters are type-checked
-const user = await this.prismaService.safeUpsert(
-  'User',
-  this.prismaService.user,
-  {
-    where: { emial: 'wrong@field.com' },      // ✅ TypeScript error: 'emial' doesn't exist
-    update: { invalidField: 'oops' },         // ✅ TypeScript error: 'invalidField' doesn't exist
-    create: { name: 'Missing required fields' }, // ✅ TypeScript error: 'email' is required
-  },
-);
+const user = await this.prismaService.safeUpsert('User', this.prismaService.user, {
+  where: { emial: 'wrong@field.com' }, // ✅ TypeScript error: 'emial' doesn't exist
+  update: { invalidField: 'oops' }, // ✅ TypeScript error: 'invalidField' doesn't exist
+  create: { name: 'Missing required fields' }, // ✅ TypeScript error: 'email' is required
+});
 ```
 
 ## Supported Models
 
 The helper automatically provides type safety for all your Prisma models:
+
 - `User` - UserWhereUniqueInput, UserCreateInput, UserUpdateInput
 - `Post` - PostWhereUniqueInput, PostCreateInput, PostUpdateInput
 - `Event` - EventWhereUniqueInput, EventCreateInput, EventUpdateInput
@@ -193,6 +176,7 @@ The helper automatically provides type safety for all your Prisma models:
 ## Migration from Standard Upsert
 
 **Before:**
+
 ```typescript
 const user = await this.prisma.user.upsert({
   where: { googleId },
@@ -202,6 +186,7 @@ const user = await this.prisma.user.upsert({
 ```
 
 **After:**
+
 ```typescript
 const user = await this.prismaService.safeUpsert(
   'User',                      // Model name for type inference
@@ -231,22 +216,22 @@ When you add new models to your Prisma schema, update the type mappings in `pris
 
 ```typescript
 // Add to WhereUniqueInput
-type WhereUniqueInput<T extends PrismaModelName> = 
+type WhereUniqueInput<T extends PrismaModelName> =
   T extends 'YourNewModel' ? Prisma.YourNewModelWhereUniqueInput :
   // ... existing types
 
 // Add to CreateInput
-type CreateInput<T extends PrismaModelName> = 
+type CreateInput<T extends PrismaModelName> =
   T extends 'YourNewModel' ? Prisma.YourNewModelCreateInput :
   // ... existing types
 
 // Add to UpdateInput
-type UpdateInput<T extends PrismaModelName> = 
+type UpdateInput<T extends PrismaModelName> =
   T extends 'YourNewModel' ? Prisma.YourNewModelUpdateInput :
   // ... existing types
 
 // Add to ModelType
-type ModelType<T extends PrismaModelName> = 
+type ModelType<T extends PrismaModelName> =
   T extends 'YourNewModel' ? YourNewModel :
   // ... existing types
 ```

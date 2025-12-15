@@ -22,7 +22,6 @@ export class NotificationResolver {
         where: { id: userId },
         data: { fcmToken: token },
       });
-      console.log(`FCM token registered for user ${userId}`);
       return true;
     } catch (error) {
       console.error('Failed to register FCM token:', error);

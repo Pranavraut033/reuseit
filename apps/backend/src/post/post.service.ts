@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { LocationService } from '~/location/location.service';
 import { PointsService } from '~/points/points.service';
@@ -80,36 +81,48 @@ export class PostService {
   }
 
   async findAll(limit?: number, offset?: number, postFilter?: PostFilterInput) {
-    let postType: PostType | undefined;
-    let locationIds: string[] | undefined;
+    const whereClause: Prisma.PostWhereInput = {};
 
     if (postFilter?.type === PostFilterType.Giveaway) {
-      postType = PostType.GIVEAWAY;
+      whereClause.postType = PostType.GIVEAWAY;
     } else if (postFilter?.type === PostFilterType.Requests) {
-      postType = PostType.REQUESTS;
-    } else if (postFilter?.type === PostFilterType.All) {
-      postType = undefined;
+      whereClause.postType = PostType.REQUESTS;
     }
 
     // Handle nearby filter
     if (postFilter?.type === PostFilterType.Nearby && postFilter.latitude && postFilter.longitude) {
-      const radiusInKm = postFilter.radiusInKm || 5; // Default 5km radius
+      const radiusInKm = postFilter.radiusInKm || 0.5; // Default 500m radius
       const nearbyLocations = await this.locationService.findNearBy(
         postFilter.latitude,
         postFilter.longitude,
         radiusInKm,
       );
+
       if (nearbyLocations && Array.isArray(nearbyLocations)) {
-        locationIds = nearbyLocations.map((loc: any) => loc._id);
+        const locationIds = nearbyLocations.map((loc) => loc._id.$oid);
+
+        whereClause.locationId = { in: locationIds };
       }
     }
 
-    const whereClause: any = {};
-    if (postType) {
-      whereClause.postType = postType;
-    }
-    if (locationIds) {
-      whereClause.locationId = { in: locationIds };
+    // Handle search filter - search title, description or tags
+    if (postFilter?.search && postFilter.search.trim().length > 0) {
+      const search = postFilter.search.trim().toLowerCase();
+
+      const searchClause: Prisma.PostWhereInput = {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { tags: { has: search } },
+        ],
+      };
+
+      // If we already have filters (e.g., nearby or type), combine them with AND
+      // so both the search and other filters apply
+      const existing = { ...whereClause };
+      // Replace whereClause with an AND wrapper combining existing and searchClause
+      Object.keys(whereClause).forEach((k) => delete whereClause[k as keyof typeof whereClause]);
+      whereClause.AND = [existing, searchClause];
     }
 
     const posts = await this.prisma.post.findMany({

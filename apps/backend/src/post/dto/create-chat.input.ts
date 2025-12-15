@@ -1,12 +1,13 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 @InputType()
 export class CreateChatInput {
-  @Field()
-  @IsString()
-  @IsNotEmpty()
+  @Field(() => String, { nullable: true })
   postId: string;
+
+  @Field(() => String, { nullable: true })
+  message: string | null;
 }
 
 @InputType()

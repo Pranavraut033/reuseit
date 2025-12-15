@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Location } from '@prisma/client';
 
 import { PrismaService } from '~/prisma/prisma.service';
 
@@ -34,7 +35,11 @@ export class LocationService {
     return this.prismaService.location.delete({ where: { id } });
   }
 
-  findNearBy(latitude: number, longitude: number, radiusInKm = 5) {
+  findNearBy(
+    latitude: number,
+    longitude: number,
+    radiusInKm = 0.5,
+  ): Promise<{ _id: { $oid: string } }[]> {
     // const radiusInRadians = radiusInKm / 6378.1; // Earth's radius in km
 
     return this.prismaService.location.aggregateRaw({
@@ -51,7 +56,11 @@ export class LocationService {
           },
         },
       ],
-    });
+    }) as unknown as Promise<
+      {
+        _id: { $oid: string };
+      }[]
+    >;
   }
 
   async verifyOrCreate(

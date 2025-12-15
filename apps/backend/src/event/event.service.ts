@@ -63,7 +63,7 @@ export class EventService {
 
   async findAll(eventFilter?: EventFilterInput) {
     let locationIds: string[] | undefined;
-    let startTimeFilter: any = {};
+    let startTimeFilter: Prisma.EventWhereInput = {};
 
     // Handle nearby filter
     if (
@@ -77,8 +77,9 @@ export class EventService {
         eventFilter.longitude,
         radiusInKm,
       );
+
       if (nearbyLocations && Array.isArray(nearbyLocations)) {
-        locationIds = nearbyLocations.map((loc) => loc._id);
+        locationIds = nearbyLocations.map((loc) => loc._id.$oid);
       }
     }
 

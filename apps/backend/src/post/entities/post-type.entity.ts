@@ -25,6 +25,9 @@ export class PostFilterInput {
 
   @Field(() => Number, { nullable: true })
   radiusInKm?: number;
+
+  @Field(() => String, { nullable: true })
+  search?: string;
 }
 
 registerEnumType(PostType, { name: 'PostType' });
