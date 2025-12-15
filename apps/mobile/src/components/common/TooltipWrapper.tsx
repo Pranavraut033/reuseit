@@ -47,21 +47,21 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
       <Tooltip.Content
         sideOffset={3}
         containerStyle={{
-          ...containerStyle,
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingTop: 8,
-          paddingBottom: 8,
+          ...(containerStyle || {}),
+          paddingTop: 12,
+          paddingBottom: 12,
+          paddingLeft: 12,
+          paddingRight: 12,
         }}
         onTap={() => setOpen(false)}
         dismissDuration={500}
         disableTapToDismiss
         side={side}
         presetAnimation="fadeIn"
-        backgroundColor="black"
-        borderRadius={12}>
+        backgroundColor="#34495E"
+        borderRadius={8}>
         {typeof content === 'string' ? (
-          <Tooltip.Text text={content} style={{ color: '#fff', fontSize: 16, ...textStyle }} />
+          <Tooltip.Text text={content} style={{ color: '#fff', fontSize: 14, ...textStyle }} />
         ) : (
           content
         )}

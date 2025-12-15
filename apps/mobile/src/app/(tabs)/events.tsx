@@ -15,8 +15,7 @@ const EventListItem = ({ event }: { event: Event }) => {
   return (
     <TouchableOpacity
       className="mb-4 rounded-lg bg-white p-4 shadow-sm"
-      onPress={() => (router.push as any)(`/events/${event.id}`)}
-    >
+      onPress={() => (router.push as any)(`/events/${event.id}`)}>
       <Text className="text-lg font-semibold text-gray-900">{event.title}</Text>
       <Text className="mt-1 text-sm text-gray-600">{event.description}</Text>
       <View className="mt-2 flex-row items-center">

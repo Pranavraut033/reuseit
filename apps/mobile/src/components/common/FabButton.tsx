@@ -38,9 +38,9 @@ type FabButtonProps = {
 } & TouchableOpacityProps;
 
 const typeClass: Record<FabButtonType, string> = {
-  primary: 'bg-primary',
-  error: 'bg-red-600',
-  neutral: 'bg-gray-400',
+  primary: 'bg-primary rounded-full shadow-card',
+  error: 'bg-red-600 rounded-full shadow-card',
+  neutral: 'bg-white border border-gray-200 rounded-full shadow-soft',
 };
 
 const sizeConfig: Record<FabButtonSize, { fab: string; icon: number; text: string }> = {
@@ -116,7 +116,7 @@ export const FabButton = forwardRef<View, FabButtonProps>(
     }, [setScrollHandler, hideOnScrollDown, mounted, handleScroll]);
 
     const resolvedIconColor = useMemo(
-      () => iconColor ?? (type === 'neutral' ? 'black' : 'white'),
+      () => iconColor ?? (type === 'neutral' ? '#34495E' : 'white'),
       [iconColor, type],
     );
 
@@ -145,11 +145,10 @@ export const FabButton = forwardRef<View, FabButtonProps>(
         activeOpacity={0.7}
         {...touchableProps}
         className={cn([
-          'flex flex-row items-center justify-center',
-          'z-[2] rounded-full shadow-lg',
+          'z-[2] flex flex-row items-center justify-center',
           typeClass[type],
           sizeConfig[size].fab,
-          isDisabled ? 'opacity-60' : '',
+          isDisabled ? 'pointer-events-none opacity-60' : '',
           (touchableProps as any).className ?? '',
         ])}
         disabled={isDisabled}

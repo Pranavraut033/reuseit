@@ -76,8 +76,7 @@ const PermissionItem = ({
             }
             requestPermission();
           }
-    }
-  >
+    }>
     <View className={cn('mr-4')}>
       <View className="h-12 w-12 items-center justify-center rounded-full bg-orange-100">
         {icon}
@@ -230,8 +229,7 @@ export default function Onboarding() {
           ref={pagerViewRef}
           style={{ flex: 1 }}
           initialPage={0}
-          onPageSelected={(e: any) => setCurrentStep(e.nativeEvent.position as number)}
-        >
+          onPageSelected={(e: any) => setCurrentStep(e.nativeEvent.position as number)}>
           {steps.map((step, index) => (
             <View key={index} style={{ flex: 1 }}>
               {step}

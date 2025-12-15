@@ -1,9 +1,8 @@
-import { FontAwesome6 as Icon } from '@expo/vector-icons';
+// Using `TabBarIcon` wrapper for tab icons
 import { Tabs } from 'expo-router';
 import { MotiView } from 'moti';
 import { ComponentProps, memo, useMemo } from 'react';
 import { Text } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import MainFabButton from '~/components/MainFabButton';
@@ -26,7 +25,7 @@ const AnimatedTabLabel = memo(function AnimatedTabLabel({
 
   return (
     <MotiView transition={{ type: 'timing', duration: 200 }} animate={animate}>
-      <Text style={{ color }} className={cn('text-xs', { 'font-bold': focused })}>
+      <Text style={{ color: String(color) }} className={cn('text-xs', { 'font-bold': focused })}>
         {label}
       </Text>
     </MotiView>
@@ -48,9 +47,13 @@ const AnimatedTabIcon = memo(function AnimatedTabIcon({
     <MotiView
       animate={animate}
       transition={{ type: 'timing', duration: 200 }}
-      style={{ alignItems: 'center', justifyContent: 'center' }}
-    >
-      <Icon name={iconName} solid color={color} size={18} />
+      style={{ alignItems: 'center', justifyContent: 'center' }}>
+      {}
+      <TabBarIcon
+        className="mb-1"
+        name={iconName as ComponentProps<typeof TabBarIcon>['name']}
+        color={String(color)}
+      />
     </MotiView>
   );
 });
@@ -59,11 +62,11 @@ const AnimatedTabIcon = memo(function AnimatedTabIcon({
 function useTabOptions(label: string, iconName: ComponentProps<typeof TabBarIcon>['name']) {
   return useMemo<ComponentProps<typeof Tabs.Screen>['options']>(
     () => ({
-      tabBarLabel: ({ color, focused }: { color: string; focused: boolean }) => (
-        <AnimatedTabLabel color={color} focused={focused} label={label} />
+      tabBarLabel: ({ color, focused }: { color: any; focused: boolean }) => (
+        <AnimatedTabLabel color={String(color)} focused={focused} label={label} />
       ),
-      tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
-        <AnimatedTabIcon color={color} focused={focused} iconName={iconName} />
+      tabBarIcon: ({ color, focused }: { color: any; focused: boolean }) => (
+        <AnimatedTabIcon color={String(color)} focused={focused} iconName={String(iconName)} />
       ),
     }),
     [label, iconName],
@@ -77,42 +80,47 @@ export default function TabLayout() {
   const profileOptions = useTabOptions('Profile', 'user');
   const eventsOptions = useTabOptions('Events', 'calendar');
   const { bottom } = useSafeAreaInsets();
+  const PRIMARY = '#2ECC71';
+  const FOREST = '#34495E';
+  const CANVAS = 'rgba(249,249,249,0.98)';
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <>
-        <MainFabButton />
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: '#34A853',
-            tabBarIconStyle: { marginBottom: 3 },
-            tabBarStyle: {
-              position: 'absolute',
-              left: 16,
-              right: 16,
-              height: 58,
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              bottom: bottom + 16,
-              borderRadius: 9999,
-              paddingBottom: 12,
-              paddingTop: 10,
-              elevation: 20,
-              zIndex: 25, // ensure it appears above other content
-              marginHorizontal: 16,
-              marginRight: 48 + 16 * 2,
-            },
-            // tabBarBackground: () => <TabBarBackground />,
-          }}
-        >
-          <Tabs.Screen name="index" options={homeOptions} />
-          <Tabs.Screen name="posts" options={postsOptions} />
-          <Tabs.Screen name="explore" options={exploreOptions} />
-          <Tabs.Screen name="events" options={eventsOptions} />
-          <Tabs.Screen name="profile" options={profileOptions} />
-        </Tabs>
-      </>
-    </GestureHandlerRootView>
+    <>
+      <MainFabButton />
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: PRIMARY,
+          tabBarInactiveTintColor: FOREST,
+          tabBarIconStyle: { marginBottom: 0 },
+          tabBarStyle: {
+            position: 'absolute',
+            left: 16,
+            right: 16,
+            height: 58,
+            backgroundColor: CANVAS,
+            bottom: bottom + 16,
+            borderRadius: 9999,
+            paddingBottom: 12,
+            paddingLeft: 4,
+            paddingRight: 4,
+            paddingTop: 12,
+            elevation: 20,
+            zIndex: 25, // ensure it appears above other content
+            marginHorizontal: 16,
+            marginRight: 48 + 16 * 2,
+            borderWidth: 0.5,
+            borderColor: 'rgba(52,73,94,0.06)',
+          },
+          // tabBarBackground: () => <TabBarBackground />,
+        }}>
+        <Tabs.Screen name="index" options={homeOptions} />
+        <Tabs.Screen name="posts" options={postsOptions} />
+        <Tabs.Screen name="explore" options={exploreOptions} />
+        <Tabs.Screen name="events" options={eventsOptions} />
+        <Tabs.Screen name="profile" options={profileOptions} />
+      </Tabs>
+    </>
   );
 }
 

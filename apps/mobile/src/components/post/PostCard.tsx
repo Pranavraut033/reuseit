@@ -5,15 +5,19 @@ import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import StartChatModal from '~/components/chat/StartChatModal';
 import AvatarIcon from '~/components/common/AvatarIcon';
 import { Post } from '~/gql/fragments';
 import { DateTime } from '~/gql/helper.types';
-import { CREATE_CHAT, TOGGLE_LIKE_POST } from '~/gql/posts';
+import { TOGGLE_LIKE_POST } from '~/gql/posts';
 import useMounted from '~/hooks/useMounted';
 import { useUserLocation } from '~/hooks/useUserLocation';
 import { useStore } from '~/store';
 import { computeGeographicalDistance } from '~/utils';
+import { t } from '~/utils/i18n';
 import { PostCreateFormData } from '~/utils/postValidation';
+
+import { Button } from '../common/Button';
 
 type BasePostCardProps = {
   userName?: string;
@@ -183,8 +187,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-1.5 py-1 mb-3"
-            >
+              contentContainerClassName="gap-1.5 py-1 mb-3">
               {tags.map((tag, index) => (
                 <View key={index} className="rounded-xl bg-green-50 px-2.5 py-1">
                   <Text className="text-xs font-medium text-green-600">#{tag}</Text>
@@ -295,88 +298,73 @@ const EngagementPreviewSkeleton: React.FC<{
   const isGiveaway = postType === 'GIVEAWAY';
   const isRequest = postType === 'REQUESTS';
 
-  const [createChat, { loading: creatingChat }] = useMutation(CREATE_CHAT, {
-    variables: { createChatInput: { postId: postId! } },
-    onCompleted: () => {
-      // Navigate to post detail to see the chat
-      router.navigate(`/posts/${postId}`);
-    },
-  });
+  const [showModal, setShowModal] = useState(false);
 
   const handleRequestPress = useCallback(() => {
     if (hasChat) {
       // Navigate to existing chat
       router.navigate(`/posts/${postId}`);
     } else {
-      // Create new chat
-      createChat();
+      // Open modal to compose initial message
+      setShowModal(true);
     }
-  }, [hasChat, postId, createChat]);
+  }, [hasChat, postId]);
 
   return (
     <View className="flex-row items-center gap-5 border-t border-gray-100 p-3">
       {!isAuthor && (
         <>
           {isGiveaway ? (
-            <TouchableOpacity
+            <Button
               onPress={handleRequestPress}
-              disabled={creatingChat}
               accessibilityLabel={hasChat ? 'View request' : 'Request this item'}
               accessibilityRole="button"
-            >
-              <View
-                className={`flex-row items-center gap-1.5 rounded-full px-4 py-2 ${
-                  hasChat ? 'bg-gray-500' : 'bg-green-500'
-                }`}
-              >
-                <Ionicons name="hand-left" size={16} color="#FFF" />
-                <Text className="text-sm font-medium text-white">
-                  {hasChat ? 'Requested' : 'Request'}
-                </Text>
-              </View>
-            </TouchableOpacity>
+              size="small"
+              className={`rounded-full ${hasChat ? 'bg-gray-500' : 'bg-primary'} shadow-card`}
+              title={hasChat ? t('postCard.requested') : t('postCard.request')}
+              icon={(props) => <Ionicons name="hand-left" {...props} />}
+            />
           ) : isRequest ? (
-            <TouchableOpacity
-              onPress={handleRequestPress}
-              disabled={creatingChat}
-              accessibilityLabel={hasChat ? 'View offer' : 'Offer this item'}
-              accessibilityRole="button"
-            >
-              <View
-                className={`flex-row items-center gap-1.5 rounded-full px-4 py-2 ${
-                  hasChat ? 'bg-gray-500' : 'bg-blue-500'
-                }`}
-              >
-                <Ionicons name="hand-right" size={16} color="#FFF" />
-                <Text className="text-sm font-medium text-white">
-                  {hasChat ? 'Offered' : 'Offer'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={onLikePress}
-              disabled={isLiking}
-              accessibilityLabel={liked ? 'Unlike this post' : 'Like this post'}
-              accessibilityRole="button"
-            >
-              <View className="flex-row items-center gap-1.5">
-                <Ionicons
-                  name={liked ? 'heart' : 'heart-outline'}
-                  size={20}
-                  color={liked ? '#10B981' : '#6B7280'}
-                />
-                <Text className="text-sm" style={{ color: liked ? '#10B981' : '#4B5563' }}>
-                  {Math.floor(likeCount)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
+            <>
+              <Button
+                onPress={handleRequestPress}
+                size="small"
+                accessibilityLabel={hasChat ? 'View offer' : 'Offer this item'}
+                accessibilityRole="button"
+                icon={(props) => <Ionicons name="hand-left" {...props} />}
+                title={hasChat ? t('postCard.offered') : t('postCard.offer')}
+              />
+            </>
+          ) : null}
+          <TouchableOpacity
+            onPress={onLikePress}
+            disabled={isLiking}
+            accessibilityLabel={liked ? 'Unlike this post' : 'Like this post'}
+            accessibilityRole="button">
+            <View className="flex-row items-center gap-1.5">
+              <Ionicons
+                name={liked ? 'heart' : 'heart-outline'}
+                size={20}
+                color={liked ? '#10B981' : '#6B7280'}
+              />
+              <Text className="text-sm" style={{ color: liked ? '#10B981' : '#4B5563' }}>
+                {Math.floor(likeCount)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <StartChatModal
+            visible={showModal}
+            onClose={() => setShowModal(false)}
+            postId={postId!}
+            postType={postType}
+            onChatCreated={() => {
+              router.navigate(`/posts/${postId}`);
+            }}
+          />
           <TouchableOpacity
             onPress={onCommentPress}
             accessibilityLabel="View chat"
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             <View className="flex-row items-center gap-1.5">
               <Ionicons name="chatbubble-outline" size={20} color="#6B7280" />
               <Text className="text-sm text-gray-600">

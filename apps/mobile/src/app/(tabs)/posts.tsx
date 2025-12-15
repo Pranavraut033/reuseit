@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client/react';
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -29,6 +29,7 @@ const filters = [
 
 const FeedsScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [postFilterType, setPostFilterType] = useState<PostFilterType>(PostFilterType.All);
   const [offset, setOffset] = useState(0);
   const limit = 10;
@@ -36,22 +37,36 @@ const FeedsScreen = () => {
   const { location: userLocation } = useUserLocation();
 
   // Create post filter object based on selected type
+  // debounce search input to avoid spamming the server on every keystroke
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
+    return () => clearTimeout(id);
+  }, [searchQuery]);
+
   const postFilter = useMemo(
     (): PostFilterInput => ({
       type: postFilterType,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
       ...(postFilterType === PostFilterType.Nearby &&
         userLocation && {
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
-          radiusInKm: 10, // 10km radius for nearby posts
+          radiusInKm: 0.5, // 0.5km radius for nearby posts
         }),
     }),
-    [postFilterType, userLocation],
+    [postFilterType, userLocation, debouncedSearch],
   );
 
   const { data, loading, error, refetch, fetchMore } = useQuery<GetPostsQuery>(GET_POSTS, {
     variables: { limit, offset: 0, postFilter },
+    fetchPolicy: 'cache-and-network',
   });
+
+  // When filters change (including debounced search), reset pagination and refetch
+  useEffect(() => {
+    setOffset(0);
+    refetch({ limit, offset: 0, postFilter });
+  }, [postFilter, refetch]);
 
   const onRefresh = useCallback(async () => {
     setOffset(0);
@@ -86,14 +101,14 @@ const FeedsScreen = () => {
     <ScreenContainer
       header={
         <View className="p-4">
-          <View className="flex-row items-center justify-between mb-4">
+          <View className="mb-4 flex-row items-center justify-between">
             <Text className="text-xl font-bold text-gray-800">{t('posts.latest')}</Text>
           </View>
-          <View className="flex-row items-center mb-4">
-            <View className="flex-1 flex-row items-center rounded-full bg-gray-100 px-4 py-2 mr-2">
+          <View className="mb-4 flex-row items-center">
+            <View className="mr-2 flex-1 flex-row items-center rounded-full bg-gray-100 px-4 py-2">
               <Ionicons name="search" size={20} color="#6B7280" />
               <TextInput
-                className="flex-1 ml-2 text-gray-700"
+                className="ml-2 flex-1 text-gray-700"
                 placeholder={t('posts.searchPlaceholder')}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -111,21 +126,18 @@ const FeedsScreen = () => {
                 }}
                 className={`rounded-full px-4 py-2 ${
                   postFilterType === filter.key ? 'bg-green-500' : 'bg-gray-200'
-                }`}
-              >
+                }`}>
                 <Text
                   className={`text-sm font-medium ${
                     postFilterType === filter.key ? 'text-white' : 'text-gray-700'
-                  }`}
-                >
+                  }`}>
                   {filter.label}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
-      }
-    >
+      }>
       {!posts.length && loading && (
         <View className="items-center justify-center py-12">
           <ActivityIndicator size="large" color="#10B981" />
@@ -163,7 +175,7 @@ const FeedsScreen = () => {
               </Text>
             </View>
           </View>
-          <Button onPress={() => refetch()} className="mb-4 mx-auto bg-red-600 px-12 rounded-full">
+          <Button onPress={() => refetch()} className="mx-auto mb-4 rounded-full bg-red-600 px-12">
             <Text className="text-white" onPress={() => refetch()}>
               Retry
             </Text>

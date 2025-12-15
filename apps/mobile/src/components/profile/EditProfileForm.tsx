@@ -1,11 +1,13 @@
 import { useMutation } from '@apollo/client/react';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormProvider, useForm } from 'react-hook-form';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toast } from 'toastify-react-native';
 import * as yup from 'yup';
 
+import { Button } from '~/components/common/Button';
 import { TextField } from '~/components/form';
 import { useAuth } from '~/context/AuthContext';
 import { UPDATE_USER_MUTATION } from '~/gql/user';
@@ -33,6 +35,7 @@ interface EditProfileFormProps {
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({ isVisible, onClose }) => {
   const { user, updateUser } = useAuth();
   const [updateUserMutation] = useMutation(UPDATE_USER_MUTATION);
+  const insets = useSafeAreaInsets();
 
   const methods = useForm({
     resolver: yupResolver(editProfileSchema),
@@ -79,60 +82,68 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({ isVisible, onC
   if (!isVisible) return null;
 
   return (
-    <BottomSheet
-      index={0}
-      snapPoints={['85%']}
-      enablePanDownToClose
-      onClose={onClose}
-      backgroundStyle={{ backgroundColor: 'white' }}
-    >
-      <BottomSheetView className="flex-1">
-        <FormProvider {...methods}>
-          <View className="flex-1">
-            {/* Header */}
-            <View className="flex-row items-center justify-between border-b border-gray-200 p-4">
-              <TouchableOpacity onPress={onClose}>
-                <Text className="text-blue-500 text-lg">{t('profile.cancel')}</Text>
-              </TouchableOpacity>
-              <Text className="text-xl font-bold text-gray-800">{t('profile.editProfile')}</Text>
-              <TouchableOpacity
-                onPress={handleSubmit(handleEditProfile as any)}
-                disabled={isSubmitting}
-              >
-                <Text className={`text-lg ${isSubmitting ? 'text-gray-400' : 'text-blue-500'}`}>
-                  {t('profile.save')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Form Content */}
-            <View className="flex-1 p-4">
-              <TextField name="name" label={t('profile.name')} placeholder="Enter your name" />
-
-              <TextField
-                name="username"
-                label={t('profile.username')}
-                placeholder="Enter your username"
-              />
-
-              <TextField
-                name="phoneNumber"
-                label={t('profile.phone')}
-                placeholder="Enter your phone number"
-                keyboardType="phone-pad"
-              />
-
-              <View className="mt-4">
-                <Text className="text-sm text-gray-600 mb-2">{t('profile.email')}</Text>
-                <Text className="text-base text-gray-800 bg-gray-100 p-3 rounded-lg">
-                  {user?.email}
-                </Text>
-                <Text className="text-xs text-gray-500 mt-1">Email cannot be changed</Text>
+    <Modal visible={isVisible} animationType="fade" transparent>
+      <Pressable onPress={onClose} className="absolute inset-0 bg-black/40" accessible={false} />
+      <BottomSheet
+        index={1}
+        snapPoints={['40%', '85%']}
+        enablePanDownToClose
+        onClose={onClose}
+        backgroundStyle={{
+          backgroundColor: 'white',
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        }}
+        handleIndicatorStyle={{ backgroundColor: '#E5E7EB', width: 40, height: 4 }}
+        style={{ paddingBottom: insets.bottom ?? 16, shadowColor: '#000', shadowOpacity: 0.05 }}
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize">
+        <BottomSheetView className="flex-1">
+          <FormProvider {...methods}>
+            <View className="flex-1">
+              {/* Header */}
+              <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3">
+                <TouchableOpacity onPress={onClose} accessibilityRole="button">
+                  <Text className="text-base text-forest">{t('profile.cancel')}</Text>
+                </TouchableOpacity>
+                <Text className="text-lg font-bold text-forest">{t('profile.editProfile')}</Text>
+                <View className="ml-2">
+                  <Button
+                    title={t('profile.save')}
+                    size="small"
+                    type="primary"
+                    onPress={handleSubmit(handleEditProfile as any)}
+                    disabled={isSubmitting}
+                  />
+                </View>
               </View>
+
+              {/* Form Content (scrollable) */}
+              <BottomSheetScrollView
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ padding: 16, paddingBottom: (insets.bottom ?? 16) + 24 }}>
+                <TextField name="name" label={t('profile.name')} placeholder="Enter your name" />
+
+                <TextField
+                  name="phoneNumber"
+                  label={t('profile.phone')}
+                  placeholder="Enter your phone number"
+                  keyboardType="phone-pad"
+                />
+
+                <View className="mt-4">
+                  <Text className="mb-2 text-sm text-forest">{t('profile.email')}</Text>
+                  <Text className="rounded-lg bg-gray-100 p-3 text-base text-forest">
+                    {user?.email}
+                  </Text>
+                  <Text className="mt-1 text-xs text-gray-500">Email cannot be changed</Text>
+                </View>
+              </BottomSheetScrollView>
             </View>
-          </View>
-        </FormProvider>
-      </BottomSheetView>
-    </BottomSheet>
+          </FormProvider>
+        </BottomSheetView>
+      </BottomSheet>
+    </Modal>
   );
 };

@@ -126,8 +126,7 @@ export default function ChatRequestsScreen() {
       <View className="mb-4 flex-row items-center justify-between border-b border-gray-200 pb-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-gray-100"
-        >
+          className="h-10 w-10 items-center justify-center rounded-full bg-gray-100">
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-xl font-bold text-gray-800">Chat Requests</Text>
@@ -177,29 +176,25 @@ export default function ChatRequestsScreen() {
               <View className="flex-row gap-2">
                 <TouchableOpacity
                   onPress={() => router.push(`/posts/${chat.post.id}`)}
-                  className="flex-1 rounded-lg bg-blue-500 py-2"
-                >
+                  className="flex-1 rounded-lg bg-blue-500 py-2">
                   <Text className="text-center text-sm font-medium text-white">View Chat</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => handleBlockUser(chat.requester.id, chat.requester.name)}
-                  className="rounded-lg bg-red-500 px-3 py-2"
-                >
+                  className="rounded-lg bg-red-500 px-3 py-2">
                   <Ionicons name="ban" size={16} color="white" />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => handleDeleteChat(chat.id)}
-                  className="rounded-lg bg-gray-500 px-3 py-2"
-                >
+                  className="rounded-lg bg-gray-500 px-3 py-2">
                   <Ionicons name="trash" size={16} color="white" />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => setReportingChatId(chat.id)}
-                  className="rounded-lg bg-yellow-500 px-3 py-2"
-                >
+                  className="rounded-lg bg-yellow-500 px-3 py-2">
                   <Ionicons name="flag" size={16} color="white" />
                 </TouchableOpacity>
               </View>
@@ -219,8 +214,7 @@ export default function ChatRequestsScreen() {
                   <View className="flex-row gap-2">
                     <TouchableOpacity
                       onPress={() => handleReportChat(chat.id)}
-                      className="flex-1 rounded bg-yellow-500 py-2"
-                    >
+                      className="flex-1 rounded bg-yellow-500 py-2">
                       <Text className="text-center text-sm font-medium text-white">Report</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -228,8 +222,7 @@ export default function ChatRequestsScreen() {
                         setReportingChatId(null);
                         setReportReason('');
                       }}
-                      className="rounded bg-gray-300 px-3 py-2"
-                    >
+                      className="rounded bg-gray-300 px-3 py-2">
                       <Text className="text-sm text-gray-700">Cancel</Text>
                     </TouchableOpacity>
                   </View>

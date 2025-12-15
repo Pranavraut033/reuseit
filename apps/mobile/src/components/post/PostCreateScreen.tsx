@@ -225,8 +225,7 @@ export const PostCreateScreen: React.FC = () => {
             disabled={isLoading}
             accessible={true}
             accessibilityLabel={t('accessibility.cancelButton')}
-            accessibilityRole="button"
-          >
+            accessibilityRole="button">
             <Ionicons name="arrow-back" size={28} color="#1F2937" />
           </TouchableOpacity>
 
@@ -239,8 +238,7 @@ export const PostCreateScreen: React.FC = () => {
             accessible={true}
             accessibilityLabel={t('accessibility.publishButton')}
             accessibilityRole="button"
-            loading={isLoading}
-          >
+            loading={isLoading}>
             {t('postCreate.publish')}
           </Button>
         </View>
@@ -249,8 +247,7 @@ export const PostCreateScreen: React.FC = () => {
         <>
           <ModalPreview formValues={formValues} images={images} />
         </>
-      }
-    >
+      }>
       <View className="flex-1">
         <View className="p-4 ">
           <FormProvider {...methods}>
@@ -275,11 +272,9 @@ export const PostCreateScreen: React.FC = () => {
                         disabled={isLoading}
                         accessible={true}
                         accessibilityLabel={`${type.label} post type`}
-                        accessibilityRole="button"
-                      >
+                        accessibilityRole="button">
                         <Text
-                          className={`text-[14px] font-medium ${value === type.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
-                        >
+                          className={`text-[14px] font-medium ${value === type.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
                           {type.label}
                         </Text>
                       </TouchableOpacity>
@@ -371,11 +366,9 @@ export const PostCreateScreen: React.FC = () => {
                             disabled={isLoading}
                             accessible={true}
                             accessibilityLabel={`${cat.label} category`}
-                            accessibilityRole="button"
-                          >
+                            accessibilityRole="button">
                             <Text
-                              className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
-                            >
+                              className={`text-[14px] font-medium ${value === cat.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
                               {cat.label}
                             </Text>
                           </TouchableOpacity>
@@ -403,11 +396,9 @@ export const PostCreateScreen: React.FC = () => {
                             disabled={isLoading}
                             accessible={true}
                             accessibilityLabel={`${cond.label} condition`}
-                            accessibilityRole="button"
-                          >
+                            accessibilityRole="button">
                             <Text
-                              className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}
-                            >
+                              className={`text-[14px] font-medium ${value === cond.value ? 'font-semibold text-blue-800' : 'text-gray-600'}`}>
                               {cond.label}
                             </Text>
                           </TouchableOpacity>
@@ -494,8 +485,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
         hideOnScrollDown
         className="absolute bottom-8 right-8"
         icon={() => <Ionicons name="eye" size={24} color="#FFFFFF" />}
-        onPress={handleOpen}
-      >
+        onPress={handleOpen}>
         {t('postCreate.preview')}
       </FabButton>
       <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={handleClose}>
@@ -519,8 +509,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
               />
             )}
             enablePanDownToClose
-            onClose={handleClose}
-          >
+            onClose={handleClose}>
             <View className="flex-1 bg-white">
               {/* Header */}
               <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3">
@@ -532,8 +521,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
                 </View>
                 <TouchableOpacity
                   className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
-                  onPress={handleClose}
-                >
+                  onPress={handleClose}>
                   <Ionicons name="close" size={20} color="#374151" />
                 </TouchableOpacity>
               </View>
@@ -541,8 +529,7 @@ const ModalPreview: React.FC<ModalPreviewProps> = ({ formValues, images }) => {
               {/* Preview Card */}
               <BottomSheetScrollView
                 contentContainerStyle={{ paddingBottom: 20, padding: 16 }}
-                showsVerticalScrollIndicator={false}
-              >
+                showsVerticalScrollIndicator={false}>
                 <PostCard isPreview formData={formValues} images={images.map((img) => img.uri)} />
               </BottomSheetScrollView>
             </View>

@@ -34,7 +34,7 @@ const IconButton = forwardRef<View, IconButtonProps>(
     {
       icon,
       size = 24,
-      color = '#222',
+      color = '#34495E',
       loading = false,
       disabled = false,
       accessibilityLabel,
@@ -49,19 +49,20 @@ const IconButton = forwardRef<View, IconButtonProps>(
   ) => {
     const isDisabled = disabled || loading;
 
-    const [wrapperClassName, resolvedColor] = useMemo(
-      () => [
+    const [wrapperClassName, resolvedColor, touchSize] = useMemo(() => {
+      const baseTouch = Math.max(size + 16, 44); // ensure 44px min touch target
+      return [
         cn(
-          'items-center justify-center rounded-md',
+          'items-center justify-center rounded-full',
           'active:opacity-70',
-          isDisabled ? 'opacity-40' : '',
+          isDisabled ? 'opacity-40 pointer-events-none' : '',
           typeof style === 'string' ? style : '',
           className || '',
         ),
         color,
-      ],
-      [isDisabled, style, className, color],
-    );
+        baseTouch,
+      ];
+    }, [isDisabled, style, className, color, size]);
 
     const renderIcon = () => {
       if (loading) return renderLoading();
@@ -96,6 +97,7 @@ const IconButton = forwardRef<View, IconButtonProps>(
           pressed && {
             opacity: 0.7,
           },
+          { width: touchSize, height: touchSize },
         ]}>
         <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
           {renderIcon()}

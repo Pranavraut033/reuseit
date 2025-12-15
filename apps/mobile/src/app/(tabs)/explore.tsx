@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toast } from 'toastify-react-native';
 
 import { NearbyPlace } from '~/__generated__/types';
+import Badge from '~/components/common/Badge';
 import { Button } from '~/components/common/Button';
 import { FabButton } from '~/components/common/FabButton';
 import ScreenContainer from '~/components/common/ScreenContainer';
@@ -17,6 +18,7 @@ import { NEARBY_PLACES_QUERY } from '~/gql/google-maps';
 import useStatusBarHeight from '~/hooks/useStatusBarHeight';
 import { useUserLocation } from '~/hooks/useUserLocation';
 import { t } from '~/utils/i18n';
+
 const INITIAL_REGION: Region = {
   // Berlin as default center
   latitude: 52.52,
@@ -153,10 +155,8 @@ export default function ExplorePage() {
       <View
         className="left-4 right-4 top-4 z-10 rounded p-6"
         style={[{ marginTop: useStatusBarHeight() }, styles.glassHeader]}>
-        <Text className="text-center text-xl font-semibold text-primary-dark">
-          {t('explore.title')}
-        </Text>
-        <Text className="mt-4 text-base text-slate-600">{t('explore.subtitle')}</Text>
+        <Text className="text-center text-xl font-semibold text-forest">{t('explore.title')}</Text>
+        <Text className="mt-4 text-base text-gray-600">{t('explore.subtitle')}</Text>
       </View>
       <View className="absolute inset-x-0" style={{ zIndex: 10, top: insets.top + 130 }}>
         <CategoryFilterBar
@@ -172,8 +172,8 @@ export default function ExplorePage() {
         <View
           className="absolute left-0 right-0 z-20 items-center"
           style={{ bottom: insets.bottom + 16 + 78 }}>
-          <View className="rounded-full bg-white px-4 py-2 shadow-lg">
-            <Text className="text-sm text-gray-700">{t('explore.loading')}</Text>
+          <View className="rounded-full bg-white px-4 py-2 shadow-soft">
+            <Text className="text-sm text-forest">{t('explore.loading')}</Text>
           </View>
         </View>
       )}
@@ -217,8 +217,9 @@ export default function ExplorePage() {
                 <FontAwesome name="location-arrow" size={size} color={color} />
               )}
               loading={isLoadingLocation}
-              className="bg-blue-500"
+              className="bg-secondary"
               iconColor="white"
+              accessibilityLabel={t('explore.tooltipCurrentLocation')}
               onPress={() => {
                 if (userRegion) animateToCurrentLocation();
                 else fetchUserLocation();
@@ -232,11 +233,12 @@ export default function ExplorePage() {
           <TooltipWrapper content={t('explore.tooltipLoadArea')}>
             <FabButton
               icon={({ color, size }) => <MaterialIcons name="refresh" size={size} color={color} />}
-              className="mt-2 bg-green-500"
+              className="mt-2 bg-primary"
               iconColor="white"
+              accessibilityLabel={t('explore.tooltipLoadArea')}
               onPress={() => setRegionToFetch(currentVisibleRegion)}
               size="small"
-              type="neutral"
+              type="primary"
               disabled={isLoadingPlaces}
             />
           </TooltipWrapper>
@@ -258,12 +260,12 @@ export default function ExplorePage() {
                   <PlacePhoto place={selectedPlace} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xl font-bold text-gray-800">{selectedPlace.name}</Text>
+                  <Text className="text-xl font-bold text-forest">{selectedPlace.name}</Text>
                   <Text className="mt-1 text-sm text-gray-600">{selectedPlace.vicinity}</Text>
                   {selectedPlace.category && (
-                    <Text className="mt-1 text-sm font-semibold text-green-600">
+                    <Badge variant="info" className="mt-2">
                       {selectedPlace.category}
-                    </Text>
+                    </Badge>
                   )}
                 </View>
               </View>
@@ -277,13 +279,11 @@ export default function ExplorePage() {
 
               {selectedPlace.acceptedMaterials && selectedPlace.acceptedMaterials.length > 0 && (
                 <View className="mb-4">
-                  <Text className="mb-2 text-lg font-semibold text-gray-800">
-                    Accepted Materials
-                  </Text>
+                  <Text className="mb-2 text-lg font-semibold text-forest">Accepted Materials</Text>
                   <View className="flex-row flex-wrap">
                     {selectedPlace.acceptedMaterials.map((material, index) => (
-                      <View key={index} className="mb-2 mr-2 rounded-full bg-green-100 px-3 py-1">
-                        <Text className="text-sm text-green-800">{material}</Text>
+                      <View key={index} className="mb-2 mr-2">
+                        <Badge variant="primary">{material}</Badge>
                       </View>
                     ))}
                   </View>
@@ -325,7 +325,7 @@ const PlacePhoto: React.FC<{ place: NearbyPlace }> = ({ place }) => {
   if (!url) {
     return (
       <View className="h-full w-full items-center justify-center bg-gray-400">
-        <Text className="text-white">No Image</Text>
+        <Text className="text-forest">No Image</Text>
       </View>
     );
   }

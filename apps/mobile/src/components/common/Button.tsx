@@ -35,15 +35,15 @@ type ButtonProps = {
 } & PressableProps;
 
 const typeClass: Record<ButtonType, string> = {
-  primary: 'bg-primary',
-  error: 'bg-red-600',
-  neutral: 'bg-gray-400',
+  primary: 'bg-primary rounded-full shadow-card',
+  error: 'bg-red-600 rounded-md shadow-soft',
+  neutral: 'bg-white border border-gray-300 rounded-md',
 };
 
 const textTypeClass: Record<ButtonType, string> = {
   primary: 'text-white',
   error: 'text-white',
-  neutral: 'text-black',
+  neutral: 'text-forest',
 };
 
 const sizeClass: Record<ButtonSize, string> = {
@@ -89,10 +89,10 @@ const ButtonComponent = forwardRef<View, ButtonProps>(
     const [buttonClassName, computedTextClassName, iconMarginClass, resolvedIconColor] = useMemo(
       () => [
         cn(
-          'items-center justify-center shadow-md rounded-lg flex-row',
+          'items-center justify-center flex-row',
           typeClass[type],
           sizeClass[size],
-          isDisabled ? 'opacity-60' : '',
+          isDisabled ? 'opacity-60 pointer-events-none' : '',
           className || '',
         ),
         cn(

@@ -35,10 +35,9 @@ const AvatarIcon: React.FC<{
   if (anonymous) {
     return (
       <View
-        style={[containerStyle, { backgroundColor: '#E5E7EB' }]}
-        className="items-center justify-center overflow-hidden"
-      >
-        <MaterialCommunityIcons name="incognito" size={size * 0.6} color="#6B7280" />
+        style={[containerStyle]}
+        className="items-center justify-center overflow-hidden bg-canvas">
+        <MaterialCommunityIcons name="incognito" size={size * 0.6} color="#34495E" />
       </View>
     );
   }
@@ -53,12 +52,10 @@ const AvatarIcon: React.FC<{
     return (
       <View
         style={[containerStyle, { backgroundColor: getRandomAvatar(user.name) }]}
-        className="items-center justify-center overflow-hidden"
-      >
+        className="items-center justify-center overflow-hidden">
         <Text
           style={{ fontSize: textSize, color: 'white', fontWeight: 'bold' }}
-          className="text-center"
-        >
+          className="text-center">
           {user.name.charAt(0).toUpperCase()}
         </Text>
       </View>
@@ -67,9 +64,8 @@ const AvatarIcon: React.FC<{
     return (
       <View
         style={containerStyle}
-        className="items-center justify-center overflow-hidden bg-green-50"
-      >
-        <Ionicons name="leaf" size={size * 0.6} color="#6B7280" />
+        className="items-center justify-center overflow-hidden bg-canvas">
+        <Ionicons name="leaf" size={size * 0.6} color="#34495E" />
       </View>
     );
   }
