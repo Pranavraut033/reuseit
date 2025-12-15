@@ -1,8 +1,8 @@
 import 'react-native-reanimated';
 import '../../global.css';
+import '~/firebase/backgroundMessaging';
 
 import { ApolloProvider } from '@apollo/client/react';
-import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, usePathname } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -34,7 +34,6 @@ export default function RootLayout() {
             <AppProvider>
               <SplashScreenController />
               <App />
-              <PortalHost />
               <ToastManager />
             </AppProvider>
           </QueryClientProvider>
