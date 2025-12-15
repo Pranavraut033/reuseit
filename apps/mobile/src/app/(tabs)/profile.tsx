@@ -13,7 +13,7 @@ import { EXPORT_USER_DATA_MUTATION, REMOVE_USER_MUTATION } from '~/gql/user';
 import { t } from '~/utils/i18n';
 
 export default function Profile() {
-  const { signOut, user } = useAuth();
+  const { signOut, user, sendEmailVerification } = useAuth();
   const [editModalVisible, setEditModalVisible] = useState(false);
 
   const [exportUserDataMutation] = useMutation(EXPORT_USER_DATA_MUTATION);
@@ -83,7 +83,8 @@ export default function Profile() {
           onPress={() => setEditModalVisible(true)}
           accessible={true}
           accessibilityLabel="Edit Profile"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <Text className="font-medium text-white">{t('profile.editProfile')}</Text>
         </TouchableOpacity>
       </View>
@@ -100,7 +101,8 @@ export default function Profile() {
           onPress={() => router.push('/posts')}
           accessible={true}
           accessibilityLabel="View My Posts"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-secondary/10">
             <Ionicons name="document-text-outline" size={20} color="#3498DB" />
           </View>
@@ -116,7 +118,8 @@ export default function Profile() {
           onPress={() => router.push('/chat-requests')}
           accessible={true}
           accessibilityLabel="Manage Chat Requests"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-secondary/10">
             <Ionicons name="chatbubbles-outline" size={20} color="#8B5CF6" />
           </View>
@@ -126,13 +129,58 @@ export default function Profile() {
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
 
+        {/* Email Verification (if applicable) */}
+        {user?.email && !user?.emailVerified && (
+          <Pressable
+            className="flex-row items-center border-b border-gray-100 px-5 py-4 active:bg-gray-50"
+            onPress={async () => {
+              try {
+                await sendEmailVerification?.(() => {});
+                Toast.success(t('profile.verifyEmailSent'));
+              } catch (error) {
+                console.error('Send verification email error:', error);
+                Toast.error(t('profile.verifyEmailError'));
+              }
+            }}
+            accessible={true}
+            accessibilityLabel="Verify Email"
+            accessibilityRole="button"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Ionicons name="mail-unread-outline" size={20} color="#F59E42" />
+            </View>
+            <Text className="ml-4 flex-1 text-base font-medium text-forest">
+              {t('profile.verifyEmail')}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </Pressable>
+        )}
+
+        {user?.email && user?.emailVerified && (
+          <Pressable
+            className="flex-row items-center border-b border-gray-100 px-5 py-4 active:bg-gray-50"
+            accessible={true}
+            accessibilityLabel="Email Verified"
+            accessibilityRole="text"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Ionicons name="checkmark-circle-outline" size={20} color="#10B981" />
+            </View>
+            <Text className="ml-4 flex-1 text-base font-medium text-forest">
+              {t('profile.emailVerified')}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </Pressable>
+        )}
+
         {/* Data Export */}
         <Pressable
           className="flex-row items-center border-b border-gray-100 px-5 py-4 active:bg-gray-50"
           onPress={handleExportData}
           accessible={true}
           accessibilityLabel="Export My Data"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-earth-accent/10">
             <Ionicons name="download-outline" size={20} color="#F59E42" />
           </View>
@@ -148,7 +196,8 @@ export default function Profile() {
           onPress={handleDeleteAccount}
           accessible={true}
           accessibilityLabel="Delete My Account"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-red-100">
             <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </View>
@@ -164,7 +213,8 @@ export default function Profile() {
           onPress={() => router.push('/privacy-policy')}
           accessible={true}
           accessibilityLabel="Privacy Policy"
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
             <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
           </View>

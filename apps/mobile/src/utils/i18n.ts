@@ -262,6 +262,10 @@ const translations_en = {
     updateSuccess: 'Profile updated successfully',
     updateError: 'Failed to update profile',
     exportSuccess: 'Data export initiated. You will receive an email shortly.',
+    emailVerified: 'Email verified',
+    verifyEmail: 'Verify Email',
+    verifyEmailSent: 'Verification email sent — check your inbox',
+    verifyEmailError: 'Failed to send verification email',
     exportError: 'Failed to export data',
     deleteConfirmTitle: 'Delete Account',
     deleteConfirmMessage:
@@ -579,6 +583,10 @@ export const translations: Record<string, TranslationObject> = {
       updateSuccess: 'Profil erfolgreich aktualisiert',
       updateError: 'Profil konnte nicht aktualisiert werden',
       exportSuccess: 'Datenexport initiiert. Sie erhalten in Kürze eine E-Mail.',
+      emailVerified: 'E-Mail bestätigt',
+      verifyEmail: 'E-Mail verifizieren',
+      verifyEmailSent: 'Bestätigungs-E-Mail gesendet — Prüfe deinen Posteingang',
+      verifyEmailError: 'Senden der Bestätigungs-E-Mail fehlgeschlagen',
       exportError: 'Datenexport fehlgeschlagen',
       deleteConfirmTitle: 'Konto löschen',
       deleteConfirmMessage:

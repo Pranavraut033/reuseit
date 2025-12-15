@@ -58,6 +58,7 @@ export type AuthContextType = {
   signInWithPhoneNumber: (phoneNumber: string, onSuccess?: () => void) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (user: User) => void;
+  sendEmailVerification: (onSuccess?: () => void) => Promise<void>;
   user: User | null;
   verifyCode: (code: string, onSuccess?: () => void) => Promise<void>;
   // Helper metadata for UI flow
@@ -125,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // fetch sign-in methods for the email from Firebase
       // Using react-native-firebase's fetchSignInMethodsForEmail
       const methods = await Auth.fetchSignInMethodsForEmail(Auth.getAuth(), email);
-      console.log({ methods });
+      LOG.debug('fetched sign-in methods for email', { methods });
 
       setPendingEmail(email);
       setAvailableMethods(methods);
@@ -209,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         // Check existing methods
         const methods = await Auth.fetchSignInMethodsForEmail(Auth.getAuth(), email);
-        console.log({ methods });
+        LOG.debug('fetched sign-in methods for email', { methods });
 
         let response;
         if (methods.includes('password')) {
@@ -266,6 +267,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       LOG.error('signInWithGoogle failed', normalized);
       setError(normalized);
       throw new Error(normalized.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Send a verification email to the current user
+  const sendEmailVerification = useCallback(async (onSuccess?: () => void) => {
+    if (isLoadingRef.current) return;
+    setIsLoading(true);
+
+    try {
+      const currentUser = Auth.getAuth().currentUser;
+      if (!currentUser || !currentUser.email) throw new Error('No signed-in user with email');
+
+      const actionCodeSettings = {
+        url: Linking.createURL(''),
+        handleCodeInApp: true,
+      };
+
+      // Send verification email. Some Firebase projects reject non-http(s) continue URLs
+      // (INVALID_CONTINUE_URI). If that happens, retry without actionCodeSettings so
+      // the project's default continue URL is used instead.
+      try {
+        await currentUser.sendEmailVerification(actionCodeSettings);
+      } catch (innerErr) {
+        const normalizedInner = normalizeError(innerErr as Error, 'auth.unknownError');
+        const msg = (normalizedInner.message || '').toString();
+
+        if (
+          /INVALID_CONTINUE_URI|invalid-continue/i.test(msg) ||
+          normalizedInner.code === 'auth.invalidContinue'
+        ) {
+          LOG.warn(
+            'sendEmailVerification invalid continue uri, retrying without actionCodeSettings',
+          );
+          await currentUser.sendEmailVerification();
+        } else {
+          throw innerErr;
+        }
+      }
+
+      setError(null);
+      LOG.info('sendEmailVerification success', { email: currentUser.email });
+      onSuccess?.();
+    } catch (err) {
+      const normalized = normalizeError(err, 'auth.unknownError');
+      LOG.error('sendEmailVerification failed', normalized);
+      setError(normalized);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -453,6 +503,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithEmailLink,
     signInWithGoogle,
     signInWithPhoneNumber,
+    sendEmailVerification,
     signOut,
     updateUser: setUser,
     user,
