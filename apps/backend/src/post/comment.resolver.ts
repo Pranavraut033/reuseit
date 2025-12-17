@@ -7,14 +7,15 @@ import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
 import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
+import { UserLoader } from '~/user/user.loader';
 
 import { User } from '../user/entities/user.entity';
-import { CommentAuthorLoader, CommentPostLoader } from './comment.loader';
 import { CommentService } from './comment.service';
 import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
 import { Comment } from './entities/comment.entity';
 import { Post } from './entities/post.entity';
+import { PostLoader } from './post.loader';
 
 @Resolver(() => Comment)
 export class CommentResolver {
@@ -84,7 +85,7 @@ export class CommentResolver {
   @ResolveField('author', () => User, { nullable: true })
   async author(
     @Parent() comment: Comment & { authorId?: string | null },
-    @Loader(CommentAuthorLoader) loader: DataLoader<string, PrismaUser | null>,
+    @Loader(UserLoader) loader: DataLoader<string, PrismaUser | null>,
   ): Promise<PrismaUser | null> {
     if (!comment.authorId) return null;
     return loader.load(comment.authorId);
@@ -93,7 +94,7 @@ export class CommentResolver {
   @ResolveField('post', () => Post)
   async post(
     @Parent() comment: Comment & { postId: string },
-    @Loader(CommentPostLoader) loader: DataLoader<string, PrismaPost | null>,
+    @Loader(PostLoader) loader: DataLoader<string, PrismaPost | null>,
   ): Promise<PrismaPost | null> {
     return loader.load(comment.postId);
   }

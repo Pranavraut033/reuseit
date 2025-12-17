@@ -1,13 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { PrismaModule } from '~/prisma/prisma.module';
+import { UserModule } from '~/user/user.module';
 
-import {
-  BadgeAssignmentBadgeLoader,
-  BadgeAssignmentUserLoader,
-  BadgeLoader,
-  BadgeUsersLoader,
-} from './badge.loader';
+import { BadgeAssignmentBadgeLoader, BadgeLoader, BadgeUsersLoader } from './badge.loader';
 import { BadgeResolver } from './badge.resolver';
 import { BadgeService } from './badge.service';
 
@@ -18,8 +14,7 @@ import { BadgeService } from './badge.service';
     BadgeLoader,
     BadgeUsersLoader,
     BadgeAssignmentBadgeLoader,
-    BadgeAssignmentUserLoader,
   ],
-  imports: [PrismaModule],
+  imports: [PrismaModule, forwardRef(() => UserModule)],
 })
 export class BadgeModule {}

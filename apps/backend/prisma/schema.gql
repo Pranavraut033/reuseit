@@ -270,12 +270,6 @@ type Query {
   point(id: Int!): Point!
   badge(id: Int!): Badge!
   userArticle(id: Int!): UserArticle!
-  events(eventFilter: EventFilterInput): [Event!]!
-  event(id: String!): Event!
-  eventsByCreator(creatorId: String!): [Event!]!
-  upcomingEvents: [Event!]!
-  locations: [Location!]!
-  location(id: String!): Location!
   posts(limit: Int, offset: Int, postFilter: PostFilterInput): [Post!]!
   postsByAuthor(authorId: String!): [Post!]!
   postsByIds(ids: [String!]!): [Post!]!
@@ -283,25 +277,18 @@ type Query {
   getChatByPostAndUser(postId: String!): Chat
   getChatById(id: String!): Chat!
   getChatsForUser: [Chat!]!
+  locations: [Location!]!
+  location(id: String!): Location!
+  events(eventFilter: EventFilterInput): [Event!]!
+  event(id: String!): Event!
+  eventsByCreator(creatorId: String!): [Event!]!
+  upcomingEvents: [Event!]!
   AIInsights(input: AIInsightsInput!): AIInsights!
   placesAutocomplete(input: String!, latitude: Float, longitude: Float, radius: Float, sessionToken: String): [PlaceAutocompletePrediction!]!
   placeDetails(placeId: String!, sessionToken: String): PlaceDetails
   nearbyPlaces(latitude: Float!, longitude: Float!, radius: Float, keywords: [String!]!): [NearbyPlace!]!
   reverseGeocode(latitude: Float!, longitude: Float!): ReverseGeocodeResult
   generatePlacesSessionToken: String!
-}
-
-input EventFilterInput {
-  type: EventFilterType
-  latitude: Float
-  longitude: Float
-  radiusInKm: Float
-}
-
-enum EventFilterType {
-  All
-  Nearby
-  Upcoming
 }
 
 input PostFilterInput {
@@ -317,6 +304,19 @@ enum PostFilterType {
   Nearby
   Giveaway
   Requests
+}
+
+input EventFilterInput {
+  type: EventFilterType
+  latitude: Float
+  longitude: Float
+  radiusInKm: Float
+}
+
+enum EventFilterType {
+  All
+  Nearby
+  Upcoming
 }
 
 input AIInsightsInput {
@@ -342,23 +342,6 @@ type Mutation {
   createUserArticle(createUserArticleInput: CreateUserArticleInput!): UserArticle!
   updateUserArticle(updateUserArticleInput: UpdateUserArticleInput!): UserArticle!
   removeUserArticle(id: Int!): UserArticle!
-  createEvent(createEventInput: CreateEventInput!): Event!
-  updateEvent(updateEventInput: UpdateEventInput!): Event!
-  removeEvent(id: String!): Event!
-  joinEvent(eventId: String!): Event!
-  leaveEvent(eventId: String!): Event!
-  createLocation(createLocationInput: CreateLocationInput!): Location!
-  updateLocation(updateLocationInput: UpdateLocationInput!): Location!
-  removeLocation(id: String!): Location!
-
-  """Register device FCM token for push notifications"""
-  registerDeviceToken(token: String!, userId: String!): Boolean!
-
-  """Send test push notification to device"""
-  sendTestNotification(token: String!, title: String!, body: String!): Boolean!
-
-  """Send push notification to a user by their ID"""
-  sendNotificationToUser(userId: String!, title: String!, body: String!): Boolean!
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: String!): Post!
@@ -368,6 +351,23 @@ type Mutation {
   blockUser(blockUserInput: BlockUserInput!): Boolean!
   deleteChat(chatId: String!): Boolean!
   reportChat(reportChatInput: ReportChatInput!): Boolean!
+
+  """Register device FCM token for push notifications"""
+  registerDeviceToken(token: String!, userId: String!): Boolean!
+
+  """Send test push notification to device"""
+  sendTestNotification(token: String!, title: String!, body: String!): Boolean!
+
+  """Send push notification to a user by their ID"""
+  sendNotificationToUser(userId: String!, title: String!, body: String!): Boolean!
+  createLocation(createLocationInput: CreateLocationInput!): Location!
+  updateLocation(updateLocationInput: UpdateLocationInput!): Location!
+  removeLocation(id: String!): Location!
+  createEvent(createEventInput: CreateEventInput!): Event!
+  updateEvent(updateEventInput: UpdateEventInput!): Event!
+  removeEvent(id: String!): Event!
+  joinEvent(eventId: String!): Event!
+  leaveEvent(eventId: String!): Event!
 }
 
 input SignInInput {
@@ -443,112 +443,6 @@ input UpdateUserArticleInput {
   id: Int!
 }
 
-input CreateEventInput {
-  """Event title"""
-  title: String!
-
-  """Event image URLs"""
-  imageUrl: [String!]!
-
-  """Event description"""
-  description: String
-
-  """Event start time"""
-  startTime: DateTime!
-
-  """Event end time"""
-  endTime: DateTime
-
-  """Location ID where the event will take place"""
-  locationId: String
-
-  """Location details for the event"""
-  location: CreateLocationInput
-}
-
-input CreateLocationInput {
-  """Street address"""
-  street: String!
-
-  """Location line 2"""
-  addressLine2: String
-
-  """Additional address information"""
-  additionalInfo: String
-
-  """City"""
-  city: String
-
-  """Country"""
-  country: String!
-
-  """Postal code"""
-  postalCode: String
-
-  """Coordinates [longitude, latitude]"""
-  coordinates: [Float!]!
-
-  """Google Place ID"""
-  googlePlaceId: String
-
-  """Location type"""
-  type: String!
-}
-
-input UpdateEventInput {
-  """Event title"""
-  title: String
-
-  """Event image URLs"""
-  imageUrl: [String!]
-
-  """Event description"""
-  description: String
-
-  """Event start time"""
-  startTime: DateTime
-
-  """Event end time"""
-  endTime: DateTime
-
-  """Location ID where the event will take place"""
-  locationId: String
-
-  """Location details for the event"""
-  location: CreateLocationInput
-  id: String!
-}
-
-input UpdateLocationInput {
-  """Street address"""
-  street: String
-
-  """Location line 2"""
-  addressLine2: String
-
-  """Additional address information"""
-  additionalInfo: String
-
-  """City"""
-  city: String
-
-  """Country"""
-  country: String
-
-  """Postal code"""
-  postalCode: String
-
-  """Coordinates [longitude, latitude]"""
-  coordinates: [Float!]
-
-  """Google Place ID"""
-  googlePlaceId: String
-
-  """Location type"""
-  type: String
-  id: String!
-}
-
 input CreatePostInput {
   """Post title"""
   title: String!
@@ -585,6 +479,35 @@ input CreatePostInput {
 
   """Type of the post"""
   postType: PostType!
+}
+
+input CreateLocationInput {
+  """Street address"""
+  street: String!
+
+  """Location line 2"""
+  addressLine2: String
+
+  """Additional address information"""
+  additionalInfo: String
+
+  """City"""
+  city: String
+
+  """Country"""
+  country: String!
+
+  """Postal code"""
+  postalCode: String
+
+  """Coordinates [longitude, latitude]"""
+  coordinates: [Float!]!
+
+  """Google Place ID"""
+  googlePlaceId: String
+
+  """Location type"""
+  type: String!
 }
 
 input UpdatePostInput {
@@ -643,4 +566,81 @@ input BlockUserInput {
 input ReportChatInput {
   chatId: String!
   reason: String!
+}
+
+input UpdateLocationInput {
+  """Street address"""
+  street: String
+
+  """Location line 2"""
+  addressLine2: String
+
+  """Additional address information"""
+  additionalInfo: String
+
+  """City"""
+  city: String
+
+  """Country"""
+  country: String
+
+  """Postal code"""
+  postalCode: String
+
+  """Coordinates [longitude, latitude]"""
+  coordinates: [Float!]
+
+  """Google Place ID"""
+  googlePlaceId: String
+
+  """Location type"""
+  type: String
+  id: String!
+}
+
+input CreateEventInput {
+  """Event title"""
+  title: String!
+
+  """Event image URLs"""
+  imageUrl: [String!]!
+
+  """Event description"""
+  description: String
+
+  """Event start time"""
+  startTime: DateTime!
+
+  """Event end time"""
+  endTime: DateTime
+
+  """Location ID where the event will take place"""
+  locationId: String
+
+  """Location details for the event"""
+  location: CreateLocationInput
+}
+
+input UpdateEventInput {
+  """Event title"""
+  title: String
+
+  """Event image URLs"""
+  imageUrl: [String!]
+
+  """Event description"""
+  description: String
+
+  """Event start time"""
+  startTime: DateTime
+
+  """Event end time"""
+  endTime: DateTime
+
+  """Location ID where the event will take place"""
+  locationId: String
+
+  """Location details for the event"""
+  location: CreateLocationInput
+  id: String!
 }

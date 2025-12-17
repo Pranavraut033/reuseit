@@ -7,7 +7,9 @@ import { Loader } from 'nestjs-dataloader';
 
 import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
 import { Location } from '~/location/entities/location.entity';
+import { LocationLoader } from '~/location/location.loader';
 import { Post } from '~/post/entities/post.entity';
+import { UserLoader } from '~/user/user.loader';
 
 import { User } from '../user/entities/user.entity';
 import { CreateEventInput } from './dto/create-event.input';
@@ -15,12 +17,7 @@ import { UpdateEventInput } from './dto/update-event.input';
 import { Event } from './entities/event.entity';
 import { EventFilterInput } from './entities/event-filter.entity';
 import { EvenParticipant } from './entities/event-participant.entity';
-import {
-  EventCreatorLoader,
-  EventLocationLoader,
-  EventParticipantsLoader,
-  EventPostsLoader,
-} from './event.loader';
+import { EventParticipantsLoader, EventPostsLoader } from './event.loader';
 import { EventService } from './event.service';
 
 @Resolver(() => Event)
@@ -121,7 +118,7 @@ export class EventResolver {
   @ResolveField('creator', () => User)
   async creator(
     @Parent() event: Event & { creatorId: string },
-    @Loader(EventCreatorLoader) loader: DataLoader<string, User | null>,
+    @Loader(UserLoader) loader: DataLoader<string, User | null>,
   ): Promise<User | null> {
     return loader.load(event.creatorId);
   }
@@ -129,7 +126,7 @@ export class EventResolver {
   @ResolveField('location', () => Location)
   async location(
     @Parent() event: Event & { locationId: string },
-    @Loader(EventLocationLoader) loader: DataLoader<string, Location | null>,
+    @Loader(LocationLoader) loader: DataLoader<string, Location | null>,
   ): Promise<Location | null> {
     return loader.load(event.locationId);
   }

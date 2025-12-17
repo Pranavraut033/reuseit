@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Badge, BadgeAssignment, User } from '@prisma/client';
+import type { Badge, BadgeAssignment } from '@prisma/client';
 import DataLoader from 'dataloader';
 import { NestDataLoader } from 'nestjs-dataloader';
 
@@ -64,19 +64,8 @@ export class BadgeAssignmentBadgeLoader implements NestDataLoader<string, Badge 
 }
 
 /**
- * DataLoader for BadgeAssignment's user (many-to-one)
+ * Deprecated: Use canonical `UserLoader` for BadgeAssignment.user lookups
+ * instead of maintaining a separate `BadgeAssignmentUserLoader`.
  */
-@Injectable()
-export class BadgeAssignmentUserLoader implements NestDataLoader<string, User | null> {
-  constructor(private readonly prisma: PrismaService) {}
 
-  generateDataLoader(): DataLoader<string, User | null> {
-    return new DataLoader<string, User | null>(async (userIds) => {
-      const users = await this.prisma.user.findMany({
-        where: { id: { in: [...userIds] } },
-      });
-
-      return orderByKeys(userIds, users, (user) => user.id);
-    });
-  }
-}
+export {};

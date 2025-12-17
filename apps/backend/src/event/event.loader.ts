@@ -1,46 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import type { EvenParticipant, Location, Post, User } from '@prisma/client';
+import type { EvenParticipant, Post } from '@prisma/client';
 import DataLoader from 'dataloader';
 import { NestDataLoader } from 'nestjs-dataloader';
 
-import { orderByKeys, orderManyByKeys } from '~/common/base.loader';
+import { orderManyByKeys } from '~/common/base.loader';
 import { PrismaService } from '~/prisma/prisma.service';
 
 /**
- * DataLoader for Event's creator (many-to-one)
+ * Deprecated: EventCreatorLoader and EventLocationLoader were duplicate
+ * single-entity loaders. Use canonical loaders instead:
+ *  - `UserLoader` for users
+ *  - `LocationLoader` for locations
  */
-@Injectable()
-export class EventCreatorLoader implements NestDataLoader<string, User | null> {
-  constructor(private readonly prisma: PrismaService) {}
 
-  generateDataLoader(): DataLoader<string, User | null> {
-    return new DataLoader<string, User | null>(async (creatorIds) => {
-      const users = await this.prisma.user.findMany({
-        where: { id: { in: [...creatorIds] } },
-      });
-
-      return orderByKeys(creatorIds, users, (user) => user.id);
-    });
-  }
-}
-
-/**
- * DataLoader for Event's location (many-to-one)
- */
-@Injectable()
-export class EventLocationLoader implements NestDataLoader<string, Location | null> {
-  constructor(private readonly prisma: PrismaService) {}
-
-  generateDataLoader(): DataLoader<string, Location | null> {
-    return new DataLoader<string, Location | null>(async (locationIds) => {
-      const locations = await this.prisma.location.findMany({
-        where: { id: { in: [...locationIds] } },
-      });
-
-      return orderByKeys(locationIds, locations, (location) => location.id);
-    });
-  }
-}
+export {}; // keep module boundary while preserving EventPostsLoader/Participants below
 
 /**
  * DataLoader for Event's posts (one-to-many)

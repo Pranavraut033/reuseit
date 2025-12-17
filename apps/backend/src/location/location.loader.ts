@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Event, Post, User } from '@prisma/client';
+import type { Event, Location, Post } from '@prisma/client';
 import DataLoader from 'dataloader';
 import { NestDataLoader } from 'nestjs-dataloader';
 
@@ -7,20 +7,27 @@ import { orderByKeys, orderManyByKeys } from '~/common/base.loader';
 import { PrismaService } from '~/prisma/prisma.service';
 
 /**
- * DataLoader for Location's creator (many-to-one)
+ * Deprecated: `LocationCreatorLoader` duplicated user lookups.
+ * Use the canonical `UserLoader` for user-by-id lookups instead.
+ */
+
+export {};
+
+/**
+ * Canonical DataLoader for Location entities by ID
+ * This keeps single-entity lookup centralized and reusable across the codebase
  */
 @Injectable()
-export class LocationCreatorLoader implements NestDataLoader<string, User | null> {
+export class LocationLoader implements NestDataLoader<string, Location | null> {
   constructor(private readonly prisma: PrismaService) {}
 
-  generateDataLoader(): DataLoader<string, User | null> {
-    return new DataLoader<string, User | null>(async (userIds) => {
-      const validIds = userIds.filter((id) => id !== null && id !== undefined);
-      const users = await this.prisma.user.findMany({
-        where: { id: { in: [...validIds] } },
+  generateDataLoader(): DataLoader<string, Location | null> {
+    return new DataLoader<string, Location | null>(async (ids) => {
+      const locations = await this.prisma.location.findMany({
+        where: { id: { in: [...ids] } },
       });
 
-      return orderByKeys(userIds, users, (user) => user.id);
+      return orderByKeys(ids, locations, (location) => location.id);
     });
   }
 }

@@ -9,15 +9,12 @@ import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
 import { CurrentUser } from '~/decorators/CurrentUser';
 import { Post } from '~/post/entities/post.entity';
 import { User } from '~/user/entities/user.entity';
+import { UserLoader } from '~/user/user.loader';
 
 import { CreateLocationInput } from './dto/create-location.input';
 import { UpdateLocationInput } from './dto/update-location.input';
 import { Location } from './entities/location.entity';
-import {
-  LocationCreatorLoader,
-  LocationEventsLoader,
-  LocationPostsLoader,
-} from './location.loader';
+import { LocationEventsLoader, LocationPostsLoader } from './location.loader';
 import { LocationService } from './location.service';
 
 @Resolver(() => Location)
@@ -79,7 +76,7 @@ export class LocationResolver {
   @ResolveField('createdBy', () => User, { nullable: true })
   async createdBy(
     @Parent() location: Location & { userId?: string | null },
-    @Loader(LocationCreatorLoader) loader: DataLoader<string, User | null>,
+    @Loader(UserLoader) loader: DataLoader<string, User | null>,
   ): Promise<User | null> {
     if (!location.userId) return null;
     return loader.load(location.userId);

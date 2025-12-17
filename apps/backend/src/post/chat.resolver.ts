@@ -15,9 +15,10 @@ import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
 import { CacheQuery, InvalidateCache } from '~/decorators/cache.decorator';
+import { CurrentUser } from '~/decorators/CurrentUser';
+import { UserLoader } from '~/user/user.loader';
 
 import { User } from '../user/entities/user.entity';
-import { ChatAuthorLoader, ChatPostLoader, ChatRequesterLoader } from './chat.loader';
 import { ChatService } from './chat.service';
 import {
   BlockUserInput,
@@ -28,6 +29,7 @@ import {
 import { Chat } from './entities/chat.entity';
 import { ChatMessage } from './entities/chat-message.entity';
 import { Post } from './entities/post.entity';
+import { PostLoader } from './post.loader';
 
 @Resolver(() => Chat)
 export class ChatResolver {
@@ -111,15 +113,15 @@ export class ChatResolver {
 
   @Query(() => [Chat])
   @CacheQuery((userId: string) => `chats:${userId}`, 300)
-  getChatsForUser(@Context('req') req: { user?: User }) {
-    return this.chatService.findChatsForUser(req.user?.id);
+  getChatsForUser(@CurrentUser() user?: User) {
+    return this.chatService.findChatsForUser(user?.id);
   }
 
   // Field resolvers for relations
   @ResolveField('post', () => Post)
   async post(
     @Parent() chat: Chat & { postId: string },
-    @Loader(ChatPostLoader) loader: DataLoader<string, Post | null>,
+    @Loader(PostLoader) loader: DataLoader<string, Post | null>,
   ): Promise<Post | null> {
     return loader.load(chat.postId);
   }
@@ -127,7 +129,7 @@ export class ChatResolver {
   @ResolveField('requester', () => User)
   async requester(
     @Parent() chat: Chat & { requesterId: string },
-    @Loader(ChatRequesterLoader) loader: DataLoader<string, User | null>,
+    @Loader(UserLoader) loader: DataLoader<string, User | null>,
   ): Promise<User | null> {
     return loader.load(chat.requesterId);
   }
@@ -135,7 +137,7 @@ export class ChatResolver {
   @ResolveField('author', () => User)
   async author(
     @Parent() chat: Chat & { authorId: string },
-    @Loader(ChatAuthorLoader) loader: DataLoader<string, User | null>,
+    @Loader(UserLoader) loader: DataLoader<string, User | null>,
   ): Promise<User | null> {
     return loader.load(chat.authorId);
   }

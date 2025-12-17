@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { PrismaModule } from '~/prisma/prisma.module';
 
@@ -31,7 +31,7 @@ import { UserArticleModule } from './user-article.module';
     UserPointsHistoryLoader,
     UserArticlesLoader,
   ],
-  imports: [PointModule, BadgeModule, UserArticleModule, PrismaModule],
-  exports: [UserService],
+  imports: [PointModule, forwardRef(() => BadgeModule), UserArticleModule, PrismaModule],
+  exports: [UserService, UserLoader],
 })
 export class UserModule {}

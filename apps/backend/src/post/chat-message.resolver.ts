@@ -3,8 +3,9 @@ import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-dataloader';
 
 import { User } from '~/user/entities/user.entity';
+import { UserLoader } from '~/user/user.loader';
 
-import { ChatLoader, ChatMessageSenderLoader } from './chat.loader';
+import { ChatLoader } from './chat.loader';
 import { Chat } from './entities/chat.entity';
 import { ChatMessage } from './entities/chat-message.entity';
 
@@ -13,7 +14,7 @@ export class ChatMessageResolver {
   @ResolveField('sender', () => User)
   async sender(
     @Parent() message: ChatMessage & { senderId: string },
-    @Loader(ChatMessageSenderLoader) loader: DataLoader<string, User>,
+    @Loader(UserLoader) loader: DataLoader<string, User>,
   ): Promise<User> {
     return loader.load(message.senderId);
   }

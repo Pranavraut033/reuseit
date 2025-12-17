@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { LocationModule } from '~/location/location.module';
 import { NotificationModule } from '~/notification/notification.module';
@@ -32,6 +32,13 @@ import { PostService } from './post.service';
     PostService,
     PostUserArticlesLoader,
   ],
-  imports: [ChatModule, PrismaModule, LocationModule, PointsModule, NotificationModule],
+  imports: [
+    forwardRef(() => ChatModule),
+    PrismaModule,
+    LocationModule,
+    PointsModule,
+    NotificationModule,
+  ],
+  exports: [PostLoader],
 })
 export class PostModule {}

@@ -190,6 +190,9 @@ function groupBy<T, K extends string | number | symbol>(
 1. `CommentAuthorLoader` - Author of Comment
 2. `CommentPostLoader` - Post of Comment
 
+> Note: Comment-specific single-entity loaders were removed in favor of canonical loaders:
+> use **`UserLoader`** (for comment.author) and **`PostLoader`** (for comment.post).
+
 ### Event Module (4 loaders)
 
 1. `EventCreatorLoader` - Creator of Event
@@ -197,11 +200,15 @@ function groupBy<T, K extends string | number | symbol>(
 3. `EventPostsLoader` - Posts for Event
 4. `EventParticipantsLoader` - Participants of Event
 
+> Note: `EventCreatorLoader` and `EventLocationLoader` are deprecated — use **`UserLoader`** and **`LocationLoader`** respectively for single-entity lookups.
+
 ### Location Module (3 loaders)
 
 1. `LocationCreatorLoader` - Creator of Location
 2. `LocationPostsLoader` - Posts at Location
 3. `LocationEventsLoader` - Events at Location
+
+> Note: `LocationCreatorLoader` is deprecated — use **`UserLoader`** for user lookups.
 
 ### Badge Module (4 loaders)
 

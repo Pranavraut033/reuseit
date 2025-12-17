@@ -2,11 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { PrismaModule } from '~/prisma/prisma.module';
 
-import {
-  LocationCreatorLoader,
-  LocationEventsLoader,
-  LocationPostsLoader,
-} from './location.loader';
+import { LocationEventsLoader, LocationLoader, LocationPostsLoader } from './location.loader';
 import { LocationResolver } from './location.resolver';
 import { LocationService } from './location.service';
 
@@ -14,11 +10,11 @@ import { LocationService } from './location.service';
   providers: [
     LocationService,
     LocationResolver,
-    LocationCreatorLoader,
+    LocationLoader,
     LocationPostsLoader,
     LocationEventsLoader,
   ],
   imports: [PrismaModule],
-  exports: [LocationService],
+  exports: [LocationService, LocationLoader],
 })
 export class LocationModule {}
