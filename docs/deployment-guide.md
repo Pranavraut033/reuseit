@@ -6,7 +6,7 @@ This guide explains how to publish and maintain the ReUseIt documentation using 
 
 ## 1. Overview
 
-The documentation is located in the `docs/` directory and configured via `docs/mkdocs.yml`. A GitHub Actions workflow (`.github/workflows/docs.yml`) automatically builds and deploys the site on every push to `main` affecting documentation files.
+The documentation is located in the `docs/` directory and configured via `mkdocs.yml`. A GitHub Actions workflow (`.github/workflows/docs.yml`) automatically builds and deploys the site on every push to `main` affecting documentation files.
 
 ---
 
@@ -23,7 +23,6 @@ The documentation is located in the `docs/` directory and configured via `docs/m
 To preview the documentation locally:
 
 ```bash
-cd docs
 pip install mkdocs-material mkdocs-minify-plugin
 mkdocs serve
 ```
@@ -38,7 +37,7 @@ The workflow file at `.github/workflows/docs.yml` performs these steps:
 
 1. Checkout repository
 2. Install MkDocs dependencies
-3. Build static site into `docs/site`
+3. Build static site into `site/`
 4. Upload build artifact
 5. Deploy to GitHub Pages using `actions/deploy-pages`
 
@@ -55,7 +54,7 @@ You can manually trigger deployment using the "Run workflow" button in the GitHu
 ## 6. Adding / Updating Content
 
 1. Create or edit Markdown files in `docs/`
-2. Update navigation in `docs/mkdocs.yml` if adding a new page
+2. Update navigation in `mkdocs.yml` if adding a new page
 3. Commit and push changes:
 
 ```bash
@@ -88,14 +87,14 @@ docs.reuseit.app
 
 To enable Google Analytics:
 
-1. Replace `G-XXXXXXXXXX` in `docs/mkdocs.yml` under `extra.analytics.property`
+1. Replace `G-XXXXXXXXXX` in `mkdocs.yml` under `extra.analytics.property`
 2. Commit and push changes
 
 ---
 
 ## 9. Theme Customization
 
-Modify the `theme:` section in `docs/mkdocs.yml` to adjust colors, icons, or features.
+Modify the `theme:` section in `mkdocs.yml` to adjust colors, icons, or features.
 
 Example change (primary color):
 
@@ -143,7 +142,7 @@ After deployment:
 ## 13. Example Commit
 
 ```bash
-git add docs/04-implementation.md docs/mkdocs.yml
+git add docs/04-implementation.md mkdocs.yml
 git commit -m "docs: add performance benchmarks section"
 git push origin main
 ```
@@ -194,10 +193,10 @@ Commit changes only if configuration requires updates.
 
 | File                         | Purpose                                               |
 | ---------------------------- | ----------------------------------------------------- |
-| `docs/mkdocs.yml`            | MkDocs configuration (navigation, theme)              |
+| `mkdocs.yml`                 | MkDocs configuration (navigation, theme)              |
 | `.github/workflows/docs.yml` | Automation workflow for deployment                    |
 | `docs/*.md`                  | Documentation content                                 |
-| `docs/site/`                 | Generated build output (ignored from version control) |
+| `site/`                      | Generated build output (ignored from version control) |
 
 ---
 
@@ -211,4 +210,4 @@ For enhancements:
 
 ---
 
-**Back to:** [Home](README.md)
+**Last Updated**: December 2025
