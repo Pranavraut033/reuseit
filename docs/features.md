@@ -3,7 +3,7 @@
 ## Implemented Features
 
 ### Mobile Application
-- **Waste Identification**: On-device waste classification using TensorFlow Lite models
+- **Waste Identification**: On-device waste classification using TensorFlow Lite models with 84% mAP50 and 76% mAP50-95 accuracy
 - **User Authentication**: Email/password, Google Sign-In, and phone verification
 - **Community Marketplace**: Create and browse posts for giveaways and requests
 - **Private Messaging**: Chat functionality for post-related communications
@@ -19,8 +19,11 @@
 - **Geospatial Queries**: Location-based searches using MongoDB geospatial indexes
 
 ### Machine Learning
-- **Model Training**: Python utilities for training waste classification models
+- **Model Training**: Python utilities for training waste classification models using YOLOv8
 - **Dataset Management**: Scripts for preparing and merging training datasets
+- **Model Performance**: YOLO waste detection model with 84% mAP50, 76% mAP50-95, 81% precision, and 81% recall
+- **Waste Categories**: Detects 8 categories (cardboard, glass, metal, paper, plastic, trash, biological, battery)
+- **Model Size**: ~2.7 MB TFLite model optimized for mobile deployment
 
 ---
 

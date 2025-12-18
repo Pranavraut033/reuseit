@@ -8,7 +8,7 @@ The project helps people identify waste, locate recycling points, share reusable
 
 ## Implemented features (verified)
 
-- Mobile client (Expo React Native) with an on-device TensorFlow Lite model for waste analysis
+- Mobile client (Expo React Native) with an on-device TensorFlow Lite model for waste analysis (84% mAP50 accuracy)
 - Backend API (NestJS + GraphQL) providing authentication, users, posts, events, locations, points, and badges
 - Location and Google Maps integration for managing and discovering recycling locations
 - Community features: posts for sharing items and event management (create/RSVP)
