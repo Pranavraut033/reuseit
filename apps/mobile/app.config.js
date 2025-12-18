@@ -1,4 +1,13 @@
 /** @type {import('@expo/config').ExpoConfig} */
+try {
+  // Load .env for local development if dotenv is available. Do not fail if it's missing
+  // (e.g., when tools run from environments that don't have it installed).
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('dotenv').config();
+} catch (e) {
+  // ignore - dotenv is optional at runtime for Expo tooling
+}
+
 module.exports = {
   expo: {
     name: 'Reuseit',
@@ -35,11 +44,14 @@ module.exports = {
           locationAlwaysAndWhenInUsePermission: 'Allow $(PRODUCT_NAME) to use your location.',
         },
       ],
+      // Custom plugin to add Android network_security_config.xml and set app attribute
+      './plugins/add-security-config-plugin.js',
       [
         'expo-build-properties',
         {
           android: {
             minSdkVersion: 26,
+            usesCleartextTraffic: true,
           },
           ios: {
             useFrameworks: 'static',
@@ -72,8 +84,7 @@ module.exports = {
       },
       googleServicesFile: './GoogleService-Info.plist',
       config: {
-        googleMapsApiKey:
-          process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyA4aO_IW6Zla8UuO3EBULzeq1cnMVmXINQ',
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
       },
     },
     android: {
@@ -88,11 +99,13 @@ module.exports = {
       package: 'ai.reuseit.app',
       config: {
         googleMaps: {
-          apiKey: process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyA4aO_IW6Zla8UuO3EBULzeq1cnMVmXINQ',
+          apiKey: process.env.GOOGLE_MAPS_API_KEY,
         },
       },
     },
     extra: {
+      // runtime-accessible app URL (falls back to localhost for local dev)
+      appUrl: process.env.EXPO_PUBLIC_APP_URL ?? 'http://91.98.231.10',
       router: {},
       eas: {
         projectId: '5d93e3bd-d633-4646-b468-4243d5e5228f',

@@ -10,8 +10,11 @@ function useAppConfig(): ExpoConfig & {
   tailwindConfig: typeof resolvedTailwindConfig;
   primaryColor: string;
 } {
+  // `AppConfig` may be an object with an `expo` property (from app.config.js)
+  const config = (AppConfig as any).expo ?? AppConfig;
+
   return {
-    ...AppConfig,
+    ...config,
     tailwindConfig: resolvedTailwindConfig,
     primaryColor: ((resolvedTailwindConfig.theme.colors as any).primary.DEFAULT ||
       '#34A853') as string,

@@ -44,16 +44,26 @@
       "pnpm": "10.24.0",
       "autoIncrement": true,
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_APP_URL":"http://91.98.231.10"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       },
       "ios": {
         "simulator": false
       },
       "cache": {
         "key": "production-cache"
+      }
+    },
+    "release-apk": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_APP_URL":"http://91.98.231.10"
       }
     }
   }

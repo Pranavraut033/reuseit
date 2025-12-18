@@ -1,6 +1,7 @@
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { withScalars } from 'apollo-link-scalars';
+import Constants from 'expo-constants';
 import { buildClientSchema, IntrospectionQuery } from 'graphql';
 
 import schema from '../__generated__/graphql.schema.json';
@@ -11,7 +12,13 @@ if (__DEV__) {
   loadErrorMessages();
 }
 
-const uri = (process.env.EXPO_PUBLIC_APP_URL || '').replace(/\/$/, '') + '/graphql';
+// Prefer runtime value from app.config.js (expo constants) falling back to process.env
+const runtimeAppUrl =
+  (Constants.expoConfig?.extra as any)?.appUrl || process.env.EXPO_PUBLIC_APP_URL || '';
+const uri = runtimeAppUrl.replace(/\/$/, '') + '/graphql';
+
+// Helpful runtime log to debug missing envs (check Metro / device logs)
+console.log('GRAPHQL_URI:', uri, 'APP_URL:', runtimeAppUrl);
 
 // Export a base HTTP link so auth links can be composed without stacking
 export const httpLink = createHttpLink({ uri });
