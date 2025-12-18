@@ -18,6 +18,7 @@ The project helps people identify waste, locate recycling points, share reusable
 ## 🚀 Deployment
 
 Production server hosted on Hetzner Cloud (Ubuntu, Docker Compose).
+**Status Page**: http://91.98.231.10/status/
 
 See the [documentation](docs/) for details and the API reference.
 

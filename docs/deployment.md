@@ -21,6 +21,7 @@ The production server is hosted on Hetzner Cloud:
 - **OS**: Ubuntu 22.04
 - **IPv4**: 91.98.231.10
 - **IPv6**: 2a01:4f8:1c1b:8be7::/64
+- **Status Page**: http://91.98.231.10/status/
 
 ### Production Deployment
 
